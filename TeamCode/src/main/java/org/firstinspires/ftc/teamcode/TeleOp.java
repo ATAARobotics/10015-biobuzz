@@ -11,6 +11,13 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import android.util.Size;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+
 @Config
 public abstract class TeleOp extends OpMode {
     GamepadEx driver;
@@ -19,6 +26,10 @@ public abstract class TeleOp extends OpMode {
     Drive drive;
     ElapsedTime runtime = new ElapsedTime();
 
+    // prototyping with some AprilTags, Sept 15
+    AprilTagProcessor april_tags;
+    VisionPortal portal;
+
     public enum Alliance {RED, BLUE};
     public abstract Alliance getAlliance();
 
@@ -26,6 +37,24 @@ public abstract class TeleOp extends OpMode {
     public void init() {
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
+
+        //AprilTagLibrary decode_tags = ;
+        // game manual says april tag family is 36h11
+        april_tags = new AprilTagProcessor.Builder()
+                //.setTagLibrary(decode_tags)
+                .setDrawTagID(true)
+                .setDrawTagOutline(true)
+                .setDrawAxes(true)
+                .setDrawCubeProjection(true)
+                .build();
+
+        portal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class,"DubbleBubble Webcam"))
+                .addProcessor(april_tags)
+                .setCameraResolution(new Size(640, 480))
+                .setStreamFormat(VisionPortal.StreamFormat.YUY2)
+                .setAutoStopLiveView(true)
+                .build();
 
         drive = new Drive(hardwareMap, driver);
         battery = hardwareMap.voltageSensor.get("Control Hub");
