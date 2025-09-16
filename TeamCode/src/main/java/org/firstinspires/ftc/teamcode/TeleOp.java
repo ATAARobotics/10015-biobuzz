@@ -14,8 +14,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import android.util.Size;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
 
 
 @Config
@@ -110,13 +113,18 @@ public abstract class TeleOp extends OpMode {
         // to see telemetry in Webots, right click on your robot and select "Show Robot Window"
         SparkFunOTOS.Pose2D drivePosition = drive.getPosition();
 
+        List<AprilTagDetection> detections = april_tags.getDetections();
+        for (AprilTagDetection tag : detections) {
+            if (tag.id == 20){
+                telemetry.addData("target", tag.ftcPose.range);
+                //range(distance)is in inches, maybe convert to centi
+
+            }
+        }
+
+
         // FIXME TODO put into FTC Dashboard too, for most of this
-        telemetry.addData("Drive/Strafe", "Right Stick")
-                 .addData("Turn", "Left Stick")
-                 .addData("Wrist Up/Middle/Down", "Dpad Up & Down")
-                 .addData("Claw Open/Closed", "X Button")
-                 .addData("-", "-------")
-                 .addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.x, drivePosition.y, drivePosition.h)
+        telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.x, drivePosition.y, drivePosition.h)
             ;
 
         telemetry.update();
