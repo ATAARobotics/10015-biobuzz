@@ -26,6 +26,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class Drive extends SubsystemBase {
     static final AngleUnit ANGLE_UNIT = AngleUnit.DEGREES;
     static final DistanceUnit DISTANCE_UNIT = DistanceUnit.METER;
+
     public static double DISTANCE_TOLERANCE_LOW = 0.035; // 25mm in DISTANCE_UNITs to target
     public static double DISTANCE_TOLERANCE = 0.010; // 10mm // in DISTANCE_UNITs to target
     public static double ANGLE_TOLERANCE = 1; // in ANGLE_UNITs to target
@@ -94,47 +95,6 @@ public class Drive extends SubsystemBase {
     GamepadEx _driver;
     Command _auto_cycle = null; // if not-null we're doing auto-cycle
     int num_auto_clips = 0;
-
-    // robot geometry
-    // static final double WHEEL_RADIUS = 0.048; // in DISTANCE_UNITs
-    // static final double LX = 0.118;  // lateral distance from robot's COM to wheel [m].
-    // static final double LY = 0.127;  // longitudinal distance from robot's COM to wheel [m].
-
-    // static final double GEAR_RATIO = (1+46.0/17) * (1+46.0/11) * (22.0/24);
-    // static final double CPR = 28*GEAR_RATIO;
-    // static final double RPM = 6000/GEAR_RATIO;
-    // static double MAX_SPEED = 2*WHEEL_RADIUS*Math.PI*RPM/60; // maximum chassis speed in DISTANCE_UNITs per second
-
-// october 13, doing some OTOS calibration tests
-//
-// spin 10x on Adrian's "at home" tiles (not identical to production)
-// -> start square to something
-// -> use controller to spin 10x
-// -> manually square up at the end
-//
-// test #1: end angle: 17.699  (spin ccw)
-// test #2: end angle: -18.62  (spin cw)
-// test #3: end angle: -16.9299 (spin cw)
-// test #4: end angle: 17.869  (spin ccw)
-
-//// (17.869 + 16.9299 + 18.62 + 17.699) / 4.0 = 17.779
-
-
-// linear tests (1m push in one direction)
-// test #1: manual push backwards: y= -1.012
-// test #2: manual push backwards: y= -0.9818
-// test #3: manual push backwards: y= -0.9872
-// test #4: manual push backwards: y= -0.9857
-// test #5: manual push backwards: y= -0.9686
-// test #6: manual push backwards: y= -0.9561
-
-/// (-1.012 + -0.9818 + -0.9872 + -0.9857 + -0.9686 + -0.9561) / 6.0 = -0.9819
-
-
-
-// NOTE: static-friction seems to be about "0.1" motor-power to overcome
-// NOTE: we give "Drive" access to "Arm" here so that our Driver can initiate climbing
-    public Arm arm = null;
 
     public Drive(HardwareMap hardwareMap, GamepadEx driver) {
         // TO DO: replace Motor.GoBILDA.RPM_312 with CPR, RPM:
@@ -385,37 +345,6 @@ public class Drive extends SubsystemBase {
             } else {
                 turbo(false);
             }
-
-            // Anjalika controls the hanging
-            if (driver.wasJustPressed(GamepadKeys.Button.A)) {
-                did_prime = true; // safety off
-                if (arm != null) {
-                    CommandScheduler.getInstance().schedule(arm.primeClimb());
-                }
-            }
-
-            // "actually hang" part (this is kind of a one-way trip
-            // because Mahie will never regain control of the arm,
-            // really .... until we "un-hang")
-            if (driver.wasJustPressed(GamepadKeys.Button.X)) {
-                if (arm != null) {
-                    if (did_prime) {
-                        CommandScheduler.getInstance().schedule(arm.doClimb());
-                        did_prime = false;
-                        //driver.getButton(GamepadKeys.Button.Y).
-                    }
-                }
-            }
-
-            // see "periodic()" for how this is cancelled
-            if (driver.isDown(GamepadKeys.Button.B)) {
-                if (arm != null) {
-                    if (_auto_cycle == null) {
-                        _auto_cycle = doAutoCycle();
-                        CommandScheduler.getInstance().schedule(_auto_cycle);
-                    }
-                }
-            }
         }
 
         public class DoNothing extends CommandBase {
@@ -426,57 +355,6 @@ public class Drive extends SubsystemBase {
             public boolean isFinished() {
                 return false;
             }
-        }
-
-        public Command doAutoCycle() {
-            // record our "actual" pickup location, and we compute and
-            // adjustment-factor for x and y -- since our OTOS may be
-            // (significantly) off by this point -- but we only care
-            // about relative positions for this scoring cycle --
-            // could in future re-localize with ArduCam
-            SparkFunOTOS.Pose2D actual = getPosition();
-
-            // ideally, we would re-localize e.g. with arducam here,
-            // but for now we just reset our position to what it
-            // "should" be
-            SparkFunOTOS.Pose2D reset = new SparkFunOTOS.Pose2D(0.95, -1.42, actual.h);
-            setPosition(reset);
-
-            // pickup: x=0.95, y=-1.42, h=180
-            // score: x=0.05, y=-0.74
-            // arm: 16, 0, 0.4
-            // arm-pickup: 20, 0, 0.6
-
-            // arm should already be in "pickup" position when the
-            // girls grab it
-
-            num_auto_clips += 1;
-
-            return new SequentialCommandGroup(
-                arm.wallPickup(),
-                new ParallelCommandGroup(
-                    //arm.backchamberprepare(),
-                    arm.highChamberDriveOn(true),
-                    new SequentialCommandGroup(
-                        moveLowThreshold(-1.5, -1.2, -90).withTimeout(1000),
-                        moveCarefully(-0.02 + (0.03 * num_auto_clips), -0.63, -1).withTimeout(1350)
-                        )
-                    ),
-                //arm.backchamberscore(),
-                arm.highChamberDriveOn(true),
-                new ParallelCommandGroup(
-                    new SequentialCommandGroup(
-                        arm.highChamberDriveOn(false).withTimeout(250),  // kind-of "DoNothing"
-                        new DoNothing().withTimeout(500),
-                        arm.wallPickupPrepare()
-                    ),
-                    /// trying to come in straight by moving right "first"
-                    new SequentialCommandGroup(
-                        moveLowThreshold(0.95, -1.0, 90).withTimeout(1000),
-                        moveCarefully(0.95, -1.40, 179).withTimeout(1000)
-                        )
-                    )
-            );
         }
 
         public double scaleInputs(double input) {
