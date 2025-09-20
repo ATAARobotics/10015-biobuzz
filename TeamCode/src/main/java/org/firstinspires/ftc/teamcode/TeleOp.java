@@ -115,9 +115,11 @@ public abstract class TeleOp extends OpMode {
 
         List<AprilTagDetection> detections = april_tags.getDetections();
         for (AprilTagDetection tag : detections) {
-            if (tag.id == 20){
+            if (tag.id == 20 || tag.id == 24){
                 telemetry.addData("target", tag.ftcPose.range);
                 //range(distance)is in inches, maybe convert to centi
+                telemetry.addData("bearing", tag.ftcPose.bearing);
+
 
             }
         }
