@@ -60,7 +60,8 @@ public class Drive extends SubsystemBase {
     double forward; // +Fwd/-Rev
     double strafe; // +Right/-Left
     double turn; // +CW/-CCW
-    double desired_heading;
+    public double april_bearing;
+    public double desired_heading;
     double human_stick;
 
     double ff_forward;
@@ -323,6 +324,7 @@ public class Drive extends SubsystemBase {
             // Run wheels in POV mode: use the Right stick to go forward & strafe, the Left stick to rotate left & right.
             strafe = scaleInputs(driver.getRightX());
             forward = scaleInputs(-driver.getRightY());
+
             double leftX = driver.getLeftX();
             if (Math.abs(leftX) > DEAD_ZONE)
                 desired_heading = wrapAngle(desired_heading - TURN_SPEED * leftX);
@@ -336,7 +338,8 @@ public class Drive extends SubsystemBase {
                 desired_heading = -90;
             if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
                 desired_heading = 135;
-
+          //  if (driver.wasJustPressed(GamepadKeys.Button.Y))
+               // desired_heading = april_bearing;
             // Anjalika wants "turbo" mode ... so if we're holding
             // left trigger _currently_, we go to Turbo -- otherwise
             // to non-Turbo

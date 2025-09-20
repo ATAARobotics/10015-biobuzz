@@ -119,6 +119,7 @@ public abstract class TeleOp extends OpMode {
                 telemetry.addData("target", tag.ftcPose.range);
                 //range(distance)is in inches, maybe convert to centi
                 telemetry.addData("bearing", tag.ftcPose.bearing);
+                drive.desired_heading = tag.ftcPose.bearing*2;
 
 
             }
