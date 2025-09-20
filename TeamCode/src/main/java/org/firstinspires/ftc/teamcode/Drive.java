@@ -93,6 +93,8 @@ public class Drive extends SubsystemBase {
     double x_velocity;
     double y_velocity;
 
+    boolean april_lock = false;
+
     GamepadEx _driver;
     Command _auto_cycle = null; // if not-null we're doing auto-cycle
     int num_auto_clips = 0;
@@ -338,8 +340,10 @@ public class Drive extends SubsystemBase {
                 desired_heading = -90;
             if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
                 desired_heading = 135;
-          //  if (driver.wasJustPressed(GamepadKeys.Button.Y))
-               // desired_heading = april_bearing;
+            if (driver.wasJustPressed(GamepadKeys.Button.Y))
+                april_lock = !april_lock;
+            if (april_lock)
+                desired_heading = april_bearing;
             // Anjalika wants "turbo" mode ... so if we're holding
             // left trigger _currently_, we go to Turbo -- otherwise
             // to non-Turbo
