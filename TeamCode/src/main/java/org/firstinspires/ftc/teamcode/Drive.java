@@ -13,6 +13,7 @@ import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
@@ -21,6 +22,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 @Config
 public class Drive extends SubsystemBase {
@@ -47,7 +49,8 @@ public class Drive extends SubsystemBase {
     public static double ANGULAR_SCALAR = 0.995;
 
     MecanumDrive drivebase;
-    SparkFunOTOS otos;
+    //SparkFunOTOS otos;
+    GoBildaPinpointDriver pinpoint;
 
     //double current_left_distance = 0.0; // in millimeters
     //Rev2mDistanceSensor dist_left;
@@ -85,10 +88,10 @@ public class Drive extends SubsystemBase {
     public static Motor.ZeroPowerBehavior zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE;
 
     double current_time;
-    SparkFunOTOS.Pose2D current_position;
+    Pose2D current_position;
 
     double previous_time;
-    //SparkFunOTOS.Pose2D previous_position;
+    //Pose2D previous_position;
 
     double x_velocity;
     double y_velocity;
@@ -119,14 +122,24 @@ public class Drive extends SubsystemBase {
         heading_control.setTolerance(ANGLE_TOLERANCE, Double.POSITIVE_INFINITY);
 
         // configure odometry sensor
-        otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        // Configure the sensor
+        pinpoint.setOffsets(48.0, 46.6, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
+                GoBildaPinpointDriver.EncoderDirection.REVERSED);
+       
+        // Set the location of the robot - this should be the place you are starting the robot from
+        pinpoint.setPosition(new Pose2D(DISTANCE_UNIT, 0, 0, ANGLE_UNIT, 0));
+
+        /*otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
         otos.setLinearUnit(DISTANCE_UNIT);
         otos.setAngularUnit(ANGLE_UNIT);
         // 169.91mm from back of arm to "center of robot"
         // theory: our "center of drivebase" is not actually where the
         // robot rotates around .. and so this offset isn't actually
         // correct, causing a bit more drive when we "turn and drive"
-        otos.setOffset(new SparkFunOTOS.Pose2D(0, 0.0466, 0));
+        otos.setOffset(new Pose2D(0, 0.0466, 0));
         // notes:
         // (above offset is the offset from the exact _center_ of the robot)
         // from CAD, December 6:
@@ -137,7 +150,7 @@ public class Drive extends SubsystemBase {
         otos.setLinearScalar(LINEAR_SCALAR);
         otos.setAngularScalar(ANGULAR_SCALAR);
         otos.calibrateImu();
-
+*/
         // distance sensor
         // TODO: more efficient if plugged to control-hub (not expansion)?
         /*
@@ -149,7 +162,8 @@ public class Drive extends SubsystemBase {
     }
 
     public void reset() {
-        otos.resetTracking();
+        //otos.resetTracking();
+        pinpoint.resetPosAndIMU();
     }
 
     public void stop() {
@@ -165,14 +179,15 @@ public class Drive extends SubsystemBase {
         return angle;
     }
 
-    public void setPosition(SparkFunOTOS.Pose2D pose) {
-        otos.setPosition(pose);
+    public void setPosition(Pose2D pose) {
+        //otos.setPosition(pose);
+        pinpoint.setPosition(pose);
 //        previous_position = current_position;
         current_position = pose;
-        desired_heading = pose.h;
+        desired_heading = pose.getHeading(ANGLE_UNIT);
     }
 
-    public SparkFunOTOS.Pose2D getPosition() {
+    public Pose2D getPosition() {
         return current_position;
     }
 
@@ -188,12 +203,13 @@ public class Drive extends SubsystemBase {
     }
 
     public class QuickMoveTo extends CommandBase {
-        SparkFunOTOS.Pose2D target;
+        Pose2D target;
         private PIDController quick_strafe;
         private PIDController quick_forward;
 
         public QuickMoveTo(double x, double y, double h, double tolerance) {
-            target = new SparkFunOTOS.Pose2D(x, y, h);
+            //target = new Pose2D(x, y, h);
+            target = new Pose2D(DISTANCE_UNIT, x, y, ANGLE_UNIT, h);
             //XXX FIXME just trying to hack in higher PID for low-tolerance move
             if (tolerance == DISTANCE_TOLERANCE_LOW) {
                 quick_strafe = new PIDController(strafe_pid_quick.p * 2.0, strafe_pid_quick.i, strafe_pid_quick.d);
@@ -209,23 +225,26 @@ public class Drive extends SubsystemBase {
 
         @Override
         public void initialize() {
-            quick_strafe.setSetPoint(target.x);
-            quick_forward.setSetPoint(target.y);
-            desired_heading = wrapAngle(target.h);
+            quick_strafe.setSetPoint(target.getX(DISTANCE_UNIT));
+            quick_forward.setSetPoint(target.getY(DISTANCE_UNIT));
+            desired_heading = wrapAngle(target.getHeading(ANGLE_UNIT));
 
             // careful, take out for production FIXME TODO
+            /*
             if (false) {
                 otos.setLinearScalar(LINEAR_SCALAR);
                 otos.setAngularScalar(ANGULAR_SCALAR);
             }
+            */
+
             drivebase.setMaxSpeed(TURBO_FAST_SPEED);
         }
 
         @Override
         public void execute() {
             // compute the direction vector relatively to the robot coordinates
-            strafe = quick_strafe.calculate(current_position.x);
-            forward = quick_forward.calculate(current_position.y);
+            strafe = quick_strafe.calculate(current_position.getX(DISTANCE_UNIT));
+            forward = quick_forward.calculate(current_position.getY(DISTANCE_UNIT));
 
             // our own "static friction" calc
             if (strafe > STATIC_F_SENSITIVE) ff_strafe = STATIC_F_STRAFE;
@@ -253,13 +272,13 @@ public class Drive extends SubsystemBase {
 
 
     public class CarefulMoveTo extends CommandBase {
-        SparkFunOTOS.Pose2D target;
+        Pose2D target;
         private PIDController careful_strafe;
         private PIDController careful_forward;
 
         public CarefulMoveTo(double x, double y, double h) {
             //System.out.println("x="+(x-current_position.x)+" y="+(y-current_position.y)+" h="+(h-current_position.h));
-            target = new SparkFunOTOS.Pose2D(x, y, h);
+            target = new Pose2D(DISTANCE_UNIT, x, y, ANGLE_UNIT, h);
             careful_strafe = new PIDController(strafe_pid_careful.p, strafe_pid_careful.i, strafe_pid_careful.d);
             careful_forward = new PIDController(forward_pid_careful.p, forward_pid_careful.i, forward_pid_careful.d);
             careful_strafe.setTolerance(DISTANCE_TOLERANCE);
@@ -269,23 +288,25 @@ public class Drive extends SubsystemBase {
 
         @Override
         public void initialize() {
-            careful_strafe.setSetPoint(target.x);
-            careful_forward.setSetPoint(target.y);
-            desired_heading = wrapAngle(target.h);
+            careful_strafe.setSetPoint(target.getX(DISTANCE_UNIT));
+            careful_forward.setSetPoint(target.getY(DISTANCE_UNIT));
+            desired_heading = wrapAngle(target.getHeading(ANGLE_UNIT));
 
             // careful, take out for production FIXME TODO
-            if (false) {
+            /*if (false) {
                 otos.setLinearScalar(LINEAR_SCALAR);
                 otos.setAngularScalar(ANGULAR_SCALAR);
             }
+
+             */
             drivebase.setMaxSpeed(TURBO_SLOW_SPEED);
         }
 
         @Override
         public void execute() {
             // compute the direction vector relatively to the robot coordinates
-            strafe = careful_strafe.calculate(current_position.x);
-            forward = careful_forward.calculate(current_position.y);
+            strafe = careful_strafe.calculate(current_position.getX(DISTANCE_UNIT));
+            forward = careful_forward.calculate(current_position.getY(DISTANCE_UNIT));
 
             // our own "static friction" calc
             if (strafe > STATIC_F_SENSITIVE) ff_strafe = STATIC_F_STRAFE;
@@ -387,7 +408,9 @@ public class Drive extends SubsystemBase {
         previous_time = current_time;
         current_time = time;
         //previous_position = current_position;
-        current_position = otos.getPosition();
+        //current_position = otos.getPosition();
+        pinpoint.update();
+        current_position = pinpoint.getPosition();
         /*
         current_left_distance= dist_left.getDistance(DistanceUnit.INCH);
         dist_left_avg.add_sample(current_left_distance);
@@ -408,9 +431,9 @@ public class Drive extends SubsystemBase {
     public void periodic() {
         // heading lock
         //heading_control.setPID(hPID.p,hPID.i,hPID.d);
-        turn = heading_control.calculate(wrapAngle(desired_heading - current_position.h));
+        turn = heading_control.calculate(wrapAngle(desired_heading - current_position.getHeading(ANGLE_UNIT)));
         // tell ftclib its inputs
-        drivebase.driveFieldCentric(strafe, forward, turn, current_position.h, false);
+        drivebase.driveFieldCentric(strafe, forward, turn, current_position.getHeading(ANGLE_UNIT), false);
 
         // note: this has to be here, or at least "not in the driver
         // controls" because those don't run while we're auto-cycling
@@ -423,13 +446,13 @@ public class Drive extends SubsystemBase {
     }
 
     public void add_telemetry(TelemetryPacket pack) {
-        pack.put("position-x", current_position.x);
-        pack.put("position-y", current_position.y);
-        pack.put("position-x-cm", current_position.x * 100.0);
-        pack.put("position-y-cm", current_position.y * 100.0);
+        pack.put("position-x", current_position.getX(DISTANCE_UNIT));
+        pack.put("position-y", current_position.getY(DISTANCE_UNIT));
+        pack.put("position-x-cm", current_position.getX(DistanceUnit.CM));
+        pack.put("position-y-cm", current_position.getY(DistanceUnit.CM));
         //pack.put("target-x", fixme);
         //pack.put("target-y", fixme);
-        pack.put("current-heading",current_position.h);
+        pack.put("current-heading", current_position.getHeading(ANGLE_UNIT));
         pack.put("desired-heading", desired_heading);
 
         pack.put("strafe", strafe);

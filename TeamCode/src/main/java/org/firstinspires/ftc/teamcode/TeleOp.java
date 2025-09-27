@@ -5,6 +5,8 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+//import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
+
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -13,6 +15,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import android.util.Size;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
@@ -38,6 +43,7 @@ public abstract class TeleOp extends OpMode {
 
     @Override
     public void init() {
+
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
@@ -82,7 +88,7 @@ public abstract class TeleOp extends OpMode {
         drive.reset();
         runtime.reset();
         // set starting position
-        //drive.setPosition(new SparkFunOTOS.Pose2D(-1.03,-1.61,0));
+        //drive.setPosition(new Pose2D(-1.03,-1.61,0));
     }
 
     @Override
@@ -111,7 +117,7 @@ public abstract class TeleOp extends OpMode {
 
         // Send telemetry messages to explain controls and show robot status
         // to see telemetry in Webots, right click on your robot and select "Show Robot Window"
-        SparkFunOTOS.Pose2D drivePosition = drive.getPosition();
+        Pose2D drivePosition = drive.getPosition();
 
         List<AprilTagDetection> detections = april_tags.getDetections();
         for (AprilTagDetection tag : detections) {
@@ -119,15 +125,14 @@ public abstract class TeleOp extends OpMode {
                 telemetry.addData("target", tag.ftcPose.range);
                 //range(distance)is in inches, maybe convert to centi
                 telemetry.addData("bearing", tag.ftcPose.bearing);
-                drive.april_bearing = tag.ftcPose.bearing*2;
+                drive.april_bearing = tag.ftcPose.bearing + drive.getPosition().getHeading(drive.ANGLE_UNIT);
 
             }
         }
 
 
         // FIXME TODO put into FTC Dashboard too, for most of this
-        telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.x, drivePosition.y, drivePosition.h)
-            ;
+        telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
 
         telemetry.update();
     }
