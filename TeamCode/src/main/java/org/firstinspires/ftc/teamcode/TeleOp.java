@@ -32,7 +32,7 @@ public abstract class TeleOp extends OpMode {
     GamepadEx operator;
     VoltageSensor battery;
     Drive drive;
-    ElapsedTime runtime = new ElapsedTime();
+    ElapsedTime  runtime = new ElapsedTime();
 
     // prototyping with some AprilTags, Sept 15
     AprilTagProcessor april_tags;
