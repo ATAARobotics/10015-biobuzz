@@ -27,7 +27,7 @@ public class  Prototyping extends OpMode {
     PIDController velocity;
     public static double velocity_p = 0.01;
     public static double velocity_i = 0.0;
-    public static double velocity_d = 0.0;
+    public static double velocity_d = 0.0004;
 
     @Override
     //setting up the gamepad and motor
@@ -51,6 +51,7 @@ public class  Prototyping extends OpMode {
         double power;
         power = velocity.calculate(currentRpm);
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
+        if(power < 0) power = 0;
         motor0.set(power); //when you move joystick, motor power changes
         telemetry.addData("motor0", power); //what you see on the screen
         telemetry.addData("rpmTarget", rpmTarget);
