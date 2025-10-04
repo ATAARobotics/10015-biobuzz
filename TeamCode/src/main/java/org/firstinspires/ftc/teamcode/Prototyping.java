@@ -30,7 +30,7 @@ public class  Prototyping extends OpMode {
     public static double velocity_i = 0.0;
     public static double velocity_d = 0.0004;
     public static double kv = 0.0021; //kv is Feed Forward Model slope
-    public static double ks = 1.4117; //ks is Feed Forward Model Y intercept
+    public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
 
 
     @Override
@@ -57,7 +57,7 @@ public class  Prototyping extends OpMode {
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
         double appliedVoltage;// = battery.getVoltage() * power;
         appliedVoltage = kv*rpmTarget+ks;
-       power = appliedVoltage/battery.getVoltage();
+        power = appliedVoltage/battery.getVoltage();
         power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
