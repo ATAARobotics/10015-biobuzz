@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 @Config
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Prototyping", group="Opmode")
@@ -19,8 +20,8 @@ public class  Prototyping extends OpMode {
     private static final double TICKS_PER_REV = 28.0;
     private static final double BIG_STEP_RPM = 250;
     private static final double SMALL_STEP_RPM = 10;
-
-    double MAX_RPM = 5000;
+    VoltageSensor battery;
+    double MAX_RPM = 5250;
     double rpmTarget;
     double currentRpm;
 
@@ -28,6 +29,9 @@ public class  Prototyping extends OpMode {
     public static double velocity_p = 0.01;
     public static double velocity_i = 0.0;
     public static double velocity_d = 0.0004;
+    public static double kv = 0.0021; //kv is Feed Forward Model slope
+    public static double ks = 1.4117; //ks is Feed Forward Model Y intercept
+
 
     @Override
     //setting up the gamepad and motor
@@ -38,6 +42,7 @@ public class  Prototyping extends OpMode {
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0. setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         velocity = new PIDController(velocity_p, velocity_i, velocity_d);
+        battery = hardwareMap.voltageSensor.get("Control Hub");
     }
 
     @Override
@@ -49,13 +54,19 @@ public class  Prototyping extends OpMode {
         double ticksPerSecond;
         ticksPerSecond = motor0.getVelocity();
         double power;
-        power = velocity.calculate(currentRpm);
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
+        double appliedVoltage;// = battery.getVoltage() * power;
+        appliedVoltage = kv*rpmTarget+ks;
+       power = appliedVoltage/battery.getVoltage();
+        power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
+        if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
         motor0.set(power); //when you move joystick, motor power changes
         telemetry.addData("motor0", power); //what you see on the screen
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
+        //telemetry.addData("Applied Voltage", appliedVoltage);
+        telemetry.addData("Battery Voltage", battery.getVoltage());
 
         // 3000 targetRPM for far, 1800 for close shot. (This was before we fixed the RPM target being the same as the RPM. We need to test this agian)
 
