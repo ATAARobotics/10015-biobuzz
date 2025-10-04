@@ -55,7 +55,7 @@ public class  Prototyping extends OpMode {
         ticksPerSecond = motor0.getVelocity();
         double power;
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
-        double appliedVoltage;// = battery.getVoltage() * power;
+        double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
         appliedVoltage = kv*rpmTarget+ks;
         power = appliedVoltage/battery.getVoltage();
         power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used

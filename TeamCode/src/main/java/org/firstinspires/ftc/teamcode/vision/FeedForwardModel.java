@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="FeedForwardModel", group="Opmode")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="FeedForwardModel", group="OpMode")
 public class  FeedForwardModel extends OpMode {
     GamepadEx control;
     MotorEx motor0;
