@@ -128,9 +128,6 @@ public class Drive extends SubsystemBase {
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
                 GoBildaPinpointDriver.EncoderDirection.REVERSED);
-       
-        // Set the location of the robot - this should be the place you are starting the robot from
-        pinpoint.setPosition(new Pose2D(DISTANCE_UNIT, 0, 0, ANGLE_UNIT, 0));
 
         /*otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
         otos.setLinearUnit(DISTANCE_UNIT);

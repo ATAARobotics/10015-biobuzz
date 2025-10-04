@@ -41,8 +41,14 @@ public abstract class TeleOp extends OpMode {
     public enum Alliance {RED, BLUE};
     public abstract Alliance getAlliance();
 
+    Pose2D target;
+
     @Override
     public void init() {
+        if (getAlliance() == Alliance.BLUE)
+            target = new Pose2D(DistanceUnit.METER, -1.413319, 1.481874, AngleUnit.DEGREES, 315);
+        else
+            target = new Pose2D(DistanceUnit.METER, 1.413319, 1.481874, AngleUnit.DEGREES, 235);
 
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
@@ -88,7 +94,7 @@ public abstract class TeleOp extends OpMode {
         drive.reset();
         runtime.reset();
         // set starting position
-        //drive.setPosition(new Pose2D(-1.03,-1.61,0));
+        drive.setPosition(new Pose2D(DistanceUnit.METER, 0.435, -1.61, AngleUnit.DEGREES, 0));
     }
 
     @Override
@@ -122,11 +128,18 @@ public abstract class TeleOp extends OpMode {
         List<AprilTagDetection> detections = april_tags.getDetections();
         for (AprilTagDetection tag : detections) {
             if (tag.id == 20 || tag.id == 24){
+                drive.april_bearing = tag.ftcPose.bearing + drive.getPosition().getHeading(AngleUnit.DEGREES);
                 telemetry.addData("target", tag.ftcPose.range);
                 //range(distance)is in inches, maybe convert to centi
                 telemetry.addData("bearing", tag.ftcPose.bearing);
-                drive.april_bearing = tag.ftcPose.bearing + drive.getPosition().getHeading(drive.ANGLE_UNIT);
-
+            } else {
+                double dx = target.getX(DistanceUnit.METER) - drive.getPosition().getX(DistanceUnit.METER);
+                double dy = target.getY(DistanceUnit.METER) - drive.getPosition().getY(DistanceUnit.METER);
+                double bearing = Math.toDegrees(Math.atan2(dy, dx));
+                drive.april_bearing = bearing;
+                telemetry.addData("target", Math.sqrt(dx * dx + dy * dy));
+                //range(distance)is in inches, maybe convert to centi
+                telemetry.addData("bearing", bearing);
             }
         }
 
