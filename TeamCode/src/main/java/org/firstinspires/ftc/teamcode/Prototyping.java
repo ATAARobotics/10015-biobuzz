@@ -29,7 +29,7 @@ public class  Prototyping extends OpMode {
     public static double velocity_p = 0.01;
     public static double velocity_i = 0.0;
     public static double velocity_d = 0.0004;
-    public static double kv = 0.0021; //kv is Feed Forward Model slope
+    public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
     public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
 
 
