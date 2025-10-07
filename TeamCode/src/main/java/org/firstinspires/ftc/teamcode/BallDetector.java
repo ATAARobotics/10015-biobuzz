@@ -7,8 +7,14 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 public class BallDetector extends OpenCvPipeline {
 
-    public Scalar lowerHSV = new Scalar(28.0, 104.0, 0.0, 0.0);
-    public Scalar upperHSV = new Scalar(88.0, 255.0, 255.0, 0.0);
+    // purple
+    public Scalar purpleLowerHSV = new Scalar(116.0, 41.0, 44.0, 0.0);
+    public Scalar purpleUpperHSV = new Scalar(164.0, 233.0, 255.0, 0.0);
+
+    // green
+    public Scalar greenLowerHSV = new Scalar(28.0, 104.0, 0.0, 0.0);
+    public Scalar greenUpperHSV = new Scalar(88.0, 255.0, 255.0, 0.0);
+
     private Mat hsvBinaryMat = new Mat();
 
     public int erodeValue = ((int) (13));
@@ -26,6 +32,9 @@ public class BallDetector extends OpenCvPipeline {
 
     @Override
     public Mat processFrame(Mat input) {
+
+        Scalar lowerHSV = purpleLowerHSV;
+        Scalar upperHSV = purpleUpperHSV;
         // "Color Threshold"
         Imgproc.cvtColor(input, hsvBinaryMat, Imgproc.COLOR_RGB2HSV);
         Core.inRange(hsvBinaryMat, lowerHSV, upperHSV, hsvBinaryMat);
