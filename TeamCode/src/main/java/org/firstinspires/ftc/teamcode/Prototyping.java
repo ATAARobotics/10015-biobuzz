@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 @Config
@@ -16,6 +17,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class  Prototyping extends OpMode {
     GamepadEx control;
     MotorEx motor0;
+    private Servo indicatorLight;
 
     private static final double TICKS_PER_REV = 28.0;
     private static final double BIG_STEP_RPM = 250;
@@ -39,6 +41,7 @@ public class  Prototyping extends OpMode {
         rpmTarget = 0;
         control = new GamepadEx(gamepad2);
         motor0 = new MotorEx(hardwareMap, "motor0");
+        indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0. setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         velocity = new PIDController(velocity_p, velocity_i, velocity_d);
@@ -65,10 +68,8 @@ public class  Prototyping extends OpMode {
         telemetry.addData("motor0", power); //what you see on the screen
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
-        //telemetry.addData("Applied Voltage", appliedVoltage);
+        telemetry.addData("Applied Voltage", appliedVoltage);
         telemetry.addData("Battery Voltage", battery.getVoltage());
-
-        // 3000 targetRPM for far, 1800 for close shot. (This was before we fixed the RPM target being the same as the RPM. We need to test this agian)
 
         control.readButtons();
 
@@ -90,6 +91,11 @@ public class  Prototyping extends OpMode {
         }
         if (control.wasJustPressed(GamepadKeys.Button.X)){
             rpmTarget = 0;
+        }
+        if (currentRpm>4900.0 && currentRpm<5100.0) {
+            indicatorLight.setPosition(0.5);
+        } else {
+            indicatorLight.setPosition(0.28);
         }
         TelemetryPacket pack = new TelemetryPacket();
         pack.put("time", time);
