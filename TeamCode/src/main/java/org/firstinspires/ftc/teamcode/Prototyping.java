@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -16,7 +17,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Prototyping", group="Opmode")
 public class  Prototyping extends OpMode {
     GamepadEx control;
-    MotorEx motor0;
+    MotorGroup shooterMotor;
     private Servo indicatorLight;
 
     private static final double TICKS_PER_REV = 28.0;
@@ -27,6 +28,7 @@ public class  Prototyping extends OpMode {
     double rpmTarget;
     double currentRpm;
 
+    private boolean on = false;
     PIDController velocity;
     public static double velocity_p = 0.01;
     public static double velocity_i = 0.0;
@@ -38,12 +40,23 @@ public class  Prototyping extends OpMode {
     @Override
     //setting up the gamepad and motor
     public void init() {
+        MotorEx motor0;
+        MotorEx motor1;
+
+        motor0 = new MotorEx(hardwareMap, "motor0");
+        motor0.setRunMode(Motor.RunMode.RawPower);
+        motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        motor0.setInverted(true);
+
+        motor1 = new MotorEx(hardwareMap, "motor1");
+        motor1.setRunMode(Motor.RunMode.RawPower);
+        motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        motor1.setInverted(false);
+
+        shooterMotor = new MotorGroup(motor0, motor1);
         rpmTarget = 0;
         control = new GamepadEx(gamepad2);
-        motor0 = new MotorEx(hardwareMap, "motor0");
         indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
-        motor0.setRunMode(Motor.RunMode.RawPower);
-        motor0. setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         velocity = new PIDController(velocity_p, velocity_i, velocity_d);
         battery = hardwareMap.voltageSensor.get("Control Hub");
     }
@@ -55,7 +68,7 @@ public class  Prototyping extends OpMode {
         velocity.setD(velocity_d);
         velocity.setSetPoint(rpmTarget);
         double ticksPerSecond;
-        ticksPerSecond = motor0.getVelocity();
+        ticksPerSecond = shooterMotor.getVelocity();
         double power;
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
         double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
@@ -64,7 +77,7 @@ public class  Prototyping extends OpMode {
         power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
-        motor0.set(power); //when you move joystick, motor power changes
+        shooterMotor.set(power); //when you move joystick, motor power changes
         telemetry.addData("motor0", power); //what you see on the screen
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
