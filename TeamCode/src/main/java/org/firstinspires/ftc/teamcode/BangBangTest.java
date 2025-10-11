@@ -32,6 +32,8 @@ public class  BangBangTest extends OpMode {
     double BAND = 50;
     double ON_POWER = 1.0;
     double OFF_POWER = 0.0;
+    double MIN_FAR_SHOT = 4900.0;
+    double MAX_FAR_SHOT = 5100.0;
     boolean on = false;
     @Override
     //setting up the gamepad and motor
@@ -99,7 +101,7 @@ public class  BangBangTest extends OpMode {
         if (control.wasJustPressed(GamepadKeys.Button.X)){
             rpmTarget = 0;
         }
-        if (currentRpm>4900.0 && currentRpm<5100.0) {
+        if (currentRpm>MIN_FAR_SHOT && currentRpm<MAX_FAR_SHOT) {
             indicatorLight.setPosition(GREEN);
         } else {
             indicatorLight.setPosition(RED);
