@@ -19,6 +19,8 @@ public class  Prototyping extends OpMode {
     GamepadEx control;
     MotorGroup shooterMotor;
     private Servo indicatorLight;
+    double RED = 0.28;
+    double GREEN = 0.5;
 
     private static final double TICKS_PER_REV = 28.0;
     private static final double BIG_STEP_RPM = 250;
@@ -83,7 +85,6 @@ public class  Prototyping extends OpMode {
         telemetry.addData("Current RPM", currentRpm);
         telemetry.addData("Applied Voltage", appliedVoltage);
         telemetry.addData("Battery Voltage", battery.getVoltage());
-
         control.readButtons();
 
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
@@ -106,9 +107,9 @@ public class  Prototyping extends OpMode {
             rpmTarget = 0;
         }
         if (currentRpm>4900.0 && currentRpm<5100.0) {
-            indicatorLight.setPosition(0.5);
+            indicatorLight.setPosition(GREEN);
         } else {
-            indicatorLight.setPosition(0.28);
+            indicatorLight.setPosition(RED);
         }
         TelemetryPacket pack = new TelemetryPacket();
         pack.put("time", time);

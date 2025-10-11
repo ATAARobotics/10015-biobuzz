@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -18,10 +19,12 @@ public class  BangBangTest extends OpMode {
     GamepadEx control;
     MotorEx motor0;
     private Servo indicatorLight;
-
+    MotorGroup shooterMotor;
     private static final double TICKS_PER_REV = 28.0;
     private static final double BIG_STEP_RPM = 250;
     private static final double SMALL_STEP_RPM = 10;
+    double GREEN = 0.5;
+    double RED = 0.28;
     VoltageSensor battery;
     double MAX_RPM = 5250;
     double rpmTarget;
@@ -33,12 +36,25 @@ public class  BangBangTest extends OpMode {
     @Override
     //setting up the gamepad and motor
     public void init() {
+        MotorEx motor0;
+        MotorEx motor1;
+
+        motor0 = new MotorEx(hardwareMap, "motor0");
+        motor0.setRunMode(Motor.RunMode.RawPower);
+        motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        motor0.setInverted(true);
+
+        motor1 = new MotorEx(hardwareMap, "motor1");
+        motor1.setRunMode(Motor.RunMode.RawPower);
+        motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        motor1.setInverted(false);
+
+        shooterMotor = new MotorGroup(motor0, motor1);
         rpmTarget = 0;
         control = new GamepadEx(gamepad2);
-        motor0 = new MotorEx(hardwareMap, "motor0");
         indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
-        motor0.setRunMode(Motor.RunMode.RawPower);
-        motor0. setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        shooterMotor.setRunMode(Motor.RunMode.RawPower);
+        shooterMotor. setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         battery = hardwareMap.voltageSensor.get("Control Hub");
     }
 
@@ -56,8 +72,8 @@ public class  BangBangTest extends OpMode {
         }
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
-        motor0.set(power); //when you move joystick, motor power changes
-        telemetry.addData("motor0", power); //what you see on the screen
+        shooterMotor.set(power); //when you move joystick, motor power changes
+        telemetry.addData("power", power); //what you see on the screen
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
         telemetry.addData("Battery Voltage", battery.getVoltage());
@@ -84,9 +100,9 @@ public class  BangBangTest extends OpMode {
             rpmTarget = 0;
         }
         if (currentRpm>4900.0 && currentRpm<5100.0) {
-            indicatorLight.setPosition(0.5);
+            indicatorLight.setPosition(GREEN);
         } else {
-            indicatorLight.setPosition(0.28);
+            indicatorLight.setPosition(RED);
         }
         TelemetryPacket pack = new TelemetryPacket();
         pack.put("time", time);
