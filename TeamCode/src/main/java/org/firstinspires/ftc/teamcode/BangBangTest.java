@@ -30,11 +30,11 @@ public class  BangBangTest extends OpMode {
     double rpmTarget;
     double currentRpm;
     double BAND = 50;
-    double ON_POWER = 1.0;
+    double BANG_POWER = 1.0;
     double OFF_POWER = 0.0;
     double MIN_FAR_SHOT = 4900.0;
     double MAX_FAR_SHOT = 5100.0;
-    boolean on = false;
+    boolean powerOn = false;
     @Override
     //setting up the gamepad and motor
     public void init() {
@@ -63,15 +63,17 @@ public class  BangBangTest extends OpMode {
     @Override
     public void loop() {
         double ticksPerSecond;
-        ticksPerSecond = motor0.getVelocity();
+        ticksPerSecond = shooterMotor.getVelocity();
         double power;
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
-        if (currentRpm < rpmTarget - BAND){
-            power = ON_POWER;
+        if (currentRpm < (rpmTarget - BAND) && !powerOn) {
+            powerOn = true;
         }
-        else {
-            power = OFF_POWER;
+        else if (currentRpm > (rpmTarget + BAND) && powerOn) {
+            powerOn = false;
         }
+        if (powerOn) power = BANG_POWER;
+        else power = OFF_POWER;
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
         shooterMotor.set(power); //when you move joystick, motor power changes
