@@ -14,31 +14,27 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Prototyping", group="Opmode")
-public class  Prototyping extends OpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="BangBangTest", group="Opmode")
+public class  BangBangTest extends OpMode {
     GamepadEx control;
-    MotorGroup shooterMotor;
+    MotorEx motor0;
     private Servo indicatorLight;
-    double RED = 0.28;
-    double GREEN = 0.5;
-
+    MotorGroup shooterMotor;
     private static final double TICKS_PER_REV = 28.0;
     private static final double BIG_STEP_RPM = 250;
     private static final double SMALL_STEP_RPM = 10;
+    double GREEN = 0.5;
+    double RED = 0.28;
     VoltageSensor battery;
     double MAX_RPM = 5250;
     double rpmTarget;
     double currentRpm;
-
-    private boolean on = false;
-    PIDController velocity;
-    public static double velocity_p = 0.01;
-    public static double velocity_i = 0.0;
-    public static double velocity_d = 0.0004;
-    public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
-    public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
-
-
+    double BAND = 50;
+    double BANG_POWER = 1.0;
+    double OFF_POWER = 0.0;
+    double MIN_FAR_SHOT = 4900.0;
+    double MAX_FAR_SHOT = 5100.0;
+    boolean powerOn = false;
     @Override
     //setting up the gamepad and motor
     public void init() {
@@ -59,32 +55,33 @@ public class  Prototyping extends OpMode {
         rpmTarget = 0;
         control = new GamepadEx(gamepad2);
         indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
-        velocity = new PIDController(velocity_p, velocity_i, velocity_d);
+        shooterMotor.setRunMode(Motor.RunMode.RawPower);
+        shooterMotor. setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         battery = hardwareMap.voltageSensor.get("Control Hub");
     }
 
     @Override
     public void loop() {
-        velocity.setP(velocity_p);
-        velocity.setI(velocity_i);
-        velocity.setD(velocity_d);
-        velocity.setSetPoint(rpmTarget);
         double ticksPerSecond;
         ticksPerSecond = shooterMotor.getVelocity();
         double power;
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
-        double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
-        appliedVoltage = kv*rpmTarget+ks;
-        power = appliedVoltage/battery.getVoltage();
-        power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
+        if (currentRpm < (rpmTarget - BAND) && !powerOn) {
+            powerOn = true;
+        }
+        else if (currentRpm > (rpmTarget + BAND) && powerOn) {
+            powerOn = false;
+        }
+        if (powerOn) power = BANG_POWER;
+        else power = OFF_POWER;
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
         shooterMotor.set(power); //when you move joystick, motor power changes
-        telemetry.addData("motor0", power); //what you see on the screen
+        telemetry.addData("power", power); //what you see on the screen
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
-        telemetry.addData("Applied Voltage", appliedVoltage);
         telemetry.addData("Battery Voltage", battery.getVoltage());
+
         control.readButtons();
 
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
@@ -106,7 +103,7 @@ public class  Prototyping extends OpMode {
         if (control.wasJustPressed(GamepadKeys.Button.X)){
             rpmTarget = 0;
         }
-        if (currentRpm>4900.0 && currentRpm<5100.0) {
+        if (currentRpm>MIN_FAR_SHOT && currentRpm<MAX_FAR_SHOT) {
             indicatorLight.setPosition(GREEN);
         } else {
             indicatorLight.setPosition(RED);
@@ -117,9 +114,6 @@ public class  Prototyping extends OpMode {
         pack.put("rpmTarget", rpmTarget);
         pack.put("Current RPM", currentRpm);
         pack.put("Power", power);
-        pack.put("velocity_p:", velocity_p);
-        pack.put("velocity_i:", velocity_i);
-        pack.put("velocity_d:", velocity_d);
         //drive.add_telemetry(pack);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
         telemetry.update();
