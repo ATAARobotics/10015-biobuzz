@@ -15,12 +15,17 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import android.util.Size;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
+import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
@@ -41,14 +46,11 @@ public abstract class TeleOp extends OpMode {
     public enum Alliance {RED, BLUE};
     public abstract Alliance getAlliance();
 
-    Pose2D target;
+    AprilTagMetadata target;
 
     @Override
     public void init() {
-        if (getAlliance() == Alliance.BLUE)
-            target = new Pose2D(DistanceUnit.METER, -1.413319, 1.481874, AngleUnit.DEGREES, 315);
-        else
-            target = new Pose2D(DistanceUnit.METER, 1.413319, 1.481874, AngleUnit.DEGREES, 235);
+        target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(getAlliance() == Alliance.BLUE ? 20 : 24);
 
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
@@ -67,11 +69,14 @@ public abstract class TeleOp extends OpMode {
                 .setCamera(hardwareMap.get(WebcamName.class,"DubbleBubble Webcam"))
                 .addProcessor(april_tags)
                 .setCameraResolution(new Size(640, 480))
-                .setStreamFormat(VisionPortal.StreamFormat.YUY2)
+                //.setStreamFormat(VisionPortal.StreamFormat.YUY2)
                 .setAutoStopLiveView(true)
                 .build();
 
         drive = new Drive(hardwareMap, driver);
+        telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
+        telemetry.update();
+
         battery = hardwareMap.voltageSensor.get("Control Hub");
 
         // (Do not remove this, we absolutely have problems without cancelling this)
@@ -125,21 +130,18 @@ public abstract class TeleOp extends OpMode {
         // to see telemetry in Webots, right click on your robot and select "Show Robot Window"
         Pose2D drivePosition = drive.getPosition();
 
+        drive.april_bearing = Math.toDegrees(Math.atan2(
+                drive.getPosition().getX(DistanceUnit.METER) - target.distanceUnit.toMeters(target.fieldPosition.get(1)),
+                -drive.getPosition().getY(DistanceUnit.METER) - target.distanceUnit.toMeters(target.fieldPosition.get(0))));
+//      target.fieldOrientation.toOrientation(AxesReference.EXTRINSIC,AxesOrder.XYZ,AngleUnit.DEGREES).thirdAngle-90
+
         List<AprilTagDetection> detections = april_tags.getDetections();
         for (AprilTagDetection tag : detections) {
-            if (tag.id == 20 || tag.id == 24){
+            if (tag.id == target.id){
                 drive.april_bearing = tag.ftcPose.bearing + drive.getPosition().getHeading(AngleUnit.DEGREES);
                 telemetry.addData("target", tag.ftcPose.range);
                 //range(distance)is in inches, maybe convert to centi
                 telemetry.addData("bearing", tag.ftcPose.bearing);
-            } else {
-                double dx = target.getX(DistanceUnit.METER) - drive.getPosition().getX(DistanceUnit.METER);
-                double dy = target.getY(DistanceUnit.METER) - drive.getPosition().getY(DistanceUnit.METER);
-                double bearing = Math.toDegrees(Math.atan2(dy, dx));
-                drive.april_bearing = bearing;
-                telemetry.addData("target", Math.sqrt(dx * dx + dy * dy));
-                //range(distance)is in inches, maybe convert to centi
-                telemetry.addData("bearing", bearing);
             }
         }
 
