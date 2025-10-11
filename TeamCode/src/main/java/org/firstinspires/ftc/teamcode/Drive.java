@@ -129,6 +129,7 @@ public class Drive extends SubsystemBase {
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
                 GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
+        pinpoint.resetPosAndIMU();
         /*otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
         otos.setLinearUnit(DISTANCE_UNIT);
         otos.setAngularUnit(ANGLE_UNIT);
@@ -160,7 +161,6 @@ public class Drive extends SubsystemBase {
 
     public void reset() {
         //otos.resetTracking();
-        pinpoint.resetPosAndIMU();
     }
 
     public void stop() {
@@ -179,6 +179,7 @@ public class Drive extends SubsystemBase {
     public void setPosition(Pose2D pose) {
         //otos.setPosition(pose);
         pinpoint.setPosition(pose);
+        //TODO FIXME
 //        previous_position = current_position;
         current_position = pose;
         desired_heading = pose.getHeading(ANGLE_UNIT);

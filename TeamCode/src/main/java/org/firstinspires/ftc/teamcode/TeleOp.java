@@ -96,8 +96,8 @@ public abstract class TeleOp extends OpMode {
 
     @Override
     public void start() {
-        drive.reset();
         runtime.reset();
+        //drive.reset();
         // set starting position
         drive.setPosition(new Pose2D(DistanceUnit.METER, 0.435, -1.61, AngleUnit.DEGREES, 0));
     }
@@ -147,6 +147,7 @@ public abstract class TeleOp extends OpMode {
 
 
         // FIXME TODO put into FTC Dashboard too, for most of this
+        telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
         telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
 
         telemetry.update();
