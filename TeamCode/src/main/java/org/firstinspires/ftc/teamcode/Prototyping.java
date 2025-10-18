@@ -18,6 +18,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class  Prototyping extends OpMode {
     GamepadEx control;
     MotorGroup shooterMotor;
+    MotorEx motor0;
+    MotorEx motor1;
     private Servo indicatorLight;
     double RED = 0.28;
     double GREEN = 0.5;
@@ -42,18 +44,15 @@ public class  Prototyping extends OpMode {
     @Override
     //setting up the gamepad and motor
     public void init() {
-        MotorEx motor0;
-        MotorEx motor1;
-
         motor0 = new MotorEx(hardwareMap, "motor0");
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        motor0.setInverted(true);
+        motor0.setInverted(false);
 
         motor1 = new MotorEx(hardwareMap, "motor1");
         motor1.setRunMode(Motor.RunMode.RawPower);
         motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        motor1.setInverted(false);
+        motor1.setInverted(true);
 
         shooterMotor = new MotorGroup(motor0, motor1);
         rpmTarget = 0;
@@ -77,9 +76,12 @@ public class  Prototyping extends OpMode {
         appliedVoltage = kv*rpmTarget+ks;
         power = appliedVoltage/battery.getVoltage();
         power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
+
+    power = 1.0;
+
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
-        shooterMotor.set(power); //when you move joystick, motor power changes
+        shooterMotor.set(power);
         telemetry.addData("motor0", power); //what you see on the screen
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
@@ -115,8 +117,12 @@ public class  Prototyping extends OpMode {
         pack.put("time", time);
         pack.put("ticksPerSecond", ticksPerSecond);
         pack.put("rpmTarget", rpmTarget);
-        pack.put("Current RPM", currentRpm);
-        pack.put("Power", power);
+        pack.put("currentRpm", currentRpm);
+        pack.put("power", power);
+        pack.put("motor0_ticks", motor0.getCurrentPosition());
+        pack.put("motor1_ticks", motor1.getCurrentPosition());
+        //pack.put("motor0_corrected_velocity", motor0.getCorrectedVelocity());
+        //pack.put("motor1_corrected_velocity", motor1.getCorrectedVelocity());
         pack.put("velocity_p:", velocity_p);
         pack.put("velocity_i:", velocity_i);
         pack.put("velocity_d:", velocity_d);
