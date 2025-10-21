@@ -23,8 +23,8 @@ public class  BangBangTest extends OpMode {
     MotorEx motor1;
 
     private static final double TICKS_PER_REV = 28.0;
-    private static final double BIG_STEP_RPM = 250;
-    private static final double SMALL_STEP_RPM = 10;
+    private static final double FAR_RPM = 4700;
+    private static final double NEAR_RPM = 3500;
     double GREEN = 0.5;
     double RED = 0.28;
     VoltageSensor battery;
@@ -33,7 +33,6 @@ public class  BangBangTest extends OpMode {
     double currentRpm;
     double BAND = 0;
     double BANG_POWER = 1.0;
-    double OFF_POWER = 0.0;
     double rpmTolerance = 100;
     public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
     public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
@@ -87,23 +86,14 @@ public class  BangBangTest extends OpMode {
 
         control.readButtons();
 
-        if (control.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
-            rpmTarget += BIG_STEP_RPM;
+        if (control.wasJustPressed(GamepadKeys.Button.B)){
+            rpmTarget = FAR_RPM;
             if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
-        }
-        if (control.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
-            rpmTarget -= BIG_STEP_RPM;
-            if(rpmTarget < 0) rpmTarget = 0;
-        }
-        if (control.wasJustPressed(GamepadKeys.Button.Y)){
-            rpmTarget += SMALL_STEP_RPM;
-            if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
-        }
-        if (control.wasJustPressed(GamepadKeys.Button.A)) {
-            rpmTarget -= SMALL_STEP_RPM;
-            if (rpmTarget < 0) rpmTarget = 0;
         }
         if (control.wasJustPressed(GamepadKeys.Button.X)){
+            rpmTarget = NEAR_RPM;
+        }
+        if (control.wasJustPressed(GamepadKeys.Button.A)){
             rpmTarget = 0;
         }
         if (Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
