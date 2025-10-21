@@ -31,10 +31,12 @@ public class  BangBangTest extends OpMode {
     double MAX_RPM = 5250;
     double rpmTarget;
     double currentRpm;
-    double BAND = 1;
+    double BAND = 0;
     double BANG_POWER = 1.0;
     double OFF_POWER = 0.0;
     double rpmTolerance = 100;
+    public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
+    public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
     boolean powerOn = false;
     @Override
     //setting up the gamepad and motor
@@ -64,6 +66,8 @@ public class  BangBangTest extends OpMode {
         ticksPerSecond = shooterMotor.getVelocity();
         double power;
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
+        double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
+        appliedVoltage = kv*rpmTarget+ks;
         if (currentRpm < (rpmTarget - BAND) && !powerOn) {
             powerOn = true;
         }
@@ -71,7 +75,7 @@ public class  BangBangTest extends OpMode {
             powerOn = false;
         }
         if (powerOn) power = BANG_POWER;
-        else power = OFF_POWER;
+        else power = appliedVoltage/battery.getVoltage();;
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
         shooterMotor.set(power); //when you move joystick, motor power changes
@@ -79,6 +83,7 @@ public class  BangBangTest extends OpMode {
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
         telemetry.addData("Battery Voltage", battery.getVoltage());
+        telemetry.addData("ticks per second", ticksPerSecond);
 
         control.readButtons();
 
@@ -110,7 +115,6 @@ public class  BangBangTest extends OpMode {
         pack.put("time", time);
         pack.put("ticksPerSecond", ticksPerSecond);
         pack.put("rpmTarget", rpmTarget);
-        pack.put("Current RPM", currentRpm);
         pack.put("Power", power);
         pack.put("currentRpm", currentRpm);
         pack.put("power", power);

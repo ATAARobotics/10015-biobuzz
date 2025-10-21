@@ -32,7 +32,6 @@ public class  Prototyping extends OpMode {
     double rpmTarget;
     double currentRpm;
 
-    private boolean on = false;
     PIDController velocity;
     public static double velocity_p = 0.01;
     public static double velocity_i = 0.0;
