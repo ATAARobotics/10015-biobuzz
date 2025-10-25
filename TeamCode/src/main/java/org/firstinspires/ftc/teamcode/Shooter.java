@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
@@ -16,7 +17,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Shooter {
     MotorGroup shooterMotor;
-    private Servo indicatorLight;
+    //private Servo indicatorLight;
+    private Servo feeder;
 
     double ticksPerSecond;
     double power;
@@ -54,9 +56,11 @@ public class Shooter {
         motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         motor1.setInverted(false);
 
+        feeder = hardwareMap.get(Servo.class, "feeder");
+
         shooterMotor = new MotorGroup(motor0, motor1);
         rpmTarget = 0;
-        indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
+        //indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
     }
 
@@ -91,11 +95,11 @@ public class Shooter {
         if (control.wasJustPressed(GamepadKeys.Button.A)){
             rpmTarget = 0;
         }
-        if (Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
-            indicatorLight.setPosition(GREEN);
-        } else {
-            indicatorLight.setPosition(RED);
-        }
+        //if (Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
+           // indicatorLight.setPosition(GREEN);
+       // } else {
+        //    indicatorLight.setPosition(RED);
+        //}
     }
 
     public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
