@@ -23,7 +23,7 @@ public class Shooter {
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
     double RED = 0.28;
     double GREEN = 0.5;
-    double BAND = 50;
+    double BAND = 10; //not tested
     double BANG_POWER = 1.0;
     double rpmTolerance = 100;
     boolean powerOn = false;
