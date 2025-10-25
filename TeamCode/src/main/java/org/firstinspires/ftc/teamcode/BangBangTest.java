@@ -31,7 +31,7 @@ public class  BangBangTest extends OpMode {
     double MAX_RPM = 5250;
     double rpmTarget;
     double currentRpm;
-    double BAND = 0;
+    double BAND = 50;
     double BANG_POWER = 1.0;
     double rpmTolerance = 100;
     public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel

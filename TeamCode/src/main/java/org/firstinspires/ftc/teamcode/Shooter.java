@@ -21,24 +21,21 @@ public class Shooter {
     double ticksPerSecond;
     double power;
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
-
-
     double RED = 0.28;
     double GREEN = 0.5;
-
+    double BAND = 50;
+    double BANG_POWER = 1.0;
+    double rpmTolerance = 100;
+    boolean powerOn = false;
+    private static final double FAR_RPM = 4700;
+    private static final double NEAR_RPM = 3500;
     private static final double TICKS_PER_REV = 28.0;
-    private static final double BIG_STEP_RPM = 250;
-    private static final double SMALL_STEP_RPM = 10;
     VoltageSensor battery;
     double MAX_RPM = 5250;
     double rpmTarget;
     double currentRpm;
 
-    private boolean on = false;
     PIDController velocity;
-    public static double velocity_p = 0.01;
-    public static double velocity_i = 0.0;
-    public static double velocity_d = 0.0004;
     public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
     public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
 
@@ -60,7 +57,6 @@ public class Shooter {
         shooterMotor = new MotorGroup(motor0, motor1);
         rpmTarget = 0;
         indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
-        velocity = new PIDController(velocity_p, velocity_i, velocity_d);
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
     }
 
@@ -71,37 +67,31 @@ public class Shooter {
     }
     public void loop(GamepadEx control) {
         // decide what to do based on sensors and human inputs from controller
-        velocity.setP(velocity_p);
-        velocity.setI(velocity_i);
-        velocity.setD(velocity_d);
-        velocity.setSetPoint(rpmTarget);
         appliedVoltage = kv*rpmTarget+ks;
         power = appliedVoltage/battery.getVoltage();
         power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
+        if (currentRpm < (rpmTarget - BAND) && !powerOn) {
+            powerOn = true;
+        }
+        else if (currentRpm > (rpmTarget + BAND) && powerOn) {
+            powerOn = false;
+        }
+        if (powerOn) power = BANG_POWER;
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
         shooterMotor.set(power); //when you move joystick, motor power changes
 
-        if (control.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
-            rpmTarget += BIG_STEP_RPM;
+        if (control.wasJustPressed(GamepadKeys.Button.B)){
+            rpmTarget = FAR_RPM;
             if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
-        }
-        if (control.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
-            rpmTarget -= BIG_STEP_RPM;
-            if(rpmTarget < 0) rpmTarget = 0;
-        }
-        if (control.wasJustPressed(GamepadKeys.Button.Y)){
-            rpmTarget += SMALL_STEP_RPM;
-            if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
-        }
-        if (control.wasJustPressed(GamepadKeys.Button.A)) {
-            rpmTarget -= SMALL_STEP_RPM;
-            if (rpmTarget < 0) rpmTarget = 0;
         }
         if (control.wasJustPressed(GamepadKeys.Button.X)){
+            rpmTarget = NEAR_RPM;
+        }
+        if (control.wasJustPressed(GamepadKeys.Button.A)){
             rpmTarget = 0;
         }
-        if (currentRpm>4900.0 && currentRpm<5100.0) {
+        if (Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
             indicatorLight.setPosition(GREEN);
         } else {
             indicatorLight.setPosition(RED);
@@ -117,8 +107,5 @@ public class Shooter {
         pack.put("rpmTarget", rpmTarget);
         pack.put("Current RPM", currentRpm);
         pack.put("Power", power);
-        pack.put("velocity_p:", velocity_p);
-        pack.put("velocity_i:", velocity_i);
-        pack.put("velocity_d:", velocity_d);
     }
 }
