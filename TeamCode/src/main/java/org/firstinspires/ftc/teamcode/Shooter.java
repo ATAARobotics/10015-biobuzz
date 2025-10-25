@@ -20,6 +20,9 @@ public class Shooter {
     //private Servo indicatorLight;
     private Servo feeder;
 
+    private Servo indicatorLight;
+    MotorEx motor0;
+    //MotorEx motor1;
     double ticksPerSecond;
     double power;
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
@@ -43,19 +46,18 @@ public class Shooter {
 
     public Shooter(HardwareMap hardwareMap) {
         // do any one-time initialization here
-        MotorEx motor0;
-        MotorEx motor1;
 
         motor0 = new MotorEx(hardwareMap, "motor0");
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         motor0.setInverted(true);
 
-        motor1 = new MotorEx(hardwareMap, "motor1");
+        /*motor1 = new MotorEx(hardwareMap, "motor1");
         motor1.setRunMode(Motor.RunMode.RawPower);
         motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         motor1.setInverted(false);
 
+        shooterMotor = new MotorGroup(motor0, motor1); */
         feeder = hardwareMap.get(Servo.class, "feeder");
 
         shooterMotor = new MotorGroup(motor0, motor1);
@@ -66,7 +68,7 @@ public class Shooter {
 
     public void read_sensors(double time) {
         // get any inputs from our encoders or other sensors
-        ticksPerSecond = shooterMotor.getVelocity();
+        ticksPerSecond = motor0.getVelocity();
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
     }
     public void loop(GamepadEx control) {
@@ -83,7 +85,7 @@ public class Shooter {
         if (powerOn) power = BANG_POWER;
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
-        shooterMotor.set(power); //when you move joystick, motor power changes
+        motor0.set(power); //when you move joystick, motor power changes
 
         if (control.wasJustPressed(GamepadKeys.Button.B)){
             rpmTarget = FAR_RPM;
