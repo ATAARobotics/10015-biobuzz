@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Shooter {
-    MotorGroup shooterMotor;
+    //MotorGroup shooterMotor;
     //private Servo indicatorLight;
     private Servo feeder;
 
@@ -39,12 +39,17 @@ public class Shooter {
     double MAX_RPM = 5250;
     double rpmTarget;
     double currentRpm;
+    double idlePos = 0.9;
 
-    PIDController velocity;
+    public enum LaunchState {IDLE, SHOOT};
+
+    public LaunchState launchState;
+
+    //PIDController velocity;
     public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
     public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
 
-    public Shooter(HardwareMap hardwareMap) {
+    public Shooter(HardwareMap hardwareMap, GamepadEx operator) {
         // do any one-time initialization here
 
         motor0 = new MotorEx(hardwareMap, "motor0");
@@ -60,7 +65,7 @@ public class Shooter {
         shooterMotor = new MotorGroup(motor0, motor1); */
         feeder = hardwareMap.get(Servo.class, "feeder");
 
-        shooterMotor = new MotorGroup(motor0, motor1);
+ //       shooterMotor = new MotorGroup(motor0, motor1);
         rpmTarget = 0;
         //indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
@@ -71,11 +76,16 @@ public class Shooter {
         ticksPerSecond = motor0.getVelocity();
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
     }
+
+    public void init() {
+        launchState = LaunchState.IDLE;
+    }
+
     public void loop(GamepadEx control) {
         // decide what to do based on sensors and human inputs from controller
         appliedVoltage = kv*rpmTarget+ks;
         power = appliedVoltage/battery.getVoltage();
-        power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
+        //power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
         if (currentRpm < (rpmTarget - BAND) && !powerOn) {
             powerOn = true;
         }
@@ -97,6 +107,9 @@ public class Shooter {
         if (control.wasJustPressed(GamepadKeys.Button.A)){
             rpmTarget = 0;
         }
+        if (control.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER) && control.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+            feed();
+        }
         //if (Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
            // indicatorLight.setPosition(GREEN);
        // } else {
@@ -113,5 +126,15 @@ public class Shooter {
         pack.put("rpmTarget", rpmTarget);
         pack.put("Current RPM", currentRpm);
         pack.put("Power", power);
+        pack.put("Feeder Idle Position", idlePos);
+    }
+    void feed() {
+        if (launchState == LaunchState.IDLE && currentRpm > rpmTarget && rpmTarget > 0) {
+            launchState = LaunchState.SHOOT;
+            feeder.setPosition(1);
+        } else if (launchState == LaunchState.SHOOT) {
+            launchState = LaunchState.IDLE;
+            feeder.setPosition(idlePos);
+        }
     }
 }

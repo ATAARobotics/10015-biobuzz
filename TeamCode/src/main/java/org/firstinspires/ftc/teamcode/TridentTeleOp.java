@@ -16,7 +16,9 @@ public class TridentTeleOp extends OpMode {
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
-        shooter = new Shooter(hardwareMap);
+        shooter = new Shooter(hardwareMap, operator);
+        shooter.init();
+
     }
 
     @Override

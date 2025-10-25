@@ -10,6 +10,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -37,6 +38,7 @@ public abstract class TeleOp extends OpMode {
     GamepadEx operator;
     VoltageSensor battery;
     Drive drive;
+    Shooter shooter;
     ElapsedTime  runtime = new ElapsedTime();
 
     // prototyping with some AprilTags, Sept 15
@@ -74,6 +76,9 @@ public abstract class TeleOp extends OpMode {
                 .build();
 
         drive = new Drive(hardwareMap, driver);
+        shooter = new Shooter(hardwareMap, operator);
+
+        shooter.init();
         telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
         telemetry.update();
 
@@ -113,6 +118,7 @@ public abstract class TeleOp extends OpMode {
         driver.readButtons();
         operator.readButtons();
         drive.read_sensors(time);
+        shooter.loop(operator);
 
         // Run the CommandScheduler instance (note: this will call
         // ".periodic()" on all registered subsystems, which is the
