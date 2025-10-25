@@ -19,6 +19,7 @@ public class Shooter {
     MotorGroup shooterMotor;
     private Servo indicatorLight;
     MotorEx motor0;
+    //MotorEx motor1;
     double ticksPerSecond;
     double power;
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
@@ -42,8 +43,6 @@ public class Shooter {
 
     public Shooter(HardwareMap hardwareMap) {
         // do any one-time initialization here
-
-        //MotorEx motor1;
 
         motor0 = new MotorEx(hardwareMap, "motor0");
         motor0.setRunMode(Motor.RunMode.RawPower);
