@@ -32,7 +32,7 @@ public class Shooter {
     double BANG_POWER = 1.0;
     double rpmTolerance = 100;
     boolean powerOn = false;
-    private static final double FAR_RPM = 4700;
+    private static final double FAR_RPM = 4900;
     private static final double NEAR_RPM = 3500;
     private static final double TICKS_PER_REV = 28.0;
     VoltageSensor battery;
