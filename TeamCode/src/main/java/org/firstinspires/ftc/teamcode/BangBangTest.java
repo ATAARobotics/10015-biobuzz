@@ -23,7 +23,7 @@ public class  BangBangTest extends OpMode {
     MotorEx motor1;
 
     private static final double TICKS_PER_REV = 28.0;
-    private static final double FAR_RPM = 4700;
+    private static final double FAR_RPM = 4900;
     private static final double NEAR_RPM = 3500;
     double GREEN = 0.5;
     double RED = 0.28;
@@ -31,11 +31,11 @@ public class  BangBangTest extends OpMode {
     double MAX_RPM = 5250;
     double rpmTarget;
     double currentRpm;
-    double BAND = 50;
+    double BAND = 0;
     double BANG_POWER = 1.0;
     double rpmTolerance = 100;
-    public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
-    public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
+    public static double kv = 0.00225; //kv is Feed Forward Model slope, determined experimentally with flywheel (try 0.0022 next time)
+    public static double ks = 0.1325; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)(Try 0.1323 next time)
     boolean powerOn = false;
     @Override
     //setting up the gamepad and motor
@@ -74,7 +74,7 @@ public class  BangBangTest extends OpMode {
             powerOn = false;
         }
         if (powerOn) power = BANG_POWER;
-        else power = appliedVoltage/battery.getVoltage();;
+        power = appliedVoltage/battery.getVoltage();
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
         shooterMotor.set(power); //when you move joystick, motor power changes
@@ -83,6 +83,7 @@ public class  BangBangTest extends OpMode {
         telemetry.addData("Current RPM", currentRpm);
         telemetry.addData("Battery Voltage", battery.getVoltage());
         telemetry.addData("ticks per second", ticksPerSecond);
+        telemetry.addData("Applied Voltage", appliedVoltage);
 
         control.readButtons();
 
@@ -110,6 +111,8 @@ public class  BangBangTest extends OpMode {
         pack.put("power", power);
         pack.put("motor0_ticks", motor0.motorEx.getCurrentPosition());
         pack.put("motor1_ticks", motor1.motorEx.getCurrentPosition());
+        pack.put("kv", kv);
+        pack.put("ks", ks);
         //pack.put("motor0_corrected_velocity", motor0.getCorrectedVelocity());
         //pack.put("motor1_corrected_velocity", motor1.getCorrectedVelocity());
         //drive.add_telemetry(pack);
