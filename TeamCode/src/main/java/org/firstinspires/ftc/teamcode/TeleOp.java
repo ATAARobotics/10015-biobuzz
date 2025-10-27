@@ -47,15 +47,17 @@ public abstract class TeleOp extends OpMode {
 
     public enum Alliance {RED, BLUE};
     public abstract Alliance getAlliance();
+    boolean isRedAlliance;
 
     AprilTagMetadata target;
 
     @Override
     public void init() {
-        target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(getAlliance() == Alliance.BLUE ? 20 : 24);
+        isRedAlliance = getAlliance() == Alliance.RED;
+        target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
 
         driver = new GamepadEx(gamepad1);
-        operator = new GamepadEx(gamepad2);
+        //operator = new GamepadEx(gamepad2);
 
         //AprilTagLibrary decode_tags = ;
         // game manual says april tag family is 36h11
@@ -75,12 +77,11 @@ public abstract class TeleOp extends OpMode {
                 .setAutoStopLiveView(true)
                 .build();
 
-        drive = new Drive(hardwareMap, driver);
-        shooter = new Shooter(hardwareMap, operator);
+        drive = new Drive(hardwareMap, isRedAlliance);
+        shooter = new Shooter(hardwareMap);
 
-        shooter.init();
-        telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
-        telemetry.update();
+        //telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
+        //telemetry.update();
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
 
@@ -97,14 +98,18 @@ public abstract class TeleOp extends OpMode {
 
         // "mostly" we want to run the HumanInputs commands during teleop
         CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
+        CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(driver));
     }
 
     @Override
     public void start() {
         runtime.reset();
         //drive.reset();
-        // set starting position
-        drive.setPosition(new Pose2D(DistanceUnit.METER, 0.435, -1.61, AngleUnit.DEGREES, 0));
+        // OPTION 1: starting position is touching audience field perimeter wall
+        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.435 : -0.435, -1.61, AngleUnit.DEGREES, 0));
+
+        // OPTION 2: starting position is over the center of a launch line touching own alliance's goal:
+//        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.3 : -1.3, 1.3, AngleUnit.DEGREES, isRedAlliance ? 135 : -135));
     }
 
     @Override
@@ -116,29 +121,16 @@ public abstract class TeleOp extends OpMode {
     public void loop() {
         // read controls and sensors
         driver.readButtons();
-        operator.readButtons();
+        //operator.readButtons();
         drive.read_sensors(time);
-        shooter.loop(operator);
-
-        // Run the CommandScheduler instance (note: this will call
-        // ".periodic()" on all registered subsystems, which is the
-        // correct place to do "per-loop" things)
-        CommandScheduler.getInstance().run();
-
-        TelemetryPacket pack = new TelemetryPacket();
-        pack.put("Elapsed time", runtime.toString());
-        pack.put("time", time);
-        pack.put("battery", battery.getVoltage());
-        drive.add_telemetry(pack);
-        FtcDashboard.getInstance().sendTelemetryPacket(pack);
+        shooter.read_sensors(time);
 
         // Send telemetry messages to explain controls and show robot status
-        // to see telemetry in Webots, right click on your robot and select "Show Robot Window"
         Pose2D drivePosition = drive.getPosition();
 
         drive.april_bearing = Math.toDegrees(Math.atan2(
-                drive.getPosition().getX(DistanceUnit.METER) - target.distanceUnit.toMeters(target.fieldPosition.get(1)),
-                -drive.getPosition().getY(DistanceUnit.METER) - target.distanceUnit.toMeters(target.fieldPosition.get(0))));
+                target.distanceUnit.toMeters(target.fieldPosition.get(1))-drive.getPosition().getX(DistanceUnit.METER),
+                target.distanceUnit.toMeters(target.fieldPosition.get(0))+drive.getPosition().getY(DistanceUnit.METER)));
 //      target.fieldOrientation.toOrientation(AxesReference.EXTRINSIC,AxesOrder.XYZ,AngleUnit.DEGREES).thirdAngle-90
 
         List<AprilTagDetection> detections = april_tags.getDetections();
@@ -151,15 +143,26 @@ public abstract class TeleOp extends OpMode {
             }
         }
 
+        // Run the CommandScheduler instance (note: this will call
+        // ".periodic()" on all registered subsystems, which is the
+        // correct place to do "per-loop" things)
+        CommandScheduler.getInstance().run();
+
+        TelemetryPacket pack = new TelemetryPacket();
+        pack.put("Elapsed time", runtime.toString());
+        pack.put("time", time);
+        pack.put("battery", battery.getVoltage());
+        drive.add_telemetry(pack);
+        shooter.add_telemetry(pack, telemetry);
+        FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // FIXME TODO put into FTC Dashboard too, for most of this
         telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
-        telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
-
         telemetry.update();
     }
 
-    @Override public void stop() {
+    @Override
+    public void stop() {
         drive.stop();
 
         // Cancel all previous commands

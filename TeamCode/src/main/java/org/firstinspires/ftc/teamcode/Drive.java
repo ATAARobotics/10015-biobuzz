@@ -5,19 +5,12 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.command.CommandScheduler;
-import com.arcrobotics.ftclib.command.SequentialCommandGroup;
-import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -45,8 +38,8 @@ public class Drive extends SubsystemBase {
     public static double STATIC_F_FORWARD = 0.04; // 0.09;
     public static double STATIC_F_STRAFE = 0.08; // 0.15;
 
-    public static double LINEAR_SCALAR = 1.018;
-    public static double ANGULAR_SCALAR = 0.995;
+    //public static double LINEAR_SCALAR = 1.018;
+    //public static double ANGULAR_SCALAR = 0.995;
 
     MecanumDrive drivebase;
     //SparkFunOTOS otos;
@@ -65,14 +58,12 @@ public class Drive extends SubsystemBase {
     double turn; // +CW/-CCW
     public double april_bearing;
     public double desired_heading;
-    double human_stick;
-
     double ff_forward;
     double ff_strafe;
 
     private final PIDController heading_control;
     public static PIDCoefficients hPID = new PIDCoefficients(0.015,0,0.0003); //adjusted November 1
-    public static PIDCoefficients PID = new PIDCoefficients(50,0,3);
+    //public static PIDCoefficients PID = new PIDCoefficients(50,0,3);
     //public static PIDCoefficients careful_pid = new PIDCoefficients(1.9, 0, 0.2);
     //public static PIDCoefficients careful_pid = new PIDCoefficients(2.0, 0, 0.2);
     // jan 15, 2025 re-tuned this, also new static-f values
@@ -93,18 +84,15 @@ public class Drive extends SubsystemBase {
     double previous_time;
     //Pose2D previous_position;
 
-    double x_velocity;
-    double y_velocity;
+    //double x_velocity;
+    //double y_velocity;
 
     boolean april_lock = false;
+    boolean isRedAlliance;
 
-    GamepadEx _driver;
-    Command _auto_cycle = null; // if not-null we're doing auto-cycle
-    int num_auto_clips = 0;
-
-    public Drive(HardwareMap hardwareMap, GamepadEx driver) {
+    public Drive(HardwareMap hardwareMap, boolean isRedAlliance) {
+        this.isRedAlliance = isRedAlliance;
         // TO DO: replace Motor.GoBILDA.RPM_312 with CPR, RPM:
-        _driver = driver;
         Motor motor_fl = new Motor(hardwareMap, "fl", Motor.GoBILDA.RPM_312);
         motor_fl.setInverted(true);
         motor_fl.setZeroPowerBehavior(zeroPowerBehavior);
@@ -160,6 +148,7 @@ public class Drive extends SubsystemBase {
     }
 
     public void reset() {
+        pinpoint.resetPosAndIMU();
         //otos.resetTracking();
     }
 
@@ -333,32 +322,37 @@ public class Drive extends SubsystemBase {
     // all interaction with gamepads should go through this inner class
     public class HumanInputs extends CommandBase {
         GamepadEx driver;
-        boolean did_prime = false;
 
         public HumanInputs(GamepadEx driver) {
             this.driver = driver;
             addRequirements(Drive.this);
+
         }
 
         @Override
         public void execute() {
             // Run wheels in POV mode: use the Right stick to go forward & strafe, the Left stick to rotate left & right.
-            strafe = scaleInputs(driver.getRightX());
-            forward = scaleInputs(-driver.getRightY());
+            if (isRedAlliance) {
+                strafe = scaleInputs(-driver.getRightY());
+                forward = scaleInputs(-driver.getRightX());
+            } else {
+                strafe = scaleInputs(driver.getRightY());
+                forward = scaleInputs(driver.getRightX());
+            }
 
             double leftX = driver.getLeftX();
             if (Math.abs(leftX) > DEAD_ZONE)
                 desired_heading = wrapAngle(desired_heading - TURN_SPEED * leftX);
             if (driver.wasJustPressed(GamepadKeys.Button.DPAD_UP))
-                desired_heading = 0;
+                desired_heading = isRedAlliance ? 90 : -90;
             if (driver.wasJustPressed(GamepadKeys.Button.DPAD_DOWN))
-                desired_heading = 180;
+                desired_heading = isRedAlliance ? -90 : 90;
             if (driver.wasJustPressed(GamepadKeys.Button.DPAD_LEFT))
-                desired_heading = 90;
+                desired_heading = isRedAlliance ? 180 : 0;
             if (driver.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT))
-                desired_heading = -90;
+                desired_heading = isRedAlliance ? 0 : 180;
             if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
-                desired_heading = 135;
+                desired_heading = isRedAlliance ? 135 : -135;
             if (driver.wasJustPressed(GamepadKeys.Button.Y))
                 april_lock = !april_lock;
             if (april_lock)
@@ -432,15 +426,6 @@ public class Drive extends SubsystemBase {
         turn = heading_control.calculate(wrapAngle(desired_heading - current_position.getHeading(ANGLE_UNIT)));
         // tell ftclib its inputs
         drivebase.driveFieldCentric(strafe, forward, turn, current_position.getHeading(ANGLE_UNIT), false);
-
-        // note: this has to be here, or at least "not in the driver
-        // controls" because those don't run while we're auto-cycling
-        if (_driver != null && ! _driver.isDown(GamepadKeys.Button.B)) {
-            if (_auto_cycle != null) {
-                _auto_cycle.cancel();
-                _auto_cycle = null;
-            }
-        }
     }
 
     public void add_telemetry(TelemetryPacket pack) {

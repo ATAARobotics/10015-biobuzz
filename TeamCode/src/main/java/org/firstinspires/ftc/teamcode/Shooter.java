@@ -1,21 +1,23 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-public class Shooter {
+@Config
+public class Shooter extends SubsystemBase {
     //MotorGroup shooterMotor;
     //private Servo indicatorLight;
     private Servo feeder;
@@ -39,23 +41,42 @@ public class Shooter {
     double MAX_RPM = 5250;
     double rpmTarget;
     double currentRpm;
-    double idlePos = 0.9;
+    public static double FEEDER_LIMIT = 0.58;
+    public static double FEEDER_CLOSED = 0.6;
+    public static double FEEDER_OPEN = 1.0;
+    public static double FEED_TIME = 0.20; //The feeder servo runs this long in seconds when a shot is requested.
 
-    public enum LaunchState {IDLE, SHOOT};
+    /*
+     * The number of seconds that we wait between each of our 3 shots from the launcher. This
+     * can be much shorter, but the longer break is reasonable since it maximizes the likelihood
+     * that each shot will score.
+     */
+    public static double TIME_BETWEEN_SHOTS = 2;
 
-    public LaunchState launchState;
+    /*
+     * Here we create two timers which we use in different parts of our code. Each of these is an
+     * "object," so even though they are all an instance of ElapsedTime(), they count independently
+     * from each other.
+     */
+    private final ElapsedTime shotTimer = new ElapsedTime();
+    private final ElapsedTime feederTimer = new ElapsedTime();
+
+
+    public enum LaunchState {IDLE, FEED, SHOOT};
+
+    private LaunchState launchState;
 
     //PIDController velocity;
     public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
     public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
 
-    public Shooter(HardwareMap hardwareMap, GamepadEx operator) {
+    public Shooter(HardwareMap hardwareMap) {
         // do any one-time initialization here
 
         motor0 = new MotorEx(hardwareMap, "motor0");
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        motor0.setInverted(true);
+//        motor0.setInverted(true);
 
         /*motor1 = new MotorEx(hardwareMap, "motor1");
         motor1.setRunMode(Motor.RunMode.RawPower);
@@ -64,6 +85,8 @@ public class Shooter {
 
         shooterMotor = new MotorGroup(motor0, motor1); */
         feeder = hardwareMap.get(Servo.class, "feeder");
+        feeder.setPosition(FEEDER_OPEN);
+        launchState = LaunchState.IDLE;
 
  //       shooterMotor = new MotorGroup(motor0, motor1);
         rpmTarget = 0;
@@ -71,18 +94,23 @@ public class Shooter {
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
     }
 
+    public void reset() {
+        feeder.setPosition(FEEDER_OPEN);
+        launchState = LaunchState.IDLE;
+    }
+
+    public void stop() {
+        rpmTarget = 0;
+        motor0.set(0);
+    }
     public void read_sensors(double time) {
         // get any inputs from our encoders or other sensors
         ticksPerSecond = motor0.getVelocity();
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
     }
 
-    public void init() {
-        launchState = LaunchState.IDLE;
-    }
-
-    public void loop(GamepadEx control) {
-        // decide what to do based on sensors and human inputs from controller
+    @Override
+    public void periodic() {
         appliedVoltage = kv*rpmTarget+ks;
         power = appliedVoltage/battery.getVoltage();
         //power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
@@ -97,19 +125,26 @@ public class Shooter {
         if(power < 0) power = 0;
         motor0.set(power); //when you move joystick, motor power changes
 
-        if (control.wasJustPressed(GamepadKeys.Button.B)){
-            rpmTarget = FAR_RPM;
-            if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
+        switch (launchState) {
+            case IDLE:
+                break;
+            case FEED:
+                if (rpmTarget > 0 && Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
+                    if (FEEDER_CLOSED < FEEDER_LIMIT) FEEDER_CLOSED = FEEDER_LIMIT;
+                    feeder.setPosition(FEEDER_CLOSED);
+                    feederTimer.reset();
+                    launchState = LaunchState.SHOOT;
+                }
+                break;
+            case SHOOT:
+                if (feederTimer.seconds() > FEED_TIME) {
+                    feeder.setPosition(FEEDER_OPEN);
+                    if (shotTimer.seconds() > TIME_BETWEEN_SHOTS)
+                        launchState = LaunchState.IDLE; // ball has been successfully launched
+                }
+                break;
         }
-        if (control.wasJustPressed(GamepadKeys.Button.X)){
-            rpmTarget = NEAR_RPM;
-        }
-        if (control.wasJustPressed(GamepadKeys.Button.A)){
-            rpmTarget = 0;
-        }
-        if (control.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER) && control.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
-            feed();
-        }
+
         //if (Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
            // indicatorLight.setPosition(GREEN);
        // } else {
@@ -122,19 +157,76 @@ public class Shooter {
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
         telemetry.addData("Applied Voltage", appliedVoltage);
+        telemetry.addData("Launch State", launchState.toString());
         pack.put("ticksPerSecond", ticksPerSecond);
         pack.put("rpmTarget", rpmTarget);
         pack.put("Current RPM", currentRpm);
         pack.put("Power", power);
-        pack.put("Feeder Idle Position", idlePos);
     }
-    void feed() {
-        if (launchState == LaunchState.IDLE && currentRpm > rpmTarget && rpmTarget > 0) {
-            launchState = LaunchState.SHOOT;
-            feeder.setPosition(1);
-        } else if (launchState == LaunchState.SHOOT) {
-            launchState = LaunchState.IDLE;
-            feeder.setPosition(idlePos);
+
+    public Command shoot(int shotsToFire) {
+        return new Shoot(shotsToFire);
+    }
+    public class Shoot extends CommandBase {
+        int shotsToFire;
+        public Shoot(int shotsToFire) {
+            addRequirements(Shooter.this);
+            this.shotsToFire = shotsToFire;
+        }
+
+        @Override
+        public void initialize() {
+            rpmTarget = NEAR_RPM;
+        }
+
+        @Override
+        public void execute() {
+            if (launchState == LaunchState.IDLE) {
+                if (shotsToFire > 0) {
+                    shotsToFire -= 1;
+                    launchState = LaunchState.FEED;
+                    shotTimer.reset();
+                }
+            }
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            stop();
+        }
+
+        @Override
+        public boolean isFinished() {
+            return (shotsToFire == 0 && launchState == LaunchState.IDLE);
+        }
+    }
+
+    public class HumanInputs extends CommandBase {
+        GamepadEx operator;
+
+        public HumanInputs(GamepadEx operator) {
+            this.operator = operator;
+            addRequirements(Shooter.this);
+        }
+
+        @Override
+        public void execute() {
+            // decide what to do based on sensors and human inputs from controller
+            if (operator.wasJustPressed(GamepadKeys.Button.B)){
+                rpmTarget = FAR_RPM;
+                if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.X)){
+                rpmTarget = NEAR_RPM;
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.A)){
+                rpmTarget = 0;
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+                // the user would like to fire a new shot
+                launchState = LaunchState.FEED;
+                shotTimer.reset();
+            }
         }
     }
 }
