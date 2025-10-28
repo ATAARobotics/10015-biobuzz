@@ -36,6 +36,7 @@ public class Shooter extends SubsystemBase {
     boolean powerOn = false;
     private static final double FAR_RPM = 4900;
     private static final double NEAR_RPM = 3500;
+    double STEP_RPM = 200;
     private static final double TICKS_PER_REV = 28.0;
     VoltageSensor battery;
     double MAX_RPM = 5250;
@@ -202,27 +203,35 @@ public class Shooter extends SubsystemBase {
     }
 
     public class HumanInputs extends CommandBase {
+        GamepadEx driver;
         GamepadEx operator;
 
-        public HumanInputs(GamepadEx operator) {
+        public HumanInputs(GamepadEx operator, GamepadEx driver) {
             this.operator = operator;
+            this.driver = driver;
             addRequirements(Shooter.this);
         }
 
         @Override
         public void execute() {
             // decide what to do based on sensors and human inputs from controller
-            if (operator.wasJustPressed(GamepadKeys.Button.B)){
+            if (driver.wasJustPressed(GamepadKeys.Button.B) || operator.wasJustPressed(GamepadKeys.Button.B)){
                 rpmTarget = FAR_RPM;
                 if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
             }
-            if (operator.wasJustPressed(GamepadKeys.Button.X)){
+            if (driver.wasJustPressed(GamepadKeys.Button.X) || operator.wasJustPressed(GamepadKeys.Button.X)){
                 rpmTarget = NEAR_RPM;
             }
-            if (operator.wasJustPressed(GamepadKeys.Button.A)){
+            if (driver.wasJustPressed(GamepadKeys.Button.A) || operator.wasJustPressed(GamepadKeys.Button.A)){
                 rpmTarget = 0;
             }
-            if (operator.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
+                rpmTarget += STEP_RPM;
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
+                rpmTarget -= STEP_RPM;
+            }
+            if (driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER) && launchState == LaunchState.IDLE) {
                 // the user would like to fire a new shot
                 launchState = LaunchState.FEED;
                 shotTimer.reset();

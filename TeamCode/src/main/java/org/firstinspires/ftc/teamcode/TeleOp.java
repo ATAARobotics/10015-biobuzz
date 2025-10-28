@@ -57,7 +57,7 @@ public abstract class TeleOp extends OpMode {
         target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
 
         driver = new GamepadEx(gamepad1);
-        //operator = new GamepadEx(gamepad2);
+        operator = new GamepadEx(gamepad2);
 
         //AprilTagLibrary decode_tags = ;
         // game manual says april tag family is 36h11
@@ -98,7 +98,7 @@ public abstract class TeleOp extends OpMode {
 
         // "mostly" we want to run the HumanInputs commands during teleop
         CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
-        CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(driver));
+        CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
     }
 
     @Override
