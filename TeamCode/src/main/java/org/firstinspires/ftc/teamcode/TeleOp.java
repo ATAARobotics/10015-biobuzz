@@ -121,7 +121,7 @@ public abstract class TeleOp extends OpMode {
     public void loop() {
         // read controls and sensors
         driver.readButtons();
-        //operator.readButtons();
+        operator.readButtons();
         drive.read_sensors(time);
         shooter.read_sensors(time);
 

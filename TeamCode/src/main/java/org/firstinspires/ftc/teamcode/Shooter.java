@@ -28,6 +28,10 @@ public class Shooter extends SubsystemBase {
     double ticksPerSecond;
     double power;
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
+    boolean readyToCount = false;
+    int shotsFired = 0;
+    double HIGH_STATE = 3300;
+    double LOW_STATE = 2900;
     double RED = 0.28;
     double GREEN = 0.5;
     double BAND = 10; //not tested
@@ -52,7 +56,7 @@ public class Shooter extends SubsystemBase {
      * can be much shorter, but the longer break is reasonable since it maximizes the likelihood
      * that each shot will score.
      */
-    public static double TIME_BETWEEN_SHOTS = 2;
+    public static double TIME_BETWEEN_SHOTS = 1.2;
 
     /*
      * Here we create two timers which we use in different parts of our code. Each of these is an
@@ -145,7 +149,18 @@ public class Shooter extends SubsystemBase {
                 }
                 break;
         }
-
+        if (currentRpm > HIGH_STATE) {
+            readyToCount = true;
+        }
+        if (readyToCount && currentRpm < LOW_STATE){
+            shotsFired += 1;
+             readyToCount = false;
+        }
+        if (shotsFired == 3){
+            launchState = LaunchState.IDLE;
+            rpmTarget = 0;
+            shotsFired = 0;
+        }
         //if (Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
            // indicatorLight.setPosition(GREEN);
        // } else {
