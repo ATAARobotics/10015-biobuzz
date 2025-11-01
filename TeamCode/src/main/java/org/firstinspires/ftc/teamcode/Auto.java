@@ -31,6 +31,10 @@ public abstract class Auto extends OpMode {
     Drive drive;
     Shooter shooter;
     ElapsedTime runtime = new ElapsedTime();
+    boolean readyToCount = false;
+    int shotsFired = 0;
+    public static double HIGH_STATE = 3300;
+    public static double LOW_STATE = 2900;
 
     // prototyping with some AprilTags, Sept 15
     AprilTagProcessor april_tags;

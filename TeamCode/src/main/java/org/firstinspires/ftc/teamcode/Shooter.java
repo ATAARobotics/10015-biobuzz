@@ -30,8 +30,8 @@ public class Shooter extends SubsystemBase {
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
     boolean readyToCount = false;
     int shotsFired = 0;
-    double HIGH_STATE = 3300;
-    double LOW_STATE = 2900;
+    public static double HIGH_STATE = 3300;
+    public static double LOW_STATE = 2900;
     double RED = 0.28;
     double GREEN = 0.5;
     double BAND = 10; //not tested
@@ -157,9 +157,9 @@ public class Shooter extends SubsystemBase {
              readyToCount = false;
         }
         if (shotsFired == 3){
-            launchState = LaunchState.IDLE;
+          //  launchState = LaunchState.IDLE;
             rpmTarget = 0;
-            shotsFired = 0;
+           // shotsFired = 0;
         }
         //if (Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
            // indicatorLight.setPosition(GREEN);
@@ -174,6 +174,7 @@ public class Shooter extends SubsystemBase {
         telemetry.addData("Current RPM", currentRpm);
         telemetry.addData("Applied Voltage", appliedVoltage);
         telemetry.addData("Launch State", launchState.toString());
+        telemetry.addData("Shots Fired" , shotsFired);
         pack.put("ticksPerSecond", ticksPerSecond);
         pack.put("rpmTarget", rpmTarget);
         pack.put("Current RPM", currentRpm);
@@ -184,10 +185,10 @@ public class Shooter extends SubsystemBase {
         return new Shoot(shotsToFire);
     }
     public class Shoot extends CommandBase {
-        int shotsToFire;
+        int targetShots;
         public Shoot(int shotsToFire) {
             addRequirements(Shooter.this);
-            this.shotsToFire = shotsToFire;
+            this.targetShots = shotsFired + shotsToFire;
         }
 
         @Override
@@ -198,8 +199,7 @@ public class Shooter extends SubsystemBase {
         @Override
         public void execute() {
             if (launchState == LaunchState.IDLE) {
-                if (shotsToFire > 0) {
-                    shotsToFire -= 1;
+                if (targetShots > 0) {
                     launchState = LaunchState.FEED;
                     shotTimer.reset();
                 }
@@ -213,7 +213,10 @@ public class Shooter extends SubsystemBase {
 
         @Override
         public boolean isFinished() {
-            return (shotsToFire == 0 && launchState == LaunchState.IDLE);
+            if (shotsFired >= targetShots){
+                return (true);
+            }
+            return (false);
         }
     }
 
