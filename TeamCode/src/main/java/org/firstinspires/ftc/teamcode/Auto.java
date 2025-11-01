@@ -7,9 +7,12 @@ import android.util.Size;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -30,6 +33,9 @@ public abstract class Auto extends OpMode {
     VoltageSensor battery;
     Drive drive;
     Shooter shooter;
+    GamepadEx driver;
+    GamepadEx operator;
+    double pauseTime = 0;
     ElapsedTime runtime = new ElapsedTime();
 
     // prototyping with some AprilTags, Sept 15
@@ -43,6 +49,10 @@ public abstract class Auto extends OpMode {
 
     @Override
     public void init() {
+        driver = new GamepadEx(gamepad1);
+        operator = new GamepadEx(gamepad2);
+        driver.readButtons();
+        operator.readButtons();
         isRedAlliance = getAlliance() == Alliance.RED;
 
         // (Do not remove this, we absolutely have problems without cancelling this)
@@ -81,7 +91,13 @@ public abstract class Auto extends OpMode {
 
     @Override
     public void init_loop() {
-        // add auto tweaks here
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
+
+        }
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
+
+        }
+
     }
 
     // origin is center of the field, in meters
@@ -102,6 +118,19 @@ public abstract class Auto extends OpMode {
 
         // schedule all our commands
         CommandScheduler.getInstance().schedule(auto_commands);
+    }
+    public Command pause(double seconds){
+        return new WaitUntil(time + seconds);
+    }
+
+    class WaitUntil extends CommandBase{
+        double endTime;
+        public WaitUntil(double endTime){
+            this.endTime = endTime;
+        }
+        public boolean isFinished(){
+            return(time > endTime);
+        }
     }
 
     @Override

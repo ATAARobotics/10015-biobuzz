@@ -360,7 +360,7 @@ public class Drive extends SubsystemBase {
             // Anjalika wants "turbo" mode ... so if we're holding
             // left trigger _currently_, we go to Turbo -- otherwise
             // to non-Turbo
-            if (driver.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5){
+            if (driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5){
                 turbo(true);
             } else {
                 turbo(false);
@@ -431,18 +431,18 @@ public class Drive extends SubsystemBase {
     public void add_telemetry(TelemetryPacket pack) {
         pack.put("position-x", current_position.getX(DISTANCE_UNIT));
         pack.put("position-y", current_position.getY(DISTANCE_UNIT));
-        pack.put("position-x-cm", current_position.getX(DistanceUnit.CM));
-        pack.put("position-y-cm", current_position.getY(DistanceUnit.CM));
+        //pack.put("position-x-cm", current_position.getX(DistanceUnit.CM));
+      //  pack.put("position-y-cm", current_position.getY(DistanceUnit.CM));
         //pack.put("target-x", fixme);
         //pack.put("target-y", fixme);
         pack.put("current-heading", current_position.getHeading(ANGLE_UNIT));
         pack.put("desired-heading", desired_heading);
 
-        pack.put("strafe", strafe);
-        pack.put("forward", forward);
-        pack.put("strafe_ff", ff_strafe);
-        pack.put("forward_ff", ff_forward);
-        pack.put("turn", turn);
+       // pack.put("strafe", strafe);
+       // pack.put("forward", forward);
+       // pack.put("strafe_ff", ff_strafe);
+       // pack.put("forward_ff", ff_forward);
+        //pack.put("turn", turn);
         /*
         pack.put("dist_left_current", current_left_distance);
         pack.put("dist_left_avg", dist_left_avg.current_value());

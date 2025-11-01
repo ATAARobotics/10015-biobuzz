@@ -50,6 +50,7 @@ public abstract class TeleOp extends OpMode {
     boolean isRedAlliance;
 
     AprilTagMetadata target;
+    double distToAprilTag;
 
     @Override
     public void init() {
@@ -140,6 +141,8 @@ public abstract class TeleOp extends OpMode {
                 telemetry.addData("target", tag.ftcPose.range);
                 //range(distance)is in inches, maybe convert to centi
                 telemetry.addData("bearing", tag.ftcPose.bearing);
+                distToAprilTag = tag.ftcPose.range;
+                telemetry.addData("distance to april tag", distToAprilTag);
             }
         }
 

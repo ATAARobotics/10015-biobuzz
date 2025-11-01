@@ -30,8 +30,9 @@ public class Shooter extends SubsystemBase {
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
     boolean readyToCount = false;
     int shotsFired = 0;
+    int endShots = 3;
     public static double HIGH_STATE = 3300;
-    public static double LOW_STATE = 2900;
+    public static double LOW_STATE = 3000;
     double RED = 0.28;
     double GREEN = 0.5;
     double BAND = 10; //not tested
@@ -156,10 +157,10 @@ public class Shooter extends SubsystemBase {
             shotsFired += 1;
              readyToCount = false;
         }
-        if (shotsFired == 3){
-          //  launchState = LaunchState.IDLE;
+        if (shotsFired >= endShots){
+          //  launchState = LunchState.IDLE;
             rpmTarget = 0;
-           // shotsFired = 0;
+            endShots += 3;
         }
         //if (Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
            // indicatorLight.setPosition(GREEN);
@@ -175,7 +176,7 @@ public class Shooter extends SubsystemBase {
         telemetry.addData("Applied Voltage", appliedVoltage);
         telemetry.addData("Launch State", launchState.toString());
         telemetry.addData("Shots Fired" , shotsFired);
-        pack.put("ticksPerSecond", ticksPerSecond);
+       // pack.put("ticksPerSecond", ticksPerSecond);
         pack.put("rpmTarget", rpmTarget);
         pack.put("Current RPM", currentRpm);
         pack.put("Power", power);
@@ -233,14 +234,14 @@ public class Shooter extends SubsystemBase {
         @Override
         public void execute() {
             // decide what to do based on sensors and human inputs from controller
-            if (driver.wasJustPressed(GamepadKeys.Button.B) || operator.wasJustPressed(GamepadKeys.Button.B)){
+            if (operator.wasJustPressed(GamepadKeys.Button.B)){
                 rpmTarget = FAR_RPM;
                 if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
             }
-            if (driver.wasJustPressed(GamepadKeys.Button.X) || operator.wasJustPressed(GamepadKeys.Button.X)){
+            if (operator.wasJustPressed(GamepadKeys.Button.X)){
                 rpmTarget = NEAR_RPM;
             }
-            if (driver.wasJustPressed(GamepadKeys.Button.A) || operator.wasJustPressed(GamepadKeys.Button.A)){
+            if (operator.wasJustPressed(GamepadKeys.Button.A)){
                 rpmTarget = 0;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
@@ -249,10 +250,22 @@ public class Shooter extends SubsystemBase {
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
                 rpmTarget -= STEP_RPM;
             }
-            if (driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER) && launchState == LaunchState.IDLE) {
+            if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
+                endShots = shotsFired + 3;
+            }
+            if (driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)){
+                rpmTarget = FAR_RPM;
+            }
+            if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
+                rpmTarget = NEAR_RPM;
+            }
+             if (driver.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5 && launchState == LaunchState.IDLE && rpmTarget > 0) {
                 // the user would like to fire a new shot
                 launchState = LaunchState.FEED;
                 shotTimer.reset();
+            }
+            if (driver.wasJustPressed(GamepadKeys.Button.A)){
+                rpmTarget = 0;
             }
         }
     }
