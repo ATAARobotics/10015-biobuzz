@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
@@ -364,6 +365,14 @@ public class Drive extends SubsystemBase {
                 turbo(true);
             } else {
                 turbo(false);
+            }
+            if (driver.wasJustPressed(GamepadKeys.Button.B) && isRedAlliance){
+                Command c = moveQuickly(-0.835, -0.95, -180);
+                CommandScheduler.getInstance().schedule(c);
+            }
+            if (driver.wasJustPressed(GamepadKeys.Button.B) && !isRedAlliance) {
+                Command c = moveQuickly(0.835, -0.95, -180);
+                CommandScheduler.getInstance().schedule(c);
             }
         }
 

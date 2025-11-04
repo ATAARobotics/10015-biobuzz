@@ -52,8 +52,6 @@ public abstract class Auto extends OpMode {
     public void init() {
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
-        driver.readButtons();
-        operator.readButtons();
         isRedAlliance = getAlliance() == Alliance.RED;
 
         // (Do not remove this, we absolutely have problems without cancelling this)
@@ -92,6 +90,8 @@ public abstract class Auto extends OpMode {
 
     @Override
     public void init_loop() {
+        driver.readButtons();
+        operator.readButtons();
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
             pauseTime += PAUSE_TIME_INCREMENT;
         }

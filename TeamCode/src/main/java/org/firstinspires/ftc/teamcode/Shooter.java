@@ -37,7 +37,7 @@ public class Shooter extends SubsystemBase {
     double GREEN = 0.5;
     double BAND = 10; //not tested
     double BANG_POWER = 1.0;
-    double rpmTolerance = 100;
+    double rpmTolerance = 50;
     boolean powerOn = false;
     private static final double FAR_RPM = 4900;
     private static final double NEAR_RPM = 3500;
