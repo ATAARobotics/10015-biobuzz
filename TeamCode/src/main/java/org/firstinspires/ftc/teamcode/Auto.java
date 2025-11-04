@@ -36,6 +36,7 @@ public abstract class Auto extends OpMode {
     GamepadEx driver;
     GamepadEx operator;
     double pauseTime = 0;
+    int PAUSE_TIME_INCREMENT = 2;
     ElapsedTime runtime = new ElapsedTime();
 
     // prototyping with some AprilTags, Sept 15
@@ -92,10 +93,13 @@ public abstract class Auto extends OpMode {
     @Override
     public void init_loop() {
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
-
+            pauseTime += PAUSE_TIME_INCREMENT;
         }
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
-
+            pauseTime -= PAUSE_TIME_INCREMENT;
+        }
+        if (pauseTime < 0){
+            pauseTime = 0;
         }
 
     }
@@ -111,6 +115,7 @@ public abstract class Auto extends OpMode {
         drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.3 : -1.3, 1.3, AngleUnit.DEGREES, isRedAlliance ? 135 : -135));
 
         SequentialCommandGroup auto_commands = new SequentialCommandGroup(
+                pause(pauseTime),
                 drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135),
                 shooter.shoot(3),
                 drive.moveQuickly(isRedAlliance ? 1.2 : -1.2,0.6, 180)
@@ -152,6 +157,7 @@ public abstract class Auto extends OpMode {
         // FIXME TODO put into FTC Dashboard too, for most of this
         Pose2D drivePosition = drive.getPosition();
         telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
+        telemetry.addData("Pause Time", pauseTime);
         telemetry.update();
     }
 
