@@ -61,6 +61,7 @@ public class Drive extends SubsystemBase {
     public double desired_heading;
     double ff_forward;
     double ff_strafe;
+    Command parking; //Null if we're not parking
 
     private final PIDController heading_control;
     public static PIDCoefficients hPID = new PIDCoefficients(0.015,0,0.0003); //adjusted November 1
@@ -257,7 +258,29 @@ public class Drive extends SubsystemBase {
             stop();
         }
     }
+    public class Park extends QuickMoveTo{
+        GamepadEx driver;
+        public Park(GamepadEx driver, double x, double y, double heading, double tolerence){
+            super(x, y, heading, tolerence);
+            this.driver = driver;
+        }
+        @Override
+        public boolean isFinished(){
+            if (driver.isDown(GamepadKeys.Button.B)){
+                return false;
+            }
+            return true;
+        }
+        @Override
+        public void end(boolean interupted){
+            super.end(interupted);
+            parking = null;
+        }
+    }
+    public Command parkAt (GamepadEx driver, double x, double y, double heading){
+        return new Park(driver, x, y, heading, DISTANCE_TOLERANCE);
 
+    }
 
     public class CarefulMoveTo extends CommandBase {
         Pose2D target;
@@ -366,13 +389,13 @@ public class Drive extends SubsystemBase {
             } else {
                 turbo(false);
             }
-            if (driver.wasJustPressed(GamepadKeys.Button.B) && isRedAlliance){
-                Command c = moveQuickly(-0.835, -0.95, -180);
-                CommandScheduler.getInstance().schedule(c);
+            if (driver.isDown(GamepadKeys.Button.B) && isRedAlliance && parking == null){
+                parking = parkAt(driver, -0.835, -0.95, -180);
+                CommandScheduler.getInstance().schedule(parking);
             }
-            if (driver.wasJustPressed(GamepadKeys.Button.B) && !isRedAlliance) {
-                Command c = moveQuickly(0.835, -0.95, -180);
-                CommandScheduler.getInstance().schedule(c);
+            if (driver.isDown(GamepadKeys.Button.B) && !isRedAlliance && parking == null) {
+                parking = parkAt(driver, 0.835, -0.95, -180);
+                CommandScheduler.getInstance().schedule(parking);
             }
         }
 
