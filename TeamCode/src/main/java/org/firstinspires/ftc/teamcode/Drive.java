@@ -39,6 +39,8 @@ public class Drive extends SubsystemBase {
     public static double STATIC_F_FORWARD = 0.04; // 0.09;
     public static double STATIC_F_STRAFE = 0.08; // 0.15;
 
+    public boolean cameraOn = false;
+
     //public static double LINEAR_SCALAR = 1.018;
     //public static double ANGULAR_SCALAR = 0.995;
 
@@ -383,7 +385,10 @@ public class Drive extends SubsystemBase {
                 april_lock = !april_lock;
             if (april_lock)
                 desired_heading = april_bearing;
-            // Anjalika wants "turbo" mode ... so if we're holding
+            if (driver.wasJustPressed((GamepadKeys.Button.RIGHT_BUMPER)))
+                cameraOn = !cameraOn;
+
+             // Anjalika wants "turbo" mode ... so if we're holding
             // left trigger _currently_, we go to Turbo -- otherwise
             // to non-Turbo
             if (driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5){

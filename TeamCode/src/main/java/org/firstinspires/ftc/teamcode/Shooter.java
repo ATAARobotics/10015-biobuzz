@@ -253,9 +253,9 @@ public class Shooter extends SubsystemBase {
             if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
                 endShots = shotsFired + 3;
             }
-            if (driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)){
+            /*if (driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)){
                 rpmTarget = FAR_RPM;
-            }
+            }*/
             if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
                 rpmTarget = NEAR_RPM;
             }

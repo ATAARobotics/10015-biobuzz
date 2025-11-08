@@ -133,18 +133,20 @@ public abstract class TeleOp extends OpMode {
                 target.distanceUnit.toMeters(target.fieldPosition.get(1))-drive.getPosition().getX(DistanceUnit.METER),
                 target.distanceUnit.toMeters(target.fieldPosition.get(0))+drive.getPosition().getY(DistanceUnit.METER)));
 //      target.fieldOrientation.toOrientation(AxesReference.EXTRINSIC,AxesOrder.XYZ,AngleUnit.DEGREES).thirdAngle-90
-
-        List<AprilTagDetection> detections = april_tags.getDetections();
-        for (AprilTagDetection tag : detections) {
-            if (tag.id == target.id){
-                drive.april_bearing = tag.ftcPose.bearing + drive.getPosition().getHeading(AngleUnit.DEGREES);
-                telemetry.addData("target", tag.ftcPose.range);
-                //range(distance)is in inches, maybe convert to centi
-                telemetry.addData("bearing", tag.ftcPose.bearing);
-                distToAprilTag = tag.ftcPose.range;
-                telemetry.addData("distance to april tag", distToAprilTag);
+        if (drive.cameraOn) {
+            List<AprilTagDetection> detections = april_tags.getDetections();
+            for (AprilTagDetection tag : detections) {
+                if (tag.id == target.id){
+                    drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) - tag.ftcPose.bearing;
+                    telemetry.addData("target", tag.ftcPose.range);
+                    //range(distance)is in inches, maybe convert to centi
+                    telemetry.addData("bearing", tag.ftcPose.bearing);
+                    distToAprilTag = tag.ftcPose.range;
+                    telemetry.addData("distance to april tag", distToAprilTag);
+                }
             }
         }
+        telemetry.addData("Camera", drive.cameraOn);
 
         // Run the CommandScheduler instance (note: this will call
         // ".periodic()" on all registered subsystems, which is the
