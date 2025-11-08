@@ -275,6 +275,8 @@ public class Drive extends SubsystemBase {
         public void end(boolean interupted){
             super.end(interupted);
             parking = null;
+            desired_heading = -180;
+            april_lock = false;
         }
     }
     public Command parkAt (GamepadEx driver, double x, double y, double heading){

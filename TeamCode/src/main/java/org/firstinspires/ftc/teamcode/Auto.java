@@ -36,7 +36,7 @@ public abstract class Auto extends OpMode {
     GamepadEx driver;
     GamepadEx operator;
     double pauseTime = 0;
-    int PAUSE_TIME_INCREMENT = 2;
+    int PAUSE_TIME_INCREMENT = 1;
     ElapsedTime runtime = new ElapsedTime();
 
     // prototyping with some AprilTags, Sept 15
@@ -44,8 +44,12 @@ public abstract class Auto extends OpMode {
     VisionPortal portal;
 
     public enum Alliance {RED, BLUE};
+    public enum AutoStartPos {FAR, NEAR};
+    public abstract AutoStartPos getStartPos();
+    boolean isFar;
     public abstract Alliance getAlliance();
     boolean isRedAlliance;
+    boolean parkingDefault = true;
     AprilTagMetadata target;
 
     @Override
@@ -53,6 +57,7 @@ public abstract class Auto extends OpMode {
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
         isRedAlliance = getAlliance() == Alliance.RED;
+        isFar = getStartPos() == AutoStartPos.FAR;
 
         // (Do not remove this, we absolutely have problems without cancelling this)
         // Cancel all previous commands
@@ -92,16 +97,23 @@ public abstract class Auto extends OpMode {
     public void init_loop() {
         driver.readButtons();
         operator.readButtons();
-        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
             pauseTime += PAUSE_TIME_INCREMENT;
         }
-        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
             pauseTime -= PAUSE_TIME_INCREMENT;
         }
+        if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {parkingDefault = true;}
+        if (operator.wasJustPressed((GamepadKeys.Button.RIGHT_BUMPER))) {parkingDefault = false;}
+
         if (pauseTime < 0){
             pauseTime = 0;
         }
-
+        telemetry.addData("Pause Time: ", pauseTime);
+        telemetry.addData("Alliance: ", getAlliance());
+        telemetry.addData("Starting Position: ", getStartPos());
+        telemetry.addData("Parking Position: ", parkingDefault ? "Default" : "Opt. 2");
+        telemetry.update();
     }
 
     // origin is center of the field, in meters
@@ -109,20 +121,52 @@ public abstract class Auto extends OpMode {
     @Override
     public void start() {
         // OPTION 1: starting position is touching audience field perimeter wall
-//        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.435 : -0.435, -1.61, AngleUnit.DEGREES, 0));
+//        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.381 : -0.381, -1.556, AngleUnit.DEGREES, 180));
 
         // OPTION 2: starting position is over the center of a launch line touching own alliance's goal:
-        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.3 : -1.3, 1.3, AngleUnit.DEGREES, isRedAlliance ? 135 : -135));
-
-        SequentialCommandGroup auto_commands = new SequentialCommandGroup(
-                pause(pauseTime),
-                drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135),
-                shooter.shoot(3),
-                drive.moveQuickly(isRedAlliance ? 1.2 : -1.2,0.6, 180)
-        );
+        if (isFar){
+            drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.381 : -0.381, -1.556, AngleUnit.DEGREES, 180));
+            if (parkingDefault) {
+                SequentialCommandGroup auto_commands = new SequentialCommandGroup(
+                        pause(pauseTime),
+                        drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 0.6, 180).withTimeout(1500),
+                        drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(4000),
+                        shooter.shoot(3),
+                        drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 1.4, 180)
+                );
+                CommandScheduler.getInstance().schedule(auto_commands);
+            } else {
+                SequentialCommandGroup auto_commands = new SequentialCommandGroup(
+                        pause(pauseTime),
+                        drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 0.6, 180).withTimeout(1500),
+                        drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(4000),
+                        shooter.shoot(3),
+                        drive.moveQuickly(isRedAlliance ? 1.2 : -1.2,0.6, 180)
+                );
+                CommandScheduler.getInstance().schedule(auto_commands);
+            }
+        } else {
+            drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.3 : -1.3, 1.3, AngleUnit.DEGREES, isRedAlliance ? 135 : -135));
+            if (parkingDefault) {
+                SequentialCommandGroup auto_commands = new SequentialCommandGroup(
+                        pause(pauseTime),
+                        drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(2500),
+                        shooter.shoot(3),
+                        drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 1.4, 180)
+                );
+                CommandScheduler.getInstance().schedule(auto_commands);
+            } else {
+                SequentialCommandGroup auto_commands = new SequentialCommandGroup(
+                        pause(pauseTime),
+                        drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(2500),
+                        shooter.shoot(3),
+                        drive.moveQuickly(isRedAlliance ? 1.2 : -1.2,0.6, 180)
+                );
+                CommandScheduler.getInstance().schedule(auto_commands);
+            }
+        }
 
         // schedule all our commands
-        CommandScheduler.getInstance().schedule(auto_commands);
     }
     public Command pause(double seconds){
         return new WaitUntil(time + seconds);
