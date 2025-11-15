@@ -59,6 +59,8 @@ public class Shooter extends SubsystemBase {
      */
     public static double TIME_BETWEEN_SHOTS = 1.2;
 
+    Turret turret;
+
     /*
      * Here we create two timers which we use in different parts of our code. Each of these is an
      * "object," so even though they are all an instance of ElapsedTime(), they count independently
@@ -234,6 +236,9 @@ public class Shooter extends SubsystemBase {
         @Override
         public void execute() {
             // decide what to do based on sensors and human inputs from controller
+
+            turret.faceRobotAngle(operator.getRightX()*20);
+
             if (operator.wasJustPressed(GamepadKeys.Button.B)){
                 rpmTarget = FAR_RPM;
                 if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;

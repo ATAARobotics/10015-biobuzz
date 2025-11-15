@@ -39,6 +39,7 @@ public abstract class TeleOp extends OpMode {
     VoltageSensor battery;
     Drive drive;
     Shooter shooter;
+    Turret turret;
     ElapsedTime  runtime = new ElapsedTime();
 
     // prototyping with some AprilTags, Sept 15
@@ -80,6 +81,7 @@ public abstract class TeleOp extends OpMode {
 
         drive = new Drive(hardwareMap, isRedAlliance);
         shooter = new Shooter(hardwareMap);
+        turret = new Turret(hardwareMap);
 
         //telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
         //telemetry.update();
@@ -159,6 +161,7 @@ public abstract class TeleOp extends OpMode {
         pack.put("battery", battery.getVoltage());
         drive.add_telemetry(pack);
         shooter.add_telemetry(pack, telemetry);
+        turret.add_telemetry(pack);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // FIXME TODO put into FTC Dashboard too, for most of this
