@@ -119,7 +119,7 @@ public class Drive extends SubsystemBase {
         pinpoint.setOffsets(22, 169, DistanceUnit.MM); // Note: Y is forward, X is right
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
         pinpoint.resetPosAndIMU();
         /*otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");

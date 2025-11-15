@@ -33,14 +33,14 @@ public class Turret extends SubsystemBase {
         servo1 = hardwareMap.get(CRServo.class, "left_turret");
         servo2 = hardwareMap.get(CRServo.class, "right_turret");
         encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
+        turretHeadingControl = new PIDController(turretP,turretI,turretD);
+        turretHeadingControl.setTolerance(TURRET_TOLERANCE);
     }
 
     public void faceFieldAngle(double angle) {
         //faceRobotAngle(); //22.755 ticks/ deg
     }
     public void faceRobotAngle(double angle) {
-        turretHeadingControl = new PIDController(turretP,turretI,turretD);
-        turretHeadingControl.setTolerance(TURRET_TOLERANCE);
         turretHeadingControl.setSetPoint(angle);
 
         double turretPower = clipPower(turretHeadingControl.calculate(getCurrentAngle()) / 360); //degrees
