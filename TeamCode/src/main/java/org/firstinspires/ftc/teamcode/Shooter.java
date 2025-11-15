@@ -20,10 +20,10 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class Shooter extends SubsystemBase {
     //MotorGroup shooterMotor;
     //private Servo indicatorLight;
-    private Servo feeder;
+   // private Servo feeder;
 
     private Servo indicatorLight;
-    MotorEx motor0;
+    //MotorEx motor0;
     //MotorEx motor1;
     double ticksPerSecond;
     double power;
@@ -81,7 +81,7 @@ public class Shooter extends SubsystemBase {
     public Shooter(HardwareMap hardwareMap) {
         // do any one-time initialization here
 
-        motor0 = new MotorEx(hardwareMap, "motor0");
+        /*motor0 = new MotorEx(hardwareMap, "motor0");
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
 //        motor0.setInverted(true);
@@ -92,28 +92,29 @@ public class Shooter extends SubsystemBase {
         motor1.setInverted(false);
 
         shooterMotor = new MotorGroup(motor0, motor1); */
-        feeder = hardwareMap.get(Servo.class, "feeder");
-        feeder.setPosition(FEEDER_OPEN);
+     //   feeder = hardwareMap.get(Servo.class, "feeder");
+   //     feeder.setPosition(FEEDER_OPEN);
         launchState = LaunchState.IDLE;
 
  //       shooterMotor = new MotorGroup(motor0, motor1);
         rpmTarget = 0;
         //indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
+        turret = new Turret(hardwareMap);
     }
 
     public void reset() {
-        feeder.setPosition(FEEDER_OPEN);
+       // feeder.setPosition(FEEDER_OPEN);
         launchState = LaunchState.IDLE;
     }
 
     public void stop() {
         rpmTarget = 0;
-        motor0.set(0);
+        //motor0.set(0);
     }
     public void read_sensors(double time) {
         // get any inputs from our encoders or other sensors
-        ticksPerSecond = motor0.getVelocity();
+   //     ticksPerSecond = motor0.getVelocity();
         currentRpm = (ticksPerSecond*60)/TICKS_PER_REV;
     }
 
@@ -131,7 +132,7 @@ public class Shooter extends SubsystemBase {
         if (powerOn) power = BANG_POWER;
         if (rpmTarget == 0) power = 0;
         if(power < 0) power = 0;
-        motor0.set(power); //when you move joystick, motor power changes
+  //      motor0.set(power); //when you move joystick, motor power changes
 
         switch (launchState) {
             case IDLE:
@@ -139,14 +140,14 @@ public class Shooter extends SubsystemBase {
             case FEED:
                 if (rpmTarget > 0 && Math.abs(currentRpm - rpmTarget) < rpmTolerance) {
                     if (FEEDER_CLOSED < FEEDER_LIMIT) FEEDER_CLOSED = FEEDER_LIMIT;
-                    feeder.setPosition(FEEDER_CLOSED);
+                   // feeder.setPosition(FEEDER_CLOSED);
                     feederTimer.reset();
                     launchState = LaunchState.SHOOT;
                 }
                 break;
             case SHOOT:
                 if (feederTimer.seconds() > FEED_TIME) {
-                    feeder.setPosition(FEEDER_OPEN);
+                 //   feeder.setPosition(FEEDER_OPEN);
                     if (shotTimer.seconds() > TIME_BETWEEN_SHOTS)
                         launchState = LaunchState.IDLE; // ball has been successfully launched
                 }

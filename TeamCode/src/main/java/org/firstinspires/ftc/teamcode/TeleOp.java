@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -44,7 +46,7 @@ public abstract class TeleOp extends OpMode {
 
     // prototyping with some AprilTags, Sept 15
     AprilTagProcessor april_tags;
-    VisionPortal portal;
+    //VisionPortal portal;
 
     public enum Alliance {RED, BLUE};
     public abstract Alliance getAlliance();
@@ -71,14 +73,14 @@ public abstract class TeleOp extends OpMode {
                 .setDrawCubeProjection(true)
                 .build();
 
-        portal = new VisionPortal.Builder()
+        /*portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class,"DubbleBubble Webcam"))
                 .addProcessor(april_tags)
                 .setCameraResolution(new Size(640, 480))
                 //.setStreamFormat(VisionPortal.StreamFormat.YUY2)
                 .setAutoStopLiveView(true)
                 .build();
-
+*/
         drive = new Drive(hardwareMap, isRedAlliance);
         shooter = new Shooter(hardwareMap);
         turret = new Turret(hardwareMap);
@@ -165,6 +167,7 @@ public abstract class TeleOp extends OpMode {
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // FIXME TODO put into FTC Dashboard too, for most of this
+        telemetry.addData("Turret Encoder Angle: ", turret.getCurrentAngle());
         telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
         telemetry.update();
     }

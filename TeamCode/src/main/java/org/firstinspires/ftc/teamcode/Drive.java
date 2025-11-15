@@ -97,15 +97,15 @@ public class Drive extends SubsystemBase {
     public Drive(HardwareMap hardwareMap, boolean isRedAlliance) {
         this.isRedAlliance = isRedAlliance;
         // TO DO: replace Motor.GoBILDA.RPM_312 with CPR, RPM:
-        Motor motor_fl = new Motor(hardwareMap, "fl", Motor.GoBILDA.RPM_312);
+        Motor motor_fl = new Motor(hardwareMap, "fl", Motor.GoBILDA.RPM_435);
         motor_fl.setInverted(true);
         motor_fl.setZeroPowerBehavior(zeroPowerBehavior);
-        Motor motor_fr = new Motor(hardwareMap, "fr", Motor.GoBILDA.RPM_312);
+        Motor motor_fr = new Motor(hardwareMap, "fr", Motor.GoBILDA.RPM_435);
         motor_fr.setZeroPowerBehavior(zeroPowerBehavior);
-        Motor motor_bl = new Motor(hardwareMap, "bl", Motor.GoBILDA.RPM_312);
+        Motor motor_bl = new Motor(hardwareMap, "bl", Motor.GoBILDA.RPM_435);
         motor_bl.setInverted(true);
         motor_bl.setZeroPowerBehavior(zeroPowerBehavior);
-        Motor motor_br = new Motor(hardwareMap, "br", Motor.GoBILDA.RPM_312);
+        Motor motor_br = new Motor(hardwareMap, "br", Motor.GoBILDA.RPM_435);
         motor_br.setZeroPowerBehavior(zeroPowerBehavior);
         drivebase = new MecanumDrive(false, motor_fl, motor_fr, motor_bl, motor_br);
         drivebase.setMaxSpeed(1);
@@ -116,9 +116,9 @@ public class Drive extends SubsystemBase {
         // configure odometry sensor
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         // Configure the sensor
-        pinpoint.setOffsets(46.6, -48.0, DistanceUnit.MM); // Note: Y is forward, X is right
+        pinpoint.setOffsets(22, 169, DistanceUnit.MM); // Note: Y is forward, X is right
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
                 GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
         pinpoint.resetPosAndIMU();

@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -14,22 +17,21 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+@Config
 public class Turret extends SubsystemBase {
     private CRServo servo1;
-    private DcMotor encoder1;
     private CRServo servo2;
-    private DcMotor encoder2;
+    AnalogInput encoder;
 
     private PIDController turretHeadingControl;
 
-    public double turretP = 0.0, turretI = 0.0, turretD = 0.0;
-    public double TURRET_TOLERANCE = 0.0;
+    public static double turretP = 1.0, turretI = 0.0, turretD = 0.0;
+    public static double TURRET_TOLERANCE = 0.0;
 
     public Turret(HardwareMap hardwareMap) {
-        servo1 = hardwareMap.get(CRServo.class, "turretServo1");
-        servo2 = hardwareMap.get(CRServo.class, "turretServo2");
-        encoder1 = hardwareMap.get(DcMotor.class, "turretEncoder1");
-        encoder2 = hardwareMap.get(DcMotor.class, "turretEncoder2");
+        servo1 = hardwareMap.get(CRServo.class, "left_turret");
+        servo2 = hardwareMap.get(CRServo.class, "right_turret");
+        encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
     }
 
     public void faceFieldAngle(double angle) {
@@ -38,12 +40,29 @@ public class Turret extends SubsystemBase {
     public void faceRobotAngle(double angle) {
         turretHeadingControl = new PIDController(turretP,turretI,turretD);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
-        servo1.setPower((turretHeadingControl.calculate(encoder2.getCurrentPosition())+1)/2);
+        turretHeadingControl.setSetPoint(angle);
+
+        double turretPower = clipPower(turretHeadingControl.calculate(getCurrentAngle())/360); //degrees
+        double servoPower = (turretPower+1)/2;
+        servo1.setPower(servoPower);
+        servo2.setPower(servoPower);
+    }
+    public double getCurrentAngle() {
+        return encoder.getVoltage()/3.3*360; // 0-360 deg
+    }
+    public double clipPower(double power) {
+        if (power > 1) {return 1;}
+        if (power < -1) {return -1;}
+        return power;
     }
     public void add_telemetry(TelemetryPacket pack) {
         pack.put("turret-d", turretD);
         pack.put("turret-i", turretI);
         pack.put("turret-p", turretP);
+        if (turretHeadingControl != null) {
+            pack.put("turret-angle", turretHeadingControl.getSetPoint());
+        }
         pack.put("turret-tolerance", TURRET_TOLERANCE);
+;
     }
 }
