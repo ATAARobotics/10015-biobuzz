@@ -83,7 +83,7 @@ public class Drive extends SubsystemBase {
     public static Motor.ZeroPowerBehavior zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE;
 
     double current_time;
-    Pose2D current_position;
+    public static Pose2D current_position;
 
     double previous_time;
     //Pose2D previous_position;
