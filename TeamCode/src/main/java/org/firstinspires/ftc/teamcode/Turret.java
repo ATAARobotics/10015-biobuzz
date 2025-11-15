@@ -24,6 +24,7 @@ public class Turret extends SubsystemBase {
     AnalogInput encoder;
 
     private PIDController turretHeadingControl;
+    double servoPower;
 
     public static double turretP = 1.0, turretI = 0.0, turretD = 0.0;
     public static double TURRET_TOLERANCE = 0.0;
@@ -42,8 +43,8 @@ public class Turret extends SubsystemBase {
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
         turretHeadingControl.setSetPoint(angle);
 
-        double turretPower = clipPower(turretHeadingControl.calculate(getCurrentAngle())/360); //degrees
-        double servoPower = (turretPower+1)/2;
+        double turretPower = clipPower(turretHeadingControl.calculate(getCurrentAngle()) / 360); //degrees
+        servoPower = (turretPower + 1.0) / 2.0;  // scale to 0.0 -> 1.0
         servo1.setPower(servoPower);
         servo2.setPower(servoPower);
     }
@@ -63,6 +64,7 @@ public class Turret extends SubsystemBase {
             pack.put("turret-angle", turretHeadingControl.getSetPoint());
         }
         pack.put("turret-tolerance", TURRET_TOLERANCE);
+        pack.put("servo-power", servoPower);
 ;
     }
 }
