@@ -246,6 +246,9 @@ public class Shooter extends SubsystemBase {
             // give turret target angles between 90 and 270
             turret.faceRobotAngle(((operator.getRightX() + 1.0) / 2.0) * 180 + 90);
             intake.intake.set(operator.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER));
+            if (operator.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) {
+                intake.intake.set(-operator.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) / 0.5);
+            }
 
           /*  if (operator.wasJustPressed(GamepadKeys.Button.B)){
                 rpmTarget = FAR_RPM;
