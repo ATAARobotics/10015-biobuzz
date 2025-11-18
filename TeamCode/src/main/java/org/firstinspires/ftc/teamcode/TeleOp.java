@@ -167,7 +167,6 @@ public abstract class TeleOp extends OpMode {
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // FIXME TODO put into FTC Dashboard too, for most of this
-        telemetry.addData("Turret Encoder Angle: ", turret.getCurrentAngle());
         telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
         telemetry.update();
     }

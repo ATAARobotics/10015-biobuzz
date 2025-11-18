@@ -7,10 +7,10 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.hardware.motors.CRServo;
+import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -19,19 +19,19 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class Turret extends SubsystemBase {
-    private CRServo servo1;
-    private CRServo servo2;
+    private SimpleServo servo1;
+    private SimpleServo servo2;
     AnalogInput encoder;
 
-    private PIDController turretHeadingControl;
-    double servoPower;
+    public PIDController turretHeadingControl;
+    public double servoPower;
 
-    public static double turretP = 1.0, turretI = 0.0, turretD = 0.0;
+    public static double turretP = 2.0, turretI = 0.0, turretD = 0.04;
     public static double TURRET_TOLERANCE = 0.0;
 
     public Turret(HardwareMap hardwareMap) {
-        servo1 = hardwareMap.get(CRServo.class, "left_turret");
-        servo2 = hardwareMap.get(CRServo.class, "right_turret");
+        servo1 = new SimpleServo(hardwareMap, "left_turret", 0, 360);
+        servo2 = new SimpleServo(hardwareMap, "right_turret", 0, 360);
         encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
         turretHeadingControl = new PIDController(turretP,turretI,turretD);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
@@ -49,8 +49,8 @@ public class Turret extends SubsystemBase {
     public void periodic() {
         double turretPower = clipPower(turretHeadingControl.calculate(getCurrentAngle()) / 360); //degrees
         servoPower = (turretPower + 1.0) / 2.0;  // scale to 0.0 -> 1.0
-        servo1.setPower(servoPower);
-        servo2.setPower(servoPower);
+        servo1.setPosition(servoPower);
+        servo2.setPosition(servoPower);
     }
 
     public double getCurrentAngle() {
@@ -73,5 +73,8 @@ public class Turret extends SubsystemBase {
         pack.put("turret-tolerance", TURRET_TOLERANCE);
         pack.put("servo-power", servoPower);
 ;
+        telemetry.addData("Turret Encoder Angle: ", getCurrentAngle());
+        telemetry.addData("Turret Target Angle:  ", turretHeadingControl.getSetPoint());
+        telemetry.addData("Turret Power: ", servoPower);
     }
 }
