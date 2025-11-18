@@ -41,22 +41,29 @@ public class Turret extends SubsystemBase {
         //faceRobotAngle(); //22.755 ticks/ deg
     }
     public void faceRobotAngle(double angle) {
+        turretHeadingControl.setPID(turretP, turretI, turretD);
         turretHeadingControl.setSetPoint(angle);
+    }
 
+    @Override
+    public void periodic() {
         double turretPower = clipPower(turretHeadingControl.calculate(getCurrentAngle()) / 360); //degrees
         servoPower = (turretPower + 1.0) / 2.0;  // scale to 0.0 -> 1.0
         servo1.setPower(servoPower);
         servo2.setPower(servoPower);
     }
+
     public double getCurrentAngle() {
         return encoder.getVoltage()/3.3*360; // 0-360 deg
     }
+
     public double clipPower(double power) {
         if (power > 1) {return 1;}
         if (power < -1) {return -1;}
         return power;
     }
-    public void add_telemetry(TelemetryPacket pack) {
+
+    public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
         pack.put("turret-d", turretD);
         pack.put("turret-i", turretI);
         pack.put("turret-p", turretP);

@@ -82,8 +82,8 @@ public abstract class TeleOp extends OpMode {
                 .build();
 */
         drive = new Drive(hardwareMap, isRedAlliance);
-        shooter = new Shooter(hardwareMap);
         turret = new Turret(hardwareMap);
+        shooter = new Shooter(hardwareMap, turret);
 
         //telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
         //telemetry.update();
@@ -163,7 +163,7 @@ public abstract class TeleOp extends OpMode {
         pack.put("battery", battery.getVoltage());
         drive.add_telemetry(pack);
         shooter.add_telemetry(pack, telemetry);
-        turret.add_telemetry(pack);
+        turret.add_telemetry(pack, telemetry);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // FIXME TODO put into FTC Dashboard too, for most of this

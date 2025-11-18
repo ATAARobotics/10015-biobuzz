@@ -78,7 +78,7 @@ public class Shooter extends SubsystemBase {
     public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
     public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
 
-    public Shooter(HardwareMap hardwareMap) {
+    public Shooter(HardwareMap hardwareMap, Turret turret) {
         // do any one-time initialization here
 
         /*motor0 = new MotorEx(hardwareMap, "motor0");
@@ -100,7 +100,7 @@ public class Shooter extends SubsystemBase {
         rpmTarget = 0;
         //indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
-        turret = new Turret(hardwareMap);
+        this.turret = turret;
     }
 
     public void reset() {
@@ -120,6 +120,8 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
+        turret.periodic();
+
         appliedVoltage = kv*rpmTarget+ks;
         power = appliedVoltage/battery.getVoltage();
         //power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
@@ -173,6 +175,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
+        turret.add_telemetry(pack, telemetry);
         telemetry.addData("motor0", power); //what you see on the screen
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
@@ -238,7 +241,7 @@ public class Shooter extends SubsystemBase {
         public void execute() {
             // decide what to do based on sensors and human inputs from controller
 
-            turret.faceRobotAngle(operator.getRightX()*20);
+            turret.faceRobotAngle(operator.getRightX() * 180);
 
             if (operator.wasJustPressed(GamepadKeys.Button.B)){
                 rpmTarget = FAR_RPM;
