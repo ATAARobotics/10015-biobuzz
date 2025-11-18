@@ -34,6 +34,7 @@ public abstract class Auto extends OpMode {
     Drive drive;
     Turret turret;
     Shooter shooter;
+    Intake intake;
     GamepadEx driver;
     GamepadEx operator;
     double pauseTime = 0;
@@ -83,7 +84,8 @@ public abstract class Auto extends OpMode {
 
         drive = new Drive(hardwareMap, isRedAlliance);
         turret = new Turret(hardwareMap);
-        shooter = new Shooter(hardwareMap, turret);
+        intake = new Intake(hardwareMap);
+        shooter = new Shooter(hardwareMap, turret, intake);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
 

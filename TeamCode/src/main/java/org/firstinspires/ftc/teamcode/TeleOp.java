@@ -41,6 +41,7 @@ public abstract class TeleOp extends OpMode {
     VoltageSensor battery;
     Drive drive;
     Shooter shooter;
+    Intake intake;
     Turret turret;
     ElapsedTime  runtime = new ElapsedTime();
 
@@ -83,7 +84,8 @@ public abstract class TeleOp extends OpMode {
 */
         drive = new Drive(hardwareMap, isRedAlliance);
         turret = new Turret(hardwareMap);
-        shooter = new Shooter(hardwareMap, turret);
+        intake = new Intake(hardwareMap);
+        shooter = new Shooter(hardwareMap, turret, intake);
 
         //telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
         //telemetry.update();

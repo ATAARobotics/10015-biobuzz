@@ -60,6 +60,7 @@ public class Shooter extends SubsystemBase {
     public static double TIME_BETWEEN_SHOTS = 1.2;
 
     Turret turret;
+    Intake intake; // Fix me, move to somewhere else
 
     /*
      * Here we create two timers which we use in different parts of our code. Each of these is an
@@ -78,7 +79,7 @@ public class Shooter extends SubsystemBase {
     public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
     public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
 
-    public Shooter(HardwareMap hardwareMap, Turret turret) {
+    public Shooter(HardwareMap hardwareMap, Turret turret, Intake intake) {
         // do any one-time initialization here
 
         /*motor0 = new MotorEx(hardwareMap, "motor0");
@@ -101,6 +102,7 @@ public class Shooter extends SubsystemBase {
         //indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
         this.turret = turret;
+        this.intake = intake;
     }
 
     public void reset() {
@@ -243,8 +245,9 @@ public class Shooter extends SubsystemBase {
 
             // give turret target angles between 90 and 270
             turret.faceRobotAngle(((operator.getRightX() + 1.0) / 2.0) * 180 + 90);
+            intake.intake.set(operator.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER));
 
-            if (operator.wasJustPressed(GamepadKeys.Button.B)){
+          /*  if (operator.wasJustPressed(GamepadKeys.Button.B)){
                 rpmTarget = FAR_RPM;
                 if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
             }

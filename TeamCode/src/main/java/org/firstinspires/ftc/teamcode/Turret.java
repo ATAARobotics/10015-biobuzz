@@ -26,7 +26,7 @@ public class Turret extends SubsystemBase {
     public PIDController turretHeadingControl;
     public double servoPower;
 
-    public static double turretP = 0.0, turretI = 0.0, turretD = 0.0;
+    public static double turretP = 0.005, turretI = 0.0, turretD = 0.0001;
     public static double F = 0.0;
     public static double TURRET_TOLERANCE = 0.0;
 
