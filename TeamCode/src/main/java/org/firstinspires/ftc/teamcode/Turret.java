@@ -26,7 +26,8 @@ public class Turret extends SubsystemBase {
     public PIDController turretHeadingControl;
     public double servoPower;
 
-    public static double turretP = 2.0, turretI = 0.0, turretD = 0.04;
+    public static double turretP = 0.0, turretI = 0.0, turretD = 0.0;
+    public static double F = 0.0;
     public static double TURRET_TOLERANCE = 0.0;
 
     public Turret(HardwareMap hardwareMap) {
@@ -47,7 +48,12 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-        double turretPower = clipPower(turretHeadingControl.calculate(getCurrentAngle()) / 360); //degrees
+        // our controller is in degrees; if this changes, P, I, D and F need to be re-tuned
+        // raw PID controller power
+        double turretPower = turretHeadingControl.calculate(getCurrentAngle());
+        // add F and clip to between -1.0 and 1.0
+        turretPower = clipPower(turretPower + F);
+        // re-scale to the servo range
         servoPower = (turretPower + 1.0) / 2.0;  // scale to 0.0 -> 1.0
         servo1.setPosition(servoPower);
         servo2.setPosition(servoPower);

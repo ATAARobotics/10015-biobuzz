@@ -241,7 +241,8 @@ public class Shooter extends SubsystemBase {
         public void execute() {
             // decide what to do based on sensors and human inputs from controller
 
-            turret.faceRobotAngle(operator.getRightX() * 180);
+            // give turret target angles between 90 and 270
+            turret.faceRobotAngle(((operator.getRightX() + 1.0) / 2.0) * 180 + 90);
 
             if (operator.wasJustPressed(GamepadKeys.Button.B)){
                 rpmTarget = FAR_RPM;
