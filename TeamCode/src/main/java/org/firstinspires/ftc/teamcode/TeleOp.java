@@ -165,7 +165,6 @@ public abstract class TeleOp extends OpMode {
         pack.put("battery", battery.getVoltage());
         drive.add_telemetry(pack);
         shooter.add_telemetry(pack, telemetry);
-        turret.add_telemetry(pack, telemetry);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // FIXME TODO put into FTC Dashboard too, for most of this

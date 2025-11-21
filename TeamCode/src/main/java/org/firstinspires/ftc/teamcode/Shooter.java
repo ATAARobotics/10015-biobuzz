@@ -112,6 +112,7 @@ public class Shooter extends SubsystemBase {
 
     public void stop() {
         rpmTarget = 0;
+        turret.stop();
         //motor0.set(0);
     }
     public void read_sensors(double time) {
@@ -243,8 +244,8 @@ public class Shooter extends SubsystemBase {
         public void execute() {
             // decide what to do based on sensors and human inputs from controller
 
-            // give turret target angles between 90 and 270
-            turret.faceRobotAngle(((operator.getRightX() + 1.0) / 2.0) * 180 + 90);
+            // give turret target angles between -180 and 180
+            turret.faceRobotAngle(-operator.getRightX() * 180);
             intake.intake.set(operator.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER));
             if (operator.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) {
                 intake.intake.set(-operator.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) / 0.5);

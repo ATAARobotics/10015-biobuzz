@@ -23,16 +23,18 @@ public class Turret extends SubsystemBase {
     private static final double GEAR_RATIO = 1/0.64; // last session Vincent, Avery and Mahie worked it out as 0.64:1 (i.e. 1 servo rotation equals 0.64 turret rotations)
     public static double turretP = 0.013*GEAR_RATIO, turretI = 0.0, turretD = 0.0004*GEAR_RATIO, turretF = 0.015; // You MUST tune these
     public static double TURRET_TOLERANCE = 2.0; // in degrees
+//    private static FileWriter writer;
 
     public Turret(HardwareMap hardwareMap) {
-        servo1 = new CRServo(hardwareMap, "left_turret"); servo1.setInverted(true);
-        servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(false);
+        servo1 = new CRServo(hardwareMap, "left_turret"); servo1.setInverted(false);
+        servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(true);
         encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
         turretHeadingControl = new PIDFController(turretP,turretI,turretD,turretF);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
         turnCount = 0;
         lastAngle = 0;
         currentAngle = 0;
+//        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
     }
 
     public void faceFieldAngle(double angle) {
@@ -67,6 +69,7 @@ public class Turret extends SubsystemBase {
         servoPower = turretHeadingControl.calculate(wrapAngle(targetAngle-currentAngle));
         servo1.set(servoPower);
         servo2.set(servoPower);
+//        try { writer.write(angle+" "+currentAngle+"\n"); } catch (IOException e) { e.printStackTrace(); }
     }
 
     private static double wrapAngle(double angle) {
@@ -85,6 +88,7 @@ public class Turret extends SubsystemBase {
     public void stop() {
         servo1.stop();
         servo2.stop();
+//        try { writer.close(); } catch (IOException e) { e.printStackTrace(); }
     }
 
     public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
