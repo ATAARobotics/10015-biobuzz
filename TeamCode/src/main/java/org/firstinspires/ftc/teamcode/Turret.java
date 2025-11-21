@@ -1,86 +1,99 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.controller.PIDController;
-import com.arcrobotics.ftclib.hardware.motors.CRServo;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.arcrobotics.ftclib.hardware.motors.CRServo;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class Turret extends SubsystemBase {
-    private SimpleServo servo1;
-    private SimpleServo servo2;
+    private CRServo servo1, servo2;
     AnalogInput encoder;
 
-    public PIDController turretHeadingControl;
-    public double servoPower;
+    public PIDFController turretHeadingControl;
+    private double targetAngle, currentAngle, lastAngle, servoPower;
+    private int turnCount;
 
-    public static double turretP = 0.005, turretI = 0.0, turretD = 0.0001;
-    public static double F = 0.0;
-    public static double TURRET_TOLERANCE = 0.0;
+    private static final double GEAR_RATIO = 1/0.64; // last session Vincent, Avery and Mahie worked it out as 0.64:1 (i.e. 1 servo rotation equals 0.64 turret rotations)
+    public static double turretP = 0.013*GEAR_RATIO, turretI = 0.0, turretD = 0.0004*GEAR_RATIO, turretF = 0.015; // You MUST tune these
+    public static double TURRET_TOLERANCE = 2.0; // in degrees
 
     public Turret(HardwareMap hardwareMap) {
-        servo1 = new SimpleServo(hardwareMap, "left_turret", 0, 360);
-        servo2 = new SimpleServo(hardwareMap, "right_turret", 0, 360);
+        servo1 = new CRServo(hardwareMap, "left_turret"); servo1.setInverted(true);
+        servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(false);
         encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
-        turretHeadingControl = new PIDController(turretP,turretI,turretD);
+        turretHeadingControl = new PIDFController(turretP,turretI,turretD,turretF);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
+        turnCount = 0;
+        lastAngle = 0;
+        currentAngle = 0;
     }
 
     public void faceFieldAngle(double angle) {
         //faceRobotAngle(); //22.755 ticks/ deg
     }
+
     public void faceRobotAngle(double angle) {
-        turretHeadingControl.setPID(turretP, turretI, turretD);
-        turretHeadingControl.setSetPoint(angle);
+        targetAngle = angle;
     }
 
     @Override
     public void periodic() {
-        // our controller is in degrees; if this changes, P, I, D and F need to be re-tuned
-        // raw PID controller power
-        double turretPower = turretHeadingControl.calculate(getCurrentAngle());
-        // add F and clip to between -1.0 and 1.0
-        turretPower = clipPower(turretPower + F);
-        // re-scale to the servo range
-        servoPower = (turretPower + 1.0) / 2.0;  // scale to 0.0 -> 1.0
-        servo1.setPosition(servoPower);
-        servo2.setPosition(servoPower);
+        // Read analog voltage and convert to single-turn angle (-180..180 deg)
+        double angle = encoder.getVoltage()/3.3 * 360 - 180;
+
+        // Wrap detection for multi-turn
+        double delta = angle - lastAngle;
+
+        // Multi-turn total angle
+        if (Math.abs(delta)<10) // ignore hysteresis
+            currentAngle = (turnCount * 360 + angle)/GEAR_RATIO;
+
+        // Forward wrap (jumped from +180 → -180)
+        if (delta < -175) turnCount++;
+
+        // Reverse wrap (jumped from -180 → +180)
+        if (delta > 175) turnCount--;
+
+        lastAngle = angle;
+
+        turretHeadingControl.setPIDF(turretP, turretI, turretD, turretF);
+        servoPower = turretHeadingControl.calculate(wrapAngle(targetAngle-currentAngle));
+        servo1.set(servoPower);
+        servo2.set(servoPower);
     }
 
-    public double getCurrentAngle() {
-        return encoder.getVoltage()/3.3*360; // 0-360 deg
+    private static double wrapAngle(double angle) {
+        angle %= 360; // normalize angle between -360 and +360
+        if (angle > 180)
+            angle -= 360;
+        else if (angle <= -180)
+            angle += 360;
+        return angle;
     }
 
-    public double clipPower(double power) {
-        if (power > 1) {return 1;}
-        if (power < -1) {return -1;}
-        return power;
+    public boolean isFinished() {
+        // check if the target is reached
+        return turretHeadingControl.atSetPoint();
+    }
+    public void stop() {
+        servo1.stop();
+        servo2.stop();
     }
 
     public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
-        pack.put("turret-d", turretD);
-        pack.put("turret-i", turretI);
-        pack.put("turret-p", turretP);
-        if (turretHeadingControl != null) {
-            pack.put("turret-angle", turretHeadingControl.getSetPoint());
-        }
-        pack.put("turret-tolerance", TURRET_TOLERANCE);
-        pack.put("servo-power", servoPower);
+        pack.put("turret-current-angle", currentAngle);
+        pack.put("turret-target-angle", currentAngle);
+        pack.put("turret-power", servoPower);
 ;
-        telemetry.addData("Turret Encoder Angle: ", getCurrentAngle());
-        telemetry.addData("Turret Target Angle:  ", turretHeadingControl.getSetPoint());
-        telemetry.addData("Turret Power: ", servoPower);
+        telemetry.addData("Turret Current Angle", currentAngle);
+        telemetry.addData("Turret Target Angle ", targetAngle);
+        telemetry.addData("Turret Power", servoPower);
     }
 }
