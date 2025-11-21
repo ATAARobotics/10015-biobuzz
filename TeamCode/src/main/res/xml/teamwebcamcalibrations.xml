@@ -54,6 +54,83 @@
 
     <!-- ======================================================================================= -->
 
+    <!-- ELP Global Shutter Camera 120 degree fov, Calibrated by Iskander, 2025.11.21 using 3DF Zephyr -->
+    <Camera vid="0x32E4" pid="0x0234">
+
+        <Calibration
+            size="320 240"
+            focalLength="94.35f, 94.35f"
+            principalPoint="175.08f, 108.807f"
+            distortionCoefficients="-0.0302453f, -0.00280484f, 0f, 0f, 0.000243684f, 0f, 0f, 0f"
+            />
+
+        <Calibration
+            size="640 480"
+            focalLength="236.713f, 236.713f"
+            principalPoint="325.366f, 234.022f"
+            distortionCoefficients="0.0151147f, -0.0347817f, 0f, 0f, 0.00648941f, 0f, 0f, 0f"
+            />
+
+        <Calibration
+            size="800 600"
+            focalLength="298.146f, 298.146f"
+            principalPoint="406.994f, 291.963f"
+            distortionCoefficients="0.0131968f, -0.0326093f, 0f, 0f, 0.00581277f, 0f, 0f, 0f"
+            />
+
+        <Calibration
+            size="960 720"
+            focalLength="357.573f, 357.573f"
+            principalPoint="488.546f, 350.971f"
+            distortionCoefficients="0.0153021f, -0.033212f, 0f, 0f, 0.00583327f, 0f, 0f, 0f"
+            />
+
+        <Calibration
+            size="1024 768"
+            focalLength="380.857f, 380.857f"
+            principalPoint="521.36f, 374.435f"
+            distortionCoefficients="0.016375f, -0.0341338f, 0f, 0f, 0.00614594f, 0f, 0f, 0f"
+            />
+
+        <Calibration
+            size="1280 720"
+            focalLength="397.038f, 397.038f"
+            principalPoint="650.027f, 350.65f"
+            distortionCoefficients="0.0106325f, -0.0292794f, 0f, 0f, 0.00498138f, 0f, 0f, 0f"
+            />
+
+        <Calibration
+            size="1280 960"
+            focalLength="476.246f, 476.246f"
+            principalPoint="651.564f, 467.965f"
+            distortionCoefficients="0.0141327f, -0.032769f, 0f, 0f, 0.0058611f, 0f, 0f, 0f"
+            />
+
+        <Calibration
+            size="1600 1200"
+            focalLength="595.386f, 595.386f"
+            principalPoint="815.71f, 586.73f"
+            distortionCoefficients="0.0132553f, -0.0311978f, 0f, 0f, 0.00531088f, 0f, 0f, 0f"
+            />
+
+        <Calibration
+            size="1920 1080"
+            focalLength="596.601f, 596.601f"
+            principalPoint="976.258f, 525.808f"
+            distortionCoefficients="0.0127469f, -0.0310799f, 0f, 0f, 0.00535564f, 0f, 0f, 0f"
+            />
+
+        <Calibration
+            size="1920 1200"
+            focalLength="596.173f, 596.173f"
+            principalPoint="975.224f, 585.913f"
+            distortionCoefficients="0.0134002f, -0.0317014f, 0f, 0f, 0.00553116f, 0f, 0f, 0f"
+            />
+
+    </Camera>
+
+    <!-- ======================================================================================= -->
+
     <!-- Microsoft Lifecam HD 3000 v1, Calibrated by PTC using unknown tooling -->
     <!-- <Camera vid="Microsoft" pid="0x0779">
         <Calibration
