@@ -4,7 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
@@ -19,11 +19,12 @@ public class Turret extends SubsystemBase {
     private CRServo servo1, servo2;
     AnalogInput encoder;
 
-    public PIDFController turretHeadingControl;
+    public PIDController turretHeadingControl;
     private double targetAngle, currentAngle, lastAngle, servoPower;
     private int turnCount;
     double beta = 0, joystickAngle;
     double encoderOffset;
+    double error = 0;
 
     private static final double GEAR_RATIO = 1/0.64; // last session Vincent, Avery and Mahie worked it out as 0.64:1 (i.e. 1 servo rotation equals 0.64 turret rotations)
     //public static double turretP = 0.013*GEAR_RATIO, turretI = 0.0, turretD = 0.0004*GEAR_RATIO, turretF = 0.015; // You MUST tune these
@@ -36,7 +37,7 @@ public class Turret extends SubsystemBase {
         servo1 = new CRServo(hardwareMap, "left_turret"); servo1.setInverted(true);
         servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(true);
         encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
-        turretHeadingControl = new PIDFController(turretP,turretI,turretD,turretF);
+        turretHeadingControl = new PIDController(turretP,turretI,turretD);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
         turnCount = 0;
         lastAngle = 0;
@@ -47,17 +48,29 @@ public class Turret extends SubsystemBase {
         //faceRobotAngle(); //22.755 ticks/ deg
     }
 
-    public void faceRobotAngle(double angle) { targetAngle = angle;}
+    public void faceRobotAngle(double angle) {
+        targetAngle = angle;
+    }
 
     public void reset() {
-        encoderOffset = encoder.getVoltage()/3.3 * 360;
+        encoderOffset = rawEncoderAngle();
+    }
+
+    public double rawEncoderAngle() {
+        return encoder.getVoltage()/3.3 * 360;
     }
 
     @Override
     public void periodic() {
-        // Read analog voltage and convert to single-turn angle (-180..180 deg)
-        double angle = encoder.getVoltage()/3.3 * 360 - 180;
+        // Read analog voltage, convert to degrees
+        double angle = rawEncoderAngle();
+        // accoun for our "software reset" (the Axons in CR mode are absolute encoders)
+        angle -= encoderOffset;
+        // convert to single-turn angle (-180..180 deg)
+        //currentAngle = wrapAngle(angle - 180);
+        currentAngle = angle;
 
+        /*
         // Wrap detection for multi-turn
         double delta = angle - lastAngle;
 
@@ -72,10 +85,11 @@ public class Turret extends SubsystemBase {
         if (delta > 175) turnCount--;
 
         lastAngle = angle;
+        */
 
-        turretHeadingControl.setPIDF(turretP, turretI, turretD, turretF);
-        double error = wrapAngle(targetAngle-currentAngle);
-        servoPower = turretHeadingControl.calculate(error) + turretF * Math.signum(error);
+        turretHeadingControl.setPID(turretP, turretI, turretD);
+        error = wrapAngle(targetAngle-currentAngle);
+        //servoPower = turretHeadingControl.calculate(error) - (turretF * Math.signum(error));
         servo1.set(servoPower);
         servo2.set(servoPower);
 //        try { writer.write(angle+" "+currentAngle+"\n"); } catch (IOException e) { e.printStackTrace(); }
@@ -104,7 +118,11 @@ public class Turret extends SubsystemBase {
         pack.put("turret-current-angle", currentAngle);
         pack.put("turret-target-angle", targetAngle);
         pack.put("turret-power", servoPower);
-;
+        pack.put("turret-error", error);
+        pack.put("turret-joystick", joystickAngle);
+        pack.put("turret-beta", beta);
+        pack.put("turret-offset", encoderOffset);
+
         telemetry.addData("Turret Current Angle", currentAngle);
         telemetry.addData("Turret Target Angle ", targetAngle);
         telemetry.addData("Turret Power", servoPower);
@@ -127,20 +145,23 @@ public class Turret extends SubsystemBase {
         public void execute() {
             // decide what to do based on sensors and human inputs from controller
 
-            // give turret target angles between -180 and 180
+            // face turret the same way the joystick is facing ... and
+            // let the operator tweak the angle with DPAD
             double rx = -operator.getRightX();
             double ry = operator.getRightY();
-            joystickAngle = (Math.atan2(ry, rx)) * 360 / 2 / 3.14159;
+            joystickAngle = Math.toDegrees(Math.atan2(ry, rx));
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
-                beta -= 10;
-            }
-            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
                 beta += 10;
             }
-            if (Math.hypot(ry,rx)> 0.8) {
-                faceRobotAngle(joystickAngle + beta - encoderOffset);
-                // faceRobotAngle(-operator.getRightX() * 180);
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
+                beta -= 10;
             }
+            // only do the joystick control if it has moved "a lot" (1.0 is slammed)
+            if (Math.hypot(ry,rx)> 0.8) {
+                beta = joystickAngle;
+            }
+            faceRobotAngle(beta);
+            servoPower = operator.getRightX();
         }
     }
 }
