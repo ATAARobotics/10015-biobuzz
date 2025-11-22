@@ -38,11 +38,10 @@ public class Turret extends SubsystemBase {
     }
 
     public void faceFieldAngle(double angle) {
-        //faceRobotAngle(); //22.755 ticks/ deg
+        //faceRobotAngle(); //22.755 ticks/deg
     }
     public void faceRobotAngle(double angle) {
         turretHeadingControl.setSetPoint(angle);
-
         double turretPower = clipPower(turretHeadingControl.calculate(getCurrentAngle()) / 360); //degrees
         servoPower = (turretPower + 1.0) / 2.0;  // scale to 0.0 -> 1.0
         servo1.setPower(servoPower);
@@ -65,6 +64,5 @@ public class Turret extends SubsystemBase {
         }
         pack.put("turret-tolerance", TURRET_TOLERANCE);
         pack.put("servo-power", servoPower);
-;
     }
 }
