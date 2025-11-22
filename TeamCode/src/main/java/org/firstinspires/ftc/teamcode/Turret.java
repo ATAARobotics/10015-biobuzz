@@ -43,8 +43,19 @@ public class Turret extends SubsystemBase {
         currentAngle = 0;
 //        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
     }
-    public void faceFieldAngle(double angle) {
-        //faceRobotAngle(); //22.755 ticks/ deg
+    public void faceFieldAngle(double fieldAngleDeg) {
+        // Default if odometry isn't ready yet
+        double robotHeadingDeg = 0.0;
+
+        if (Drive.current_position != null) {
+            robotHeadingDeg = Drive.current_position.getHeading(Drive.ANGLE_UNIT);
+        }
+
+        // Robot-relative angle: where turret must point relative to robot frame
+        double robotRelative = wrapAngle(fieldAngleDeg - robotHeadingDeg);
+
+        // Reuse existing robot-relative method
+        faceRobotAngle(robotRelative);
     }
 
     public void faceRobotAngle(double angle) { targetAngle = angle;}
@@ -125,22 +136,32 @@ public class Turret extends SubsystemBase {
 
         @Override
         public void execute() {
+
+
+
             // decide what to do based on sensors and human inputs from controller
 
             // give turret target angles between -180 and 180
-            double rx = -operator.getRightX();
+            double rx = operator.getRightX();
             double ry = operator.getRightY();
-            joystickAngle = (Math.atan2(ry, rx)) * 360 / 2 / 3.14159;
+            double mag = Math.hypot(rx, ry);
+
+            if (mag > 0.8) {
+                joystickAngle = Math.atan2(rx, -ry) * 360 / 2 / 3.14159;
+                beta = 0;
+            }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
                 beta -= 10;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
                 beta += 10;
             }
-            if (Math.hypot(ry,rx)> 0.8) {
-                faceRobotAngle(joystickAngle + beta - encoderOffset);
+            double desiredFieldAngle = joystickAngle + beta - encoderOffset;
+            faceFieldAngle(desiredFieldAngle);
+
+//            faceRobotAngle(joystickAngle + beta - encoderOffset);
                 // faceRobotAngle(-operator.getRightX() * 180);
-            }
+
         }
     }
 }
