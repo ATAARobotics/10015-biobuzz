@@ -123,8 +123,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        turret.periodic();
-
         appliedVoltage = kv*rpmTarget+ks;
         power = appliedVoltage/battery.getVoltage();
         //power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
@@ -244,12 +242,13 @@ public class Shooter extends SubsystemBase {
         public void execute() {
             // decide what to do based on sensors and human inputs from controller
 
-            // give turret target angles between -180 and 180
-            turret.faceRobotAngle(-operator.getRightX() * 180);
-            intake.intake.set(operator.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER));
-            if (operator.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) {
-                intake.intake.set(-operator.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) / 0.5);
-            }
+
+            // "intake" and "turret" also have default HumanInput
+            // commands so not ALL operator or driver controls are
+            // here
+
+            // todo: these commented controls are from Trident,
+            // Bazooka Joe needs new ones
 
           /*  if (operator.wasJustPressed(GamepadKeys.Button.B)){
                 rpmTarget = FAR_RPM;

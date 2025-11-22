@@ -102,10 +102,15 @@ public abstract class TeleOp extends OpMode {
 
         // Register Subsystem objects to the scheduler
         CommandScheduler.getInstance().registerSubsystem(drive);
+        CommandScheduler.getInstance().registerSubsystem(shooter);
+        CommandScheduler.getInstance().registerSubsystem(turret);
+        CommandScheduler.getInstance().registerSubsystem(intake);
 
         // "mostly" we want to run the HumanInputs commands during teleop
         CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
         CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
+        CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
+        CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
     }
 
     @Override
@@ -131,6 +136,8 @@ public abstract class TeleOp extends OpMode {
         operator.readButtons();
         drive.read_sensors(time);
         shooter.read_sensors(time);
+        //turret.read_sensors(time);
+        //intake.read_sensors(time);
 
         // Send telemetry messages to explain controls and show robot status
         Pose2D drivePosition = drive.getPosition();
@@ -165,6 +172,8 @@ public abstract class TeleOp extends OpMode {
         pack.put("battery", battery.getVoltage());
         drive.add_telemetry(pack);
         shooter.add_telemetry(pack, telemetry);
+        turret.add_telemetry(pack, telemetry);
+        //intake.add_telemetry(pack, telemetry);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // FIXME TODO put into FTC Dashboard too, for most of this

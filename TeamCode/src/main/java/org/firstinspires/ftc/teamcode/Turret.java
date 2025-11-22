@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.CRServo;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -21,11 +23,13 @@ public class Turret extends SubsystemBase {
     private int turnCount;
 
     private static final double GEAR_RATIO = 1/0.64; // last session Vincent, Avery and Mahie worked it out as 0.64:1 (i.e. 1 servo rotation equals 0.64 turret rotations)
-    public static double turretP = 0.013*GEAR_RATIO, turretI = 0.0, turretD = 0.0004*GEAR_RATIO, turretF = 0.015; // You MUST tune these
+    //public static double turretP = 0.013*GEAR_RATIO, turretI = 0.0, turretD = 0.0004*GEAR_RATIO, turretF = 0.015; // You MUST tune these
+    public static double turretP = 0.005, turretI = 0.0, turretD = 0.0001, turretF = 0.0; // You MUST tune these
     public static double TURRET_TOLERANCE = 2.0; // in degrees
 //    private static FileWriter writer;
 
     public Turret(HardwareMap hardwareMap) {
+        // both servos must always run in the same direction
         servo1 = new CRServo(hardwareMap, "left_turret"); servo1.setInverted(false);
         servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(false);
         encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
@@ -96,5 +100,25 @@ public class Turret extends SubsystemBase {
         telemetry.addData("Turret Current Angle", currentAngle);
         telemetry.addData("Turret Target Angle ", targetAngle);
         telemetry.addData("Turret Power", servoPower);
+    }
+
+
+    public class HumanInputs extends CommandBase {
+        GamepadEx driver;
+        GamepadEx operator;
+
+        public HumanInputs(GamepadEx operator, GamepadEx driver) {
+            this.operator = operator;
+            this.driver = driver;
+            addRequirements(Turret.this);
+        }
+
+        @Override
+        public void execute() {
+            // decide what to do based on sensors and human inputs from controller
+
+            // give turret target angles between -180 and 180
+            faceRobotAngle(-operator.getRightX() * 180);
+        }
     }
 }
