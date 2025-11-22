@@ -27,7 +27,7 @@ public class Turret extends SubsystemBase {
 
     public Turret(HardwareMap hardwareMap) {
         servo1 = new CRServo(hardwareMap, "left_turret"); servo1.setInverted(false);
-        servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(true);
+        servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(false);
         encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
         turretHeadingControl = new PIDFController(turretP,turretI,turretD,turretF);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
@@ -36,14 +36,11 @@ public class Turret extends SubsystemBase {
         currentAngle = 0;
 //        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
     }
-
     public void faceFieldAngle(double angle) {
         //faceRobotAngle(); //22.755 ticks/ deg
     }
 
-    public void faceRobotAngle(double angle) {
-        targetAngle = angle;
-    }
+    public void faceRobotAngle(double angle) { targetAngle = angle;}
 
     @Override
     public void periodic() {
