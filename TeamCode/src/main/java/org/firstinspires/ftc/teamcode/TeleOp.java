@@ -41,6 +41,7 @@ public abstract class TeleOp extends OpMode {
     VoltageSensor battery;
     Drive drive;
     Shooter shooter;
+    Intake intake;
     Turret turret;
     ElapsedTime  runtime = new ElapsedTime();
 
@@ -82,8 +83,9 @@ public abstract class TeleOp extends OpMode {
                 .build();
 */
         drive = new Drive(hardwareMap, isRedAlliance);
-        shooter = new Shooter(hardwareMap);
         turret = new Turret(hardwareMap);
+        intake = new Intake(hardwareMap);
+        shooter = new Shooter(hardwareMap, turret, intake);
 
         //telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
         //telemetry.update();
@@ -163,11 +165,9 @@ public abstract class TeleOp extends OpMode {
         pack.put("battery", battery.getVoltage());
         drive.add_telemetry(pack);
         shooter.add_telemetry(pack, telemetry);
-        turret.add_telemetry(pack);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // FIXME TODO put into FTC Dashboard too, for most of this
-        telemetry.addData("Turret Encoder Angle: ", turret.getCurrentAngle());
         telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
         telemetry.update();
     }

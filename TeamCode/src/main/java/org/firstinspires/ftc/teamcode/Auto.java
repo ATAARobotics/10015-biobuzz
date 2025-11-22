@@ -32,7 +32,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 public abstract class Auto extends OpMode {
     VoltageSensor battery;
     Drive drive;
+    Turret turret;
     Shooter shooter;
+    Intake intake;
     GamepadEx driver;
     GamepadEx operator;
     double pauseTime = 0;
@@ -81,7 +83,9 @@ public abstract class Auto extends OpMode {
                 .build();
 
         drive = new Drive(hardwareMap, isRedAlliance);
-        shooter = new Shooter(hardwareMap);
+        turret = new Turret(hardwareMap);
+        intake = new Intake(hardwareMap);
+        shooter = new Shooter(hardwareMap, turret, intake);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
 
