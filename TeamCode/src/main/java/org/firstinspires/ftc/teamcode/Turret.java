@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.CRServo;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -26,8 +28,9 @@ public class Turret extends SubsystemBase {
 //    private static FileWriter writer;
 
     public Turret(HardwareMap hardwareMap) {
+        // both servos must always run in the same direction
         servo1 = new CRServo(hardwareMap, "left_turret"); servo1.setInverted(false);
-        servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(true);
+        servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(false);
         encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
         turretHeadingControl = new PIDFController(turretP,turretI,turretD,turretF);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
@@ -99,5 +102,25 @@ public class Turret extends SubsystemBase {
         telemetry.addData("Turret Current Angle", currentAngle);
         telemetry.addData("Turret Target Angle ", targetAngle);
         telemetry.addData("Turret Power", servoPower);
+    }
+
+
+    public class HumanInputs extends CommandBase {
+        GamepadEx driver;
+        GamepadEx operator;
+
+        public HumanInputs(GamepadEx operator, GamepadEx driver) {
+            this.operator = operator;
+            this.driver = driver;
+            addRequirements(Turret.this);
+        }
+
+        @Override
+        public void execute() {
+            // decide what to do based on sensors and human inputs from controller
+
+            // give turret target angles between -180 and 180
+            faceRobotAngle(-operator.getRightX() * 180);
+        }
     }
 }
