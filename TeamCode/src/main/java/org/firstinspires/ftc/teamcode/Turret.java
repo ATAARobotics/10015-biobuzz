@@ -23,7 +23,8 @@ public class Turret extends SubsystemBase {
     private int turnCount;
 
     private static final double GEAR_RATIO = 1/0.64; // last session Vincent, Avery and Mahie worked it out as 0.64:1 (i.e. 1 servo rotation equals 0.64 turret rotations)
-    public static double turretP = 0.013*GEAR_RATIO, turretI = 0.0, turretD = 0.0004*GEAR_RATIO, turretF = 0.015; // You MUST tune these
+    //public static double turretP = 0.013*GEAR_RATIO, turretI = 0.0, turretD = 0.0004*GEAR_RATIO, turretF = 0.015; // You MUST tune these
+    public static double turretP = 0.005, turretI = 0.0, turretD = 0.0001, turretF = 0.0; // You MUST tune these
     public static double TURRET_TOLERANCE = 2.0; // in degrees
 //    private static FileWriter writer;
 
