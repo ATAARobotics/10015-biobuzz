@@ -116,6 +116,7 @@ public abstract class TeleOp extends OpMode {
     @Override
     public void start() {
         runtime.reset();
+        turret.reset();
         //drive.reset();
         // OPTION 1: starting position is touching audience field perimeter wall
         drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.435 : -0.435, -1.61, AngleUnit.DEGREES, 0));

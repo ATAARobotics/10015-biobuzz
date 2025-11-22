@@ -6,6 +6,7 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.CRServo;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -21,10 +22,12 @@ public class Turret extends SubsystemBase {
     public PIDFController turretHeadingControl;
     private double targetAngle, currentAngle, lastAngle, servoPower;
     private int turnCount;
+    double beta = 0, joystickAngle;
+    double encoderOffset;
 
     private static final double GEAR_RATIO = 1/0.64; // last session Vincent, Avery and Mahie worked it out as 0.64:1 (i.e. 1 servo rotation equals 0.64 turret rotations)
     //public static double turretP = 0.013*GEAR_RATIO, turretI = 0.0, turretD = 0.0004*GEAR_RATIO, turretF = 0.015; // You MUST tune these
-    public static double turretP = 0.005, turretI = 0.0, turretD = 0.02, turretF = 0.05; // You MUST tune these
+    public static double turretP = 0.005, turretI = 0.0, turretD = 0.0, turretF = 0.05; // You MUST tune these
     public static double TURRET_TOLERANCE = 2.0; // in degrees
 //    private static FileWriter writer;
 
@@ -45,6 +48,10 @@ public class Turret extends SubsystemBase {
     }
 
     public void faceRobotAngle(double angle) { targetAngle = angle;}
+
+    public void reset() {
+        encoderOffset = encoder.getVoltage()/3.3 * 360;
+    }
 
     @Override
     public void periodic() {
@@ -101,6 +108,8 @@ public class Turret extends SubsystemBase {
         telemetry.addData("Turret Current Angle", currentAngle);
         telemetry.addData("Turret Target Angle ", targetAngle);
         telemetry.addData("Turret Power", servoPower);
+        telemetry.addData("Heading Offset", beta);
+        telemetry.addData("Joystick Angle", joystickAngle);
     }
 
 
@@ -119,10 +128,17 @@ public class Turret extends SubsystemBase {
             // decide what to do based on sensors and human inputs from controller
 
             // give turret target angles between -180 and 180
-            double rx = operator.getRightX();
+            double rx = -operator.getRightX();
             double ry = operator.getRightY();
+            joystickAngle = (Math.atan2(ry, rx)) * 360 / 2 / 3.14159;
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
+                beta -= 10;
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
+                beta += 10;
+            }
             if (Math.hypot(ry,rx)> 0.8) {
-                faceRobotAngle((Math.atan2(ry, rx)) * 360 / 2 / 3.14159);
+                faceRobotAngle(joystickAngle + beta - encoderOffset);
                 // faceRobotAngle(-operator.getRightX() * 180);
             }
         }
