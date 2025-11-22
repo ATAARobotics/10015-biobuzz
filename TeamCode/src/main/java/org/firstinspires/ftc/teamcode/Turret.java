@@ -44,8 +44,19 @@ public class Turret extends SubsystemBase {
         currentAngle = 0;
 //        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
     }
-    public void faceFieldAngle(double angle) {
-        //faceRobotAngle(); //22.755 ticks/ deg
+    public void faceFieldAngle(double fieldAngleDeg) {
+        // Default if odometry isn't ready yet
+        double robotHeadingDeg = 0.0;
+
+        if (Drive.current_position != null) {
+            robotHeadingDeg = Drive.current_position.getHeading(Drive.ANGLE_UNIT);
+        }
+
+        // Robot-relative angle: where turret must point relative to robot frame
+        double robotRelative = wrapAngle(fieldAngleDeg - robotHeadingDeg);
+
+        // Reuse existing robot-relative method
+        faceRobotAngle(robotRelative);
     }
 
     public void faceRobotAngle(double angle) {
@@ -147,9 +158,16 @@ public class Turret extends SubsystemBase {
 
             // face turret the same way the joystick is facing ... and
             // let the operator tweak the angle with DPAD
-            double rx = -operator.getRightX();
+            double rx = operator.getRightX();
             double ry = operator.getRightY();
             joystickAngle = Math.toDegrees(Math.atan2(ry, rx));
+            double mag = Math.hypot(rx, ry);
+
+            if (mag > 0.8) {
+                joystickAngle = Math.atan2(rx, -ry) * 360 / 2 / 3.14159;
+                beta = 0;
+            }
+
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
                 beta += 10;
             }
@@ -160,7 +178,7 @@ public class Turret extends SubsystemBase {
             if (Math.hypot(ry,rx)> 0.8) {
                 beta = joystickAngle;
             }
-            faceRobotAngle(beta);
+            //faceRobotAngle(beta);
             servoPower = operator.getRightX();
         }
     }
