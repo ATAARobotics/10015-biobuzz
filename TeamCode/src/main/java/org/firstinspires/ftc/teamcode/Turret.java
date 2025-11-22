@@ -119,7 +119,10 @@ public class Turret extends SubsystemBase {
             // decide what to do based on sensors and human inputs from controller
 
             // give turret target angles between -180 and 180
-            faceRobotAngle(-operator.getRightX() * 180);
+            double rx = operator.getRightX();
+            double ry = operator.getRightY();
+            faceRobotAngle((Math.atan(ry/rx))*360/2/3.14159);
+           // faceRobotAngle(-operator.getRightX() * 180);
         }
     }
 }
