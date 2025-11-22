@@ -24,14 +24,14 @@ public class Turret extends SubsystemBase {
 
     private static final double GEAR_RATIO = 1/0.64; // last session Vincent, Avery and Mahie worked it out as 0.64:1 (i.e. 1 servo rotation equals 0.64 turret rotations)
     //public static double turretP = 0.013*GEAR_RATIO, turretI = 0.0, turretD = 0.0004*GEAR_RATIO, turretF = 0.015; // You MUST tune these
-    public static double turretP = 0.005, turretI = 0.0, turretD = 0.0001, turretF = 0.0; // You MUST tune these
+    public static double turretP = 0.005, turretI = 0.0, turretD = 0.02, turretF = 0.05; // You MUST tune these
     public static double TURRET_TOLERANCE = 2.0; // in degrees
 //    private static FileWriter writer;
 
     public Turret(HardwareMap hardwareMap) {
         // both servos must always run in the same direction
-        servo1 = new CRServo(hardwareMap, "left_turret"); servo1.setInverted(false);
-        servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(false);
+        servo1 = new CRServo(hardwareMap, "left_turret"); servo1.setInverted(true);
+        servo2 = new CRServo(hardwareMap, "right_turret"); servo2.setInverted(true);
         encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
         turretHeadingControl = new PIDFController(turretP,turretI,turretD,turretF);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
@@ -67,7 +67,8 @@ public class Turret extends SubsystemBase {
         lastAngle = angle;
 
         turretHeadingControl.setPIDF(turretP, turretI, turretD, turretF);
-        servoPower = turretHeadingControl.calculate(wrapAngle(targetAngle-currentAngle));
+        double error = wrapAngle(targetAngle-currentAngle);
+        servoPower = turretHeadingControl.calculate(error) + turretF * Math.signum(error);
         servo1.set(servoPower);
         servo2.set(servoPower);
 //        try { writer.write(angle+" "+currentAngle+"\n"); } catch (IOException e) { e.printStackTrace(); }
@@ -94,7 +95,7 @@ public class Turret extends SubsystemBase {
 
     public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
         pack.put("turret-current-angle", currentAngle);
-        pack.put("turret-target-angle", currentAngle);
+        pack.put("turret-target-angle", targetAngle);
         pack.put("turret-power", servoPower);
 ;
         telemetry.addData("Turret Current Angle", currentAngle);

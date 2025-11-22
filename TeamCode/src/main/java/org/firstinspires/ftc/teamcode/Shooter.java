@@ -176,7 +176,6 @@ public class Shooter extends SubsystemBase {
     }
 
     public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
-        turret.add_telemetry(pack, telemetry);
         telemetry.addData("motor0", power); //what you see on the screen
         telemetry.addData("rpmTarget", rpmTarget);
         telemetry.addData("Current RPM", currentRpm);
