@@ -121,8 +121,10 @@ public class Turret extends SubsystemBase {
             // give turret target angles between -180 and 180
             double rx = operator.getRightX();
             double ry = operator.getRightY();
-            faceRobotAngle((Math.atan(ry/rx))*360/2/3.14159);
-           // faceRobotAngle(-operator.getRightX() * 180);
+            if (Math.hypot(ry,rx)> 0.8) {
+                faceRobotAngle((Math.atan2(ry, rx)) * 360 / 2 / 3.14159);
+                // faceRobotAngle(-operator.getRightX() * 180);
+            }
         }
     }
 }
