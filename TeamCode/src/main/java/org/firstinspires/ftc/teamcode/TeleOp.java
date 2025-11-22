@@ -129,6 +129,7 @@ public abstract class TeleOp extends OpMode {
     public void init_loop() {
         // runs while the robot is "on" but we haven't pressed "play" yet
         telemetry.addData("turret.encoder", turret.rawEncoderAngle());
+        telemetry.addData("turret.voltage", turret.encoder.getVoltage());
         telemetry.update();
     }
 
