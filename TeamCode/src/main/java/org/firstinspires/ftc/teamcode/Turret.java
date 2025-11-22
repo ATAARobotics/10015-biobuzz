@@ -40,14 +40,11 @@ public class Turret extends SubsystemBase {
         currentAngle = 0;
 //        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
     }
-
     public void faceFieldAngle(double angle) {
         //faceRobotAngle(); //22.755 ticks/ deg
     }
 
-    public void faceRobotAngle(double angle) {
-        targetAngle = angle;
-    }
+    public void faceRobotAngle(double angle) { targetAngle = angle;}
 
     @Override
     public void periodic() {
