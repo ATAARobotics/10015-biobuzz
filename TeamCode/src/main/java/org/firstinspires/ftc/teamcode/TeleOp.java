@@ -121,6 +121,7 @@ public abstract class TeleOp extends OpMode {
     public void start() {
         runtime.reset();
         turret.reset();
+        spindexer.reset();
         //drive.reset();
         // OPTION 1: starting position is touching audience field perimeter wall
         drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.435 : -0.435, -1.61, AngleUnit.DEGREES, 0));
@@ -181,6 +182,7 @@ public abstract class TeleOp extends OpMode {
         shooter.add_telemetry(pack, telemetry);
         turret.add_telemetry(pack, telemetry);
         //intake.add_telemetry(pack, telemetry);
+        spindexer.add_telemetry(pack, telemetry);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // FIXME TODO put into FTC Dashboard too, for most of this
