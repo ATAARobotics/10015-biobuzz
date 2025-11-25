@@ -23,7 +23,8 @@ public class Spindexer extends SubsystemBase {
     public static double STEP_DEG = 120;
     public static double TICKS_PER_REV = 537.7;
     public static double GEAR_RATIO = 19.2;
-    public static double spindexerP = 0.006, spindexerI = 0.0, spindexerD = 0.0;
+    // tuned november 24 end of session
+    public static double spindexerP = 0.026, spindexerI = 0.002, spindexerD = 0.0005;
     public Spindexer (HardwareMap hardwareMap){
         spindexerMotor = new MotorEx(hardwareMap, "spindexerMotor", Motor.GoBILDA.RPM_312);
         spindexerPID = new PIDController(spindexerP,spindexerI,spindexerD);
