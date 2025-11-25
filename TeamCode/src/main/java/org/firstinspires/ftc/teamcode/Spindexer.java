@@ -80,6 +80,9 @@ public class Spindexer extends SubsystemBase {
                 targetAngle += STEP_DEG;
                 //targetAngle = wrapAngle(targetAngle);
             }
+            if (operator.wasJustPressed(GamepadKeys.Button.Y)){
+                targetAngle -= STEP_DEG;
+            }
 
         }
     }
