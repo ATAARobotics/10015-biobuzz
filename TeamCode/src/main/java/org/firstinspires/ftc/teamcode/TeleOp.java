@@ -43,6 +43,7 @@ public abstract class TeleOp extends OpMode {
     Shooter shooter;
     Intake intake;
     Turret turret;
+    Spindexer spindexer;
     ElapsedTime  runtime = new ElapsedTime();
 
     // prototyping with some AprilTags, Sept 15
@@ -86,6 +87,7 @@ public abstract class TeleOp extends OpMode {
         turret = new Turret(hardwareMap);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap, turret, intake);
+        spindexer = new Spindexer(hardwareMap);
 
         //telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
         //telemetry.update();
@@ -105,12 +107,14 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().registerSubsystem(shooter);
         CommandScheduler.getInstance().registerSubsystem(turret);
         CommandScheduler.getInstance().registerSubsystem(intake);
+        CommandScheduler.getInstance().registerSubsystem(spindexer);
 
         // "mostly" we want to run the HumanInputs commands during teleop
         CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
         CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
+        CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
     }
 
     @Override
