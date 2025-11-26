@@ -17,6 +17,7 @@ public class Turret extends SubsystemBase {
 
     public PIDController turretHeadingControl;
     private double lastServoAngle, servoPower, currentTurretAngle;
+    private double resetAngle;
     private int servoTurnCount;
     double joystickAngle;
 
@@ -61,6 +62,9 @@ public class Turret extends SubsystemBase {
         servoTurnCount = 0;
         faceRobotAngle(0);
         stop();
+        servo1.stop();
+        servo2.stop();
+        resetAngle = getServoAngle();
     }
 
     public double getServoAngle() {
@@ -70,7 +74,7 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-        double servoAngle = getServoAngle();
+        double servoAngle = getServoAngle() - resetAngle;
         double delta = servoAngle - lastServoAngle;
         lastServoAngle = servoAngle;
 
