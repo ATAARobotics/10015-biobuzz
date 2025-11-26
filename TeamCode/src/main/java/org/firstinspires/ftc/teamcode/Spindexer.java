@@ -63,6 +63,15 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-d", spindexerD);
     }
 
+// TODO: there's a nicer way to do this, which may be more reusable in Auto
+// we can bind buttons / etc to "run commands"
+// e.g.:
+//     operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(new SpindexCCW());
+//
+// we must take care to think about when new commands will run, what gets "taken over", etc
+// (remember: one subsystem may only run one command at a time).
+// figure out: does e.g. a subsequent "Y" press "override" the command? e.g. cancel the previous?
+
     public class HumanInputs extends CommandBase {
         GamepadEx driver;
         GamepadEx operator;
