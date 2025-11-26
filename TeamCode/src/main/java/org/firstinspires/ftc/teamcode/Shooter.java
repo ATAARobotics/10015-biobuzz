@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -13,13 +11,10 @@ import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class Shooter extends SubsystemBase {
-    private Servo indicatorLight;
+    private final Servo indicatorLight;
     MotorEx motor0;
     MotorEx motor1;
     MotorGroup shooterMotor;
@@ -39,7 +34,6 @@ public class Shooter extends SubsystemBase {
     boolean powerOn = false;
     private static final double FAR_RPM = 4900;
     private static final double NEAR_RPM = 3500;
-    double STEP_RPM = 200;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
     VoltageSensor battery;
     double MAX_RPM = 5250;
@@ -85,7 +79,7 @@ public class Shooter extends SubsystemBase {
         voltage = battery.getVoltage();
     }
 
-    public boolean readyToFire() {
+    public boolean readyToShoot() {
         return (rpmTarget > 0 && Math.abs(currentRpm - rpmTarget) < rpmTolerance);
     }
 
@@ -103,6 +97,18 @@ public class Shooter extends SubsystemBase {
         if (powerOn) power = BANG_POWER;
         if (rpmTarget == 0) power = 0;
         if (power < 0) power = 0;
+
+        // indicator lights
+        if (rpmTarget > 0) {
+            if (readyToShoot()) {
+                indicatorLight.setPosition(GREEN);
+            } else {
+                indicatorLight.setPosition(RED);
+            }
+        } else {
+            // turn off the light if we're not spinning
+            indicatorLight.setPosition(0);
+        }
 
         // count shots
         if (currentRpm > HIGH_STATE) {

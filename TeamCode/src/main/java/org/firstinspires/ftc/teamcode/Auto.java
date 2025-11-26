@@ -13,8 +13,6 @@ import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -46,8 +44,8 @@ public abstract class Auto extends OpMode {
     AprilTagProcessor april_tags;
     VisionPortal portal;
 
-    public enum Alliance {RED, BLUE};
-    public enum AutoStartPos {FAR, NEAR};
+    public enum Alliance {RED, BLUE}
+    public enum AutoStartPos {FAR, NEAR}
     public abstract AutoStartPos getStartPos();
     boolean isFar;
     public abstract Alliance getAlliance();
