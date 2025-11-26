@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
@@ -195,8 +194,8 @@ public class Drive extends SubsystemBase {
 
     public class QuickMoveTo extends CommandBase {
         Pose2D target;
-        private PIDController quick_strafe;
-        private PIDController quick_forward;
+        private final PIDController quick_strafe;
+        private final PIDController quick_forward;
 
         public QuickMoveTo(double x, double y, double h, double tolerance) {
             //target = new Pose2D(x, y, h);
@@ -268,10 +267,7 @@ public class Drive extends SubsystemBase {
         }
         @Override
         public boolean isFinished(){
-            if (driver.isDown(GamepadKeys.Button.B)){
-                return false;
-            }
-            return true;
+            return (!driver.isDown(GamepadKeys.Button.B));
         }
         @Override
         public void end(boolean interupted){
@@ -391,11 +387,7 @@ public class Drive extends SubsystemBase {
              // Anjalika wants "turbo" mode ... so if we're holding
             // left trigger _currently_, we go to Turbo -- otherwise
             // to non-Turbo
-            if (driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5){
-                turbo(true);
-            } else {
-                turbo(false);
-            }
+            turbo(driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5);
             if (driver.isDown(GamepadKeys.Button.B) && isRedAlliance && parking == null){
                 parking = parkAt(driver, -0.835, -0.95, -180);
                 CommandScheduler.getInstance().schedule(parking);
@@ -407,13 +399,6 @@ public class Drive extends SubsystemBase {
         }
 
         public class DoNothing extends CommandBase {
-            @Override
-            public void execute() {
-            }
-            @Override
-            public boolean isFinished() {
-                return false;
-            }
         }
 
         public double scaleInputs(double input) {
