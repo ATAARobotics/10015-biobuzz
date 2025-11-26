@@ -87,7 +87,7 @@ public abstract class Auto extends OpMode {
         drive = new Drive(hardwareMap, isRedAlliance);
         turret = new Turret(hardwareMap);
         intake = new Intake(hardwareMap);
-        shooter = new Shooter(hardwareMap, turret, intake);
+        shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
@@ -145,7 +145,7 @@ public abstract class Auto extends OpMode {
                         pause(pauseTime),
                         drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 0.6, 180).withTimeout(1500),
                         drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(4000),
-                        shooter.shoot(3),
+                        //shooter.shoot(3), FIXME
                         drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 1.4, 180)
                 );
                 CommandScheduler.getInstance().schedule(auto_commands);
@@ -154,7 +154,7 @@ public abstract class Auto extends OpMode {
                         pause(pauseTime),
                         drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 0.6, 180).withTimeout(1500),
                         drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(4000),
-                        shooter.shoot(3),
+                        //shooter.shoot(3),  FIXME
                         drive.moveQuickly(isRedAlliance ? 1.2 : -1.2,0.6, 180)
                 );
                 CommandScheduler.getInstance().schedule(auto_commands);
@@ -165,7 +165,7 @@ public abstract class Auto extends OpMode {
                 SequentialCommandGroup auto_commands = new SequentialCommandGroup(
                         pause(pauseTime),
                         drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(2500),
-                        shooter.shoot(3),
+                        //shooter.shoot(3), // FIXME
                         drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 1.4, 180)
                 );
                 CommandScheduler.getInstance().schedule(auto_commands);
@@ -173,7 +173,7 @@ public abstract class Auto extends OpMode {
                 SequentialCommandGroup auto_commands = new SequentialCommandGroup(
                         pause(pauseTime),
                         drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(2500),
-                        shooter.shoot(3),
+                        //shooter.shoot(3), // FIXME
                         drive.moveQuickly(isRedAlliance ? 1.2 : -1.2,0.6, 180)
                 );
                 CommandScheduler.getInstance().schedule(auto_commands);

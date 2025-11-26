@@ -86,7 +86,7 @@ public abstract class TeleOp extends OpMode {
         drive = new Drive(hardwareMap, isRedAlliance);
         turret = new Turret(hardwareMap);
         intake = new Intake(hardwareMap);
-        shooter = new Shooter(hardwareMap, turret, intake);
+        shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);
 
         //telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
@@ -201,6 +201,8 @@ public abstract class TeleOp extends OpMode {
     @Override
     public void stop() {
         drive.stop();
+        turret.stop();
+        shooter.stop();
 
         // Cancel all previous commands
         CommandScheduler.getInstance().reset();

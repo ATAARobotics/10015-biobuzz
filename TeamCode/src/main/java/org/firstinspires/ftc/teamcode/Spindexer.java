@@ -71,6 +71,10 @@ public class Spindexer extends SubsystemBase {
 // we must take care to think about when new commands will run, what gets "taken over", etc
 // (remember: one subsystem may only run one command at a time).
 // figure out: does e.g. a subsequent "Y" press "override" the command? e.g. cancel the previous?
+//
+// this could be better for "spindex" e.g. because we could have a
+// "timeout" (and maybe even "cancel" back to the previous target
+// angle?)
 
     public class HumanInputs extends CommandBase {
         GamepadEx driver;
