@@ -26,14 +26,14 @@ public class Shooter extends SubsystemBase {
     int shotsFired = 0;
     public static double HIGH_STATE = 3300;
     public static double LOW_STATE = 3000;
+    public static double FAR_RPM = 4900;
+    public static double NEAR_RPM = 3500;
     double RED = 0.28;
     double GREEN = 0.5;
     double BAND = 10; //not tested
     double BANG_POWER = 1.0;
     double rpmTolerance = 250;
     boolean powerOn = false;
-    private static final double FAR_RPM = 4900;
-    private static final double NEAR_RPM = 3500;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
     VoltageSensor battery;
     double MAX_RPM = 5250;
