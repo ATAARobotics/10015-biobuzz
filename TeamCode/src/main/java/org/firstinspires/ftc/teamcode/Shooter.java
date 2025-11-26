@@ -30,7 +30,7 @@ public class Shooter extends SubsystemBase {
     double GREEN = 0.5;
     double BAND = 10; //not tested
     double BANG_POWER = 1.0;
-    double rpmTolerance = 50;
+    double rpmTolerance = 250;
     boolean powerOn = false;
     private static final double FAR_RPM = 4900;
     private static final double NEAR_RPM = 3500;
@@ -47,19 +47,19 @@ public class Shooter extends SubsystemBase {
     public Shooter(HardwareMap hardwareMap) {
         // do any one-time initialization here
 
-        motor0 = new MotorEx(hardwareMap, "motor0");
+        motor0 = new MotorEx(hardwareMap, "shooter0", Motor.GoBILDA.BARE);
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-//        motor0.setInverted(true);
+        motor0.setInverted(true);
 
-        motor1 = new MotorEx(hardwareMap, "motor1");
+        motor1 = new MotorEx(hardwareMap, "shooter1", Motor.GoBILDA.BARE);
         motor1.setRunMode(Motor.RunMode.RawPower);
         motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         motor1.setInverted(false);
 
         shooterMotor = new MotorGroup(motor0, motor1);
         rpmTarget = 0;
-        indicatorLight = hardwareMap.get(Servo.class, "indicatorLight");
+        indicatorLight = hardwareMap.get(Servo.class, "indicator");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
     }
 
@@ -97,6 +97,8 @@ public class Shooter extends SubsystemBase {
         if (powerOn) power = BANG_POWER;
         if (rpmTarget == 0) power = 0;
         if (power < 0) power = 0;
+
+        shooterMotor.set(power);
 
         // indicator lights
         if (rpmTarget > 0) {
@@ -154,6 +156,16 @@ public class Shooter extends SubsystemBase {
             }
             if (driver.wasJustPressed(GamepadKeys.Button.A)){
                 rpmTarget = 0;
+            }
+
+            if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
+                if (rpmTarget == 0) {
+                    rpmTarget = NEAR_RPM;
+                } else if (rpmTarget == NEAR_RPM) {
+                    rpmTarget = FAR_RPM;
+                } else {
+                    rpmTarget = 0;
+                }
             }
 
             // clip our rpmTarget .. do this LAST after all command processing
