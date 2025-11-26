@@ -467,26 +467,26 @@ public class Drive extends SubsystemBase {
         drivebase.driveFieldCentric(strafe, forward, turn, current_position.getHeading(ANGLE_UNIT), false);
     }
 
-    public void add_telemetry(TelemetryPacket pack) {
-        pack.put("position-x", current_position.getX(DISTANCE_UNIT));
-        pack.put("position-y", current_position.getY(DISTANCE_UNIT));
-        //pack.put("position-x-cm", current_position.getX(DistanceUnit.CM));
-      //  pack.put("position-y-cm", current_position.getY(DistanceUnit.CM));
-        //pack.put("target-x", fixme);
-        //pack.put("target-y", fixme);
-        pack.put("current-heading", current_position.getHeading(ANGLE_UNIT));
-        pack.put("desired-heading", desired_heading);
+    public void addTelemetry(HyperTelemetry telem) {
+        telem.log("position-x", current_position.getX(DISTANCE_UNIT));
+        telem.log("position-y", current_position.getY(DISTANCE_UNIT));
+        //telem.log("position-x-cm", current_position.getX(DistanceUnit.CM));
+      //  telem.log("position-y-cm", current_position.getY(DistanceUnit.CM));
+        //telem.log("target-x", fixme);
+        //telem.log("target-y", fixme);
+        telem.log("current-heading", current_position.getHeading(ANGLE_UNIT));
+        telem.log("desired-heading", desired_heading);
 
-       // pack.put("strafe", strafe);
-       // pack.put("forward", forward);
-       // pack.put("strafe_ff", ff_strafe);
-       // pack.put("forward_ff", ff_forward);
-        //pack.put("turn", turn);
+       // telem.log("strafe", strafe);
+       // telem.log("forward", forward);
+       // telem.log("strafe_ff", ff_strafe);
+       // telem.log("forward_ff", ff_forward);
+        //telem.log("turn", turn);
         /*
-        pack.put("dist_left_current", current_left_distance);
-        pack.put("dist_left_avg", dist_left_avg.current_value());
-        pack.put("dist_right_current", current_right_distance);
-        pack.put("dist_right_avg", dist_right_avg.current_value());
+        telem.log("dist_left_current", current_left_distance);
+        telem.log("dist_left_avg", dist_left_avg.current_value());
+        telem.log("dist_right_current", current_right_distance);
+        telem.log("dist_right_avg", dist_right_avg.current_value());
         */
     }
 }

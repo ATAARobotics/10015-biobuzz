@@ -175,18 +175,26 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().run();
 
         TelemetryPacket pack = new TelemetryPacket();
-        pack.put("Elapsed time", runtime.toString());
-        pack.put("time", time);
-        pack.put("battery", battery.getVoltage());
-        drive.add_telemetry(pack);
-        shooter.add_telemetry(pack, telemetry);
-        turret.add_telemetry(pack, telemetry);
-        //intake.add_telemetry(pack, telemetry);
-        spindexer.add_telemetry(pack, telemetry);
+        HyperTelemetry telem = new HyperTelemetry(telemetry, pack);
+        telem.log("elapsed", runtime.toString());
+        telem.log("time", time);
+        telem.log("battery", battery.getVoltage());
+
+        drive.addTelemetry(telem);
+        shooter.addTelemetry(telem);
+        turret.addTelemetry(telem);
+        //intake.addTelemetry(telem);
+        spindexer.addTelemetry(telem);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
-        // FIXME TODO put into FTC Dashboard too, for most of this
-        telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
+        // log some drivetrain information always too
+        double x = drivePosition.getX(DistanceUnit.METER);
+        double y = drivePosition.getY(DistanceUnit.METER);
+        double h = drivePosition.getHeading(AngleUnit.DEGREES);
+        telem.log("position-x", x);
+        telem.log("position-y", y);
+        telem.log("position-heading", h);
+        telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
         telemetry.update();
     }
 

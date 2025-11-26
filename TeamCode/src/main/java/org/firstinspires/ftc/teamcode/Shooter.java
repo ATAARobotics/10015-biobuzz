@@ -175,17 +175,17 @@ public class Shooter extends SubsystemBase {
         //}
     }
 
-    public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
-        telemetry.addData("motor0", power); //what you see on the screen
-        telemetry.addData("rpmTarget", rpmTarget);
-        telemetry.addData("Current RPM", currentRpm);
-        telemetry.addData("Applied Voltage", appliedVoltage);
-        telemetry.addData("Launch State", launchState.toString());
-        telemetry.addData("Shots Fired" , shotsFired);
+    public void addTelemetry(HyperTelemetry telem) {
+        telem.logBoth("motor0", power); //what you see on the screen
+        telem.logBoth("rpmTarget", rpmTarget);
+        telem.logBoth("Current RPM", currentRpm);
+        telem.logBoth("Applied Voltage", appliedVoltage);
+        telem.logBoth("Launch State", launchState.toString());
+        telem.logBoth("Shots Fired" , shotsFired);
        // pack.put("ticksPerSecond", ticksPerSecond);
-        pack.put("rpmTarget", rpmTarget);
-        pack.put("Current RPM", currentRpm);
-        pack.put("Power", power);
+        telem.log("shooter-rpm-target", rpmTarget);
+        telem.log("shooter-rpm-current", currentRpm);
+        telem.log("shooter-power", power);
     }
 
     public Command shoot(int shotsToFire) {

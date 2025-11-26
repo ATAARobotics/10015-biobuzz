@@ -115,18 +115,18 @@ public class Turret extends SubsystemBase {
 //        try { writer.close(); } catch (IOException e) { e.printStackTrace(); }
     }
 
-    public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
-        pack.put("turret-current-angle", currentTurretAngle);
-        pack.put("turret-target-angle", turretHeadingControl.getSetPoint());
-        pack.put("turret-power", servoPower);
-        pack.put("turret-error", turretHeadingControl.getPositionError());
-        pack.put("turret-joystick", joystickAngle);
+    public void addTelemetry(HyperTelemetry telem) {
+        telem.log("turret-current-angle", currentTurretAngle);
+        telem.log("turret-target-angle", turretHeadingControl.getSetPoint());
+        telem.log("turret-power", servoPower);
+        telem.log("turret-error", turretHeadingControl.getPositionError());
+        telem.log("turret-joystick", joystickAngle);
 
-        telemetry.addData("Turret Current Angle", currentTurretAngle);
-        telemetry.addData("Turret Target Angle ", turretHeadingControl.getSetPoint());
-        telemetry.addData("Turret Power", servoPower);
-        telemetry.addData("Turret Angle Error", turretHeadingControl.getPositionError());
-        telemetry.addData("Joystick Angle", joystickAngle);
+        telem.logDrivers("Turret Current Angle", currentTurretAngle);
+        telem.logDrivers("Turret Target Angle ", turretHeadingControl.getSetPoint());
+        telem.logDrivers("Turret Power", servoPower);
+        telem.logDrivers("Turret Angle Error", turretHeadingControl.getPositionError());
+        telem.logDrivers("Joystick Angle", joystickAngle);
     }
 
 

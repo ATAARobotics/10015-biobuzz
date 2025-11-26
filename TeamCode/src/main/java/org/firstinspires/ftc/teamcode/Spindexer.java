@@ -19,10 +19,8 @@ public class Spindexer extends SubsystemBase {
     public PIDController spindexerPID;
     double targetAngle;
     double currentAngle;
-    public static double TOLERENCE_DEG;
+    public static double TOLERENCE_DEG = 1.0;
     public static double STEP_DEG = 120;
-    public static double TICKS_PER_REV = 537.7;
-    public static double GEAR_RATIO = 19.2;
     // tuned november 24 end of session
     public static double spindexerP = 0.026, spindexerI = 0.002, spindexerD = 0.0005;
     public Spindexer (HardwareMap hardwareMap){
@@ -32,21 +30,20 @@ public class Spindexer extends SubsystemBase {
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
     }
+
     public void reset() {
         currentAngle = 0;
         targetAngle = 0;
         spindexerMotor.set(0);
+        // drive-team needs to orient Spindexer with one segment forward
         spindexerMotor.resetEncoder();
     }
 
-    double wrapAngle(double angle) {
-        angle %= 360; // normalize angle between -360 and +360
-        return angle;
-    }
     private double ticksToDeg(int ticks){
        double motorRevs = ticks/spindexerMotor.getCPR();
        return motorRevs * 360;
     }
+
     @Override
     public void periodic() {
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
@@ -56,14 +53,16 @@ public class Spindexer extends SubsystemBase {
         if (power < -0.5) power = -0.5;
         spindexerMotor.set(power);
     }
-    public void add_telemetry(TelemetryPacket pack, Telemetry telemetry) {
-        telemetry.addData("targetAngle", targetAngle);
-        telemetry.addData("currentAngle", currentAngle);
 
-        pack.put("spindexer P", spindexerP);
-        pack.put("spindexer I", spindexerI);
-        pack.put("spindexer D", spindexerD);
+    public void addTelemetry(HyperTelemetry telem) {
+        telem.logBoth("spindex-target-angle", targetAngle);
+        telem.logBoth("spindex-current-angle", currentAngle);
+
+        telem.log("spindexer-p", spindexerP);
+        telem.log("spindexer-i", spindexerI);
+        telem.log("spindexer-d", spindexerD);
     }
+
     public class HumanInputs extends CommandBase {
         GamepadEx driver;
         GamepadEx operator;
@@ -78,7 +77,6 @@ public class Spindexer extends SubsystemBase {
         public void execute() {
             if (operator.wasJustPressed(GamepadKeys.Button.A)){
                 targetAngle += STEP_DEG;
-                //targetAngle = wrapAngle(targetAngle);
             }
             if (operator.wasJustPressed(GamepadKeys.Button.Y)){
                 targetAngle -= STEP_DEG;

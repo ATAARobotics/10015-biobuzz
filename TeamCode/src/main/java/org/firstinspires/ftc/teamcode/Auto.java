@@ -34,6 +34,7 @@ public abstract class Auto extends OpMode {
     Drive drive;
     Turret turret;
     Shooter shooter;
+    Spindexer spindexer;
     Intake intake;
     GamepadEx driver;
     GamepadEx operator;
@@ -82,19 +83,25 @@ public abstract class Auto extends OpMode {
                 .setAutoStopLiveView(true)
                 .build();
 
+        // todo: a lot of this repeats in Auto and TeleOp -- can we combine?
         drive = new Drive(hardwareMap, isRedAlliance);
         turret = new Turret(hardwareMap);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap, turret, intake);
+        spindexer = new Spindexer(hardwareMap);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
 
         // Register Subsystem objects to the scheduler
         CommandScheduler.getInstance().registerSubsystem(drive);
         CommandScheduler.getInstance().registerSubsystem(shooter);
+        CommandScheduler.getInstance().registerSubsystem(turret);
+        CommandScheduler.getInstance().registerSubsystem(intake);
+        CommandScheduler.getInstance().registerSubsystem(spindexer);
 
         drive.reset();
         shooter.reset();
+        spindexer.reset();
     }
 
     @Override
@@ -124,6 +131,9 @@ public abstract class Auto extends OpMode {
     // Looking from audience side, axis X is pointing left and axis Y is pointint forward
     @Override
     public void start() {
+        runtime.reset();
+        turret.reset();
+        spindexer.reset();
         // OPTION 1: starting position is touching audience field perimeter wall
 //        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.381 : -0.381, -1.556, AngleUnit.DEGREES, 180));
 
@@ -195,17 +205,27 @@ public abstract class Auto extends OpMode {
         CommandScheduler.getInstance().run();
 
         TelemetryPacket pack = new TelemetryPacket();
-        pack.put("Elapsed time", runtime.toString());
-        pack.put("time", time);
-        pack.put("battery", battery.getVoltage());
-        drive.add_telemetry(pack);
-        shooter.add_telemetry(pack, telemetry);
+        HyperTelemetry telem = new HyperTelemetry(telemetry, pack);
+        telem.log("elapsed", runtime.toString());
+        telem.log("time", time);
+        telem.log("battery", battery.getVoltage());
+
+        drive.addTelemetry(telem);
+        shooter.addTelemetry(telem);
+        turret.addTelemetry(telem);
+        //intake.addTelemetry(telem);
+        spindexer.addTelemetry(telem);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
-        // FIXME TODO put into FTC Dashboard too, for most of this
+        // log some drivetrain information always too
         Pose2D drivePosition = drive.getPosition();
-        telemetry.addData("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", drivePosition.getX(DistanceUnit.METER), drivePosition.getY(DistanceUnit.METER), drivePosition.getHeading(AngleUnit.DEGREES));
-        telemetry.addData("Pause Time", pauseTime);
+        double x = drivePosition.getX(DistanceUnit.METER);
+        double y = drivePosition.getY(DistanceUnit.METER);
+        double h = drivePosition.getHeading(AngleUnit.DEGREES);
+        telem.log("position-x", x);
+        telem.log("position-y", y);
+        telem.log("position-heading", h);
+        telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
         telemetry.update();
     }
 
