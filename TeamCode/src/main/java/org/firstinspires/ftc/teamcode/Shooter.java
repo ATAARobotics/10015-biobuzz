@@ -33,7 +33,7 @@ public class Shooter extends SubsystemBase {
     double GREEN = 0.5;
     double BAND = 10; //not tested
     double BANG_POWER = 1.0;
-    double rpmTolerance = 250;
+    double RPM_TOLERANCE = 450;
     boolean powerOn = false;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
     VoltageSensor battery;
@@ -81,11 +81,13 @@ public class Shooter extends SubsystemBase {
     }
     public class Shoot extends CommandBase {
         private Spindexer spinner;
+        private Intake takeIn;
         private boolean didShoot;
         private int shots;
 
-        public Shoot(Spindexer s) {
+        public Shoot(Spindexer s, Intake i) {
             spinner = s;
+            takeIn = i;
             didShoot = false;
         }
 
@@ -100,6 +102,7 @@ public class Shooter extends SubsystemBase {
         public void execute() {
             if (readyToShoot() && ! didShoot) {
                 spinner.spinccw();
+                takeIn.grab();
                 didShoot = true;
             }
         }
@@ -111,15 +114,16 @@ public class Shooter extends SubsystemBase {
         @Override
         public void end(boolean interrupted){
             rpmTarget = 0;
+            takeIn.stop();
         }
     }
 
-    public CommandBase shoot(Spindexer s){
-        return new Shoot(s);
+    public CommandBase shoot(Spindexer s, Intake i){
+        return new Shoot(s,i);
     }
 
     public boolean readyToShoot() {
-        return (rpmTarget > 0 && Math.abs(currentRpm - rpmTarget) < rpmTolerance);
+        return (rpmTarget > 0 && Math.abs(currentRpm - rpmTarget) < RPM_TOLERANCE);
     }
 
     @Override

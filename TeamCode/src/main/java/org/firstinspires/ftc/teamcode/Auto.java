@@ -100,6 +100,7 @@ public abstract class Auto extends OpMode {
         drive.reset();
         shooter.reset();
         spindexer.reset();
+        intake.reset();
     }
 
     @Override
@@ -132,6 +133,7 @@ public abstract class Auto extends OpMode {
         runtime.reset();
         turret.reset();
         spindexer.reset();
+        intake.reset();
         // OPTION 1: starting position is touching audience field perimeter wall
 //        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.381 : -0.381, -1.556, AngleUnit.DEGREES, 180));
 
@@ -142,9 +144,9 @@ public abstract class Auto extends OpMode {
                 SequentialCommandGroup auto_commands = new SequentialCommandGroup(
                         pause(pauseTime),
                         drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.390, isRedAlliance ? -25 : 25).withTimeout(1500),
-                        shooter.shoot(spindexer),
-                        shooter.shoot(spindexer),
-                        //shooter.shoot(spindexer),
+                        shooter.shoot(spindexer, intake),
+                        shooter.shoot(spindexer, intake),
+                        shooter.shoot(spindexer, intake),
                         drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.182, isRedAlliance ? -90 : 90)
                 );
                 CommandScheduler.getInstance().schedule(auto_commands);

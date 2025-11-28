@@ -7,10 +7,18 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 public class Intake extends SubsystemBase {
-    public MotorEx intake;
+    private MotorEx intake;
 
     public Intake (HardwareMap hardwareMap){
         intake = new MotorEx(hardwareMap, "intake");
+    }
+    public void reset(){
+    }
+    public void grab(){
+        intake.set(0.8);
+    }
+    public void stop(){
+        intake.set(0);
     }
 
     public class HumanInputs extends CommandBase {
