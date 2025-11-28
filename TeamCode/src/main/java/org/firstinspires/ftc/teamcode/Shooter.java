@@ -27,13 +27,13 @@ public class Shooter extends SubsystemBase {
     public static double HIGH_STATE = 4700; //was 3300 for low
     public static double LOW_STATE = 4300; //was 3000 for low
     //Tuned on November 27:
-    public static double FAR_RPM = 5200;
+    public static double FAR_RPM = 4950;
     public static double NEAR_RPM = 4500;
     double RED = 0.28;
     double GREEN = 0.5;
     double BAND = 10; //not tested
     double BANG_POWER = 1.0;
-    public static double RPM_TOLERANCE = 450;
+    public static double RPM_TOLERANCE = 250;
     boolean powerOn = false;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
     VoltageSensor battery;
