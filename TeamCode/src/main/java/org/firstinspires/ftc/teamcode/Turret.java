@@ -64,7 +64,15 @@ public class Turret extends SubsystemBase {
         stop();
         servo1.stop();
         servo2.stop();
+        angleReset();
+    }
+
+    public void angleReset() {
         resetAngle = getServoAngle();
+    }
+
+    public void setAngleReset(double v) {
+        resetAngle = v;
     }
 
     public double getServoAngle() {

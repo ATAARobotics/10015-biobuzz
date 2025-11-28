@@ -238,6 +238,7 @@ public abstract class Auto extends OpMode {
         editor.putFloat("heading", (float)drive.getPosition().getHeading(AngleUnit.DEGREES));
         editor.putFloat("x", (float)drive.getPosition().getX(DistanceUnit.METER));
         editor.putFloat("y", (float)drive.getPosition().getY(DistanceUnit.METER));
+        editor.putFloat("turret", (float)turret.getServoAngle());
         editor.apply();
         drive.stop();
         shooter.stop();

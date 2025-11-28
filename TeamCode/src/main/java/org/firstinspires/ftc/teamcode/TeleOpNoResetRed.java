@@ -19,5 +19,7 @@ public class TeleOpNoResetRed extends TeleOp {
         float y = prefs.getFloat("y", 0.0f);
         float h = prefs.getFloat("heading", 0.0f);
         drive.setPosition(new Pose2D(DistanceUnit.METER, x, y, AngleUnit.DEGREES, h));
+        float t = prefs.getFloat("turret", 0.0f);
+        turret.setAngleReset(t);
     }
 }
