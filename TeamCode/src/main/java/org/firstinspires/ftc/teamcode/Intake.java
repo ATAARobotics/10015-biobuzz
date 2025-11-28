@@ -38,6 +38,10 @@ public class Intake extends SubsystemBase {
         }
     }
 
+    public void addTelemetry(HyperTelemetry telem) {
+        telem.log("intake-mode", mode);
+    }
+
     public class HumanInputs extends CommandBase {
         GamepadEx driver;
         GamepadEx operator;

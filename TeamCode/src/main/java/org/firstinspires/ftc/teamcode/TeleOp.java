@@ -171,7 +171,7 @@ public abstract class TeleOp extends OpMode {
         drive.addTelemetry(telem);
         shooter.addTelemetry(telem);
         turret.addTelemetry(telem);
-        //intake.addTelemetry(telem);
+        intake.addTelemetry(telem);
         spindexer.addTelemetry(telem);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
