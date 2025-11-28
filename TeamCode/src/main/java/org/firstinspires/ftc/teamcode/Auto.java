@@ -143,7 +143,7 @@ public abstract class Auto extends OpMode {
             if (parkingDefault) {
                 SequentialCommandGroup auto_commands = new SequentialCommandGroup(
                         pause(pauseTime),
-                        drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.390, isRedAlliance ? -25 : 25).withTimeout(1500),
+                        drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.390, isRedAlliance ? -19 : 19).withTimeout(1500),
                         shooter.shoot(spindexer, intake),
                         shooter.shoot(spindexer, intake),
                         shooter.shoot(spindexer, intake),
