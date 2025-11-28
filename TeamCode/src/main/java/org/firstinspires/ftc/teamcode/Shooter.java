@@ -158,10 +158,10 @@ public class Shooter extends SubsystemBase {
         }
 
         // count shots
-        if (currentRpm > targetRpm + HIGH_STATE_OFFSET) {
+        if (targetRpm > 0 && currentRpm > targetRpm + HIGH_STATE_OFFSET) {
             readyToCount = true;
         }
-        if (readyToCount && currentRpm < targetRpm + LOW_STATE_OFFSET){
+        if (targetRpm > 0 && readyToCount && currentRpm < targetRpm + LOW_STATE_OFFSET){
             shotsFired += 1;
             readyToCount = false;
         }
