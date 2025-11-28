@@ -40,6 +40,9 @@ public class Spindexer extends SubsystemBase {
        double motorRevs = ticks/spindexerMotor.getCPR();
        return motorRevs * 360;
     }
+    public void spinccw(){
+        targetAngle += STEP_DEG;
+    }
 
     @Override
     public void periodic() {

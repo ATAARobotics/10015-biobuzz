@@ -24,10 +24,11 @@ public class Shooter extends SubsystemBase {
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
     boolean readyToCount = false;
     int shotsFired = 0;
-    public static double HIGH_STATE = 3300;
-    public static double LOW_STATE = 3000;
-    public static double FAR_RPM = 4900;
-    public static double NEAR_RPM = 3500;
+    public static double HIGH_STATE = 4700; //was 3300 for low
+    public static double LOW_STATE = 4300; //was 3000 for low
+    //Tuned on November 27:
+    public static double FAR_RPM = 5200;
+    public static double NEAR_RPM = 4500;
     double RED = 0.28;
     double GREEN = 0.5;
     double BAND = 10; //not tested
@@ -77,6 +78,44 @@ public class Shooter extends SubsystemBase {
         ticksPerSecond = motor0.getVelocity();
         currentRpm = (ticksPerSecond * 60) / TICKS_PER_REV;
         voltage = battery.getVoltage();
+    }
+    public class Shoot extends CommandBase {
+        private Spindexer spinner;
+        private boolean didShoot;
+        private int shots;
+
+        public Shoot(Spindexer s) {
+            spinner = s;
+            didShoot = false;
+        }
+
+        @Override
+        public void initialize() {
+            rpmTarget = FAR_RPM;
+            shots = shotsFired;
+            didShoot = false;
+        }
+
+        @Override
+        public void execute() {
+            if (readyToShoot() && ! didShoot) {
+                spinner.spinccw();
+                didShoot = true;
+            }
+        }
+
+        @Override
+        public boolean isFinished() {
+            return shotsFired > shots;
+        }
+        @Override
+        public void end(boolean interrupted){
+            rpmTarget = 0;
+        }
+    }
+
+    public CommandBase shoot(Spindexer s){
+        return new Shoot(s);
     }
 
     public boolean readyToShoot() {
@@ -151,13 +190,13 @@ public class Shooter extends SubsystemBase {
             // FIXME: need operator controls ... and far-shot target?
             // and "hood" controls?
 
-            if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
+           /* if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
                 rpmTarget = NEAR_RPM;
             }
             if (driver.wasJustPressed(GamepadKeys.Button.A)){
                 rpmTarget = 0;
             }
-
+            */
             if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
                 if (rpmTarget == 0) {
                     rpmTarget = NEAR_RPM;

@@ -141,8 +141,8 @@ public class Turret extends SubsystemBase {
             addRequirements(Turret.this);
         }
 
-        @Override
-        public void execute() {
+       // @Override
+        public void lockedturrentfornow_execute() {
             // decide what to do based on sensors and human inputs from controller
 
             // face turret the same way the joystick is facing ... and

@@ -28,7 +28,7 @@ public class Drive extends SubsystemBase {
     public static double TURN_SPEED = 3;
     public static double POWER_INPUT = 2;
     public static double DEAD_ZONE = 0.1;
-
+    public static final double ANGLE_TWEAK = 20;
     public static double TURBO_FAST_SPEED = 1.0;
     public static double TURBO_SLOW_SPEED = 0.75;
 
@@ -375,8 +375,9 @@ public class Drive extends SubsystemBase {
                 desired_heading = isRedAlliance ? 180 : 0;
             if (driver.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT))
                 desired_heading = isRedAlliance ? 0 : 180;
-            if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
-                desired_heading = isRedAlliance ? 135 : -135;
+            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_UP) || driver.wasJustPressed(GamepadKeys.Button.DPAD_DOWN) || driver.wasJustPressed(GamepadKeys.Button.DPAD_LEFT) || driver.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
+                desired_heading += ANGLE_TWEAK;
+            }
             if (driver.wasJustPressed(GamepadKeys.Button.Y))
                 april_lock = !april_lock;
             if (april_lock)
