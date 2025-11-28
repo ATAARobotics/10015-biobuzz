@@ -8,17 +8,34 @@ import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 public class Intake extends SubsystemBase {
     private MotorEx intake;
-
+    public enum IntakeMode { In, Out, Idle }
+    private IntakeMode mode = IntakeMode.Idle;
     public Intake (HardwareMap hardwareMap){
         intake = new MotorEx(hardwareMap, "intake");
     }
     public void reset(){
+        mode = IntakeMode.Idle;
     }
     public void grab(){
-        intake.set(0.8);
+        mode = IntakeMode.In;
     }
     public void stop(){
-        intake.set(0);
+        mode = IntakeMode.Idle;
+    }
+
+    public void spit(){
+        mode = IntakeMode.Out;
+    }
+
+    @Override
+    public void periodic() {
+        if (mode == IntakeMode.In) {
+            intake.set(0.8);
+        } else if (mode == IntakeMode.Out) {
+            intake.set(-0.3);
+        } else {
+            intake.set(0.0);
+        }
     }
 
     public class HumanInputs extends CommandBase {
@@ -38,11 +55,13 @@ public class Intake extends SubsystemBase {
             // todo: ideally we'd set "what the user wants to do" and
             // only during "periodic" would we actually call motor
             // commands like .set()
-            intake.set(operator.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER));
-            if (operator.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) {
-                intake.set(-operator.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) / 0.5);
+            if (operator.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5) {
+                mode = IntakeMode.In;
+            } else if (operator.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) {
+                mode = IntakeMode.Out;
+            } else {
+                mode = IntakeMode.Idle;
             }
-
         }
     }
 
