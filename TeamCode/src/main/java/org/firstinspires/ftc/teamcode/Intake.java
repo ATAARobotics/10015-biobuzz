@@ -30,9 +30,9 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         if (mode == IntakeMode.In) {
-            intake.set(0.8);
+            intake.set(1.0);
         } else if (mode == IntakeMode.Out) {
-            intake.set(-0.3);
+            intake.set(-0.5);
         } else {
             intake.set(0.0);
         }
