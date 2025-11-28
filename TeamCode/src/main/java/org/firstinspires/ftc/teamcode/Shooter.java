@@ -24,8 +24,8 @@ public class Shooter extends SubsystemBase {
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
     boolean readyToCount = false;
     int shotsFired = 0;
-    public static double HIGH_STATE = 4700; //was 3300 for low
-    public static double LOW_STATE = 4300; //was 3000 for low
+    public static double HIGH_STATE_OFFSET = -250;
+    public static double LOW_STATE_OFFSET = -500;
     //Tuned on November 27:
     public static double FAR_RPM = 4950;
     public static double NEAR_RPM = 4500;
@@ -156,10 +156,10 @@ public class Shooter extends SubsystemBase {
         }
 
         // count shots
-        if (currentRpm > HIGH_STATE) {
+        if (currentRpm > targetRpm + HIGH_STATE_OFFSET) {
             readyToCount = true;
         }
-        if (readyToCount && currentRpm < LOW_STATE){
+        if (readyToCount && currentRpm < targetRpm + LOW_STATE_OFFSET){
             shotsFired += 1;
             readyToCount = false;
         }
