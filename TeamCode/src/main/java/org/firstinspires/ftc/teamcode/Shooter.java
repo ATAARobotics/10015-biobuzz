@@ -102,8 +102,10 @@ public class Shooter extends SubsystemBase {
         public void execute() {
             if (readyToShoot() && ! didShoot) {
                 spinner.spinccw();
-                takeIn.grab();
                 didShoot = true;
+            }
+            if (didShoot) {
+                takeIn.grab();
             }
         }
 
