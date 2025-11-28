@@ -357,11 +357,11 @@ public class Drive extends SubsystemBase {
         public void execute() {
             // Run wheels in POV mode: use the Right stick to go forward & strafe, the Left stick to rotate left & right.
             if (isRedAlliance) {
-                strafe = scaleInputs(-driver.getRightY());
-                forward = scaleInputs(-driver.getRightX());
+                strafe = scaleInputs(-driver.getRightX());
+                forward = scaleInputs(-driver.getRightY());
             } else {
-                strafe = scaleInputs(driver.getRightY());
-                forward = scaleInputs(driver.getRightX());
+                strafe = scaleInputs(driver.getRightX());
+                forward = scaleInputs(driver.getRightY());
             }
 
             double leftX = driver.getLeftX();
