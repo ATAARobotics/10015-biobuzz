@@ -38,7 +38,7 @@ public class Shooter extends SubsystemBase {
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
     VoltageSensor battery;
     double MAX_RPM = 5250;
-    double rpmTarget;
+    double targetRpm;
     double currentRpm;
     double voltage; // current battery voltage
 
@@ -59,7 +59,7 @@ public class Shooter extends SubsystemBase {
         motor1.setInverted(false);
 
         shooterMotor = new MotorGroup(motor0, motor1);
-        rpmTarget = 0;
+        targetRpm = 0;
         indicatorLight = hardwareMap.get(Servo.class, "indicator");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
     }
@@ -69,7 +69,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void stop() {
-        rpmTarget = 0;
+        targetRpm = 0;
         motor0.set(0);
         motor1.set(0);
     }
@@ -93,7 +93,7 @@ public class Shooter extends SubsystemBase {
 
         @Override
         public void initialize() {
-            rpmTarget = FAR_RPM;
+            targetRpm = FAR_RPM;
             shots = shotsFired;
             didShoot = false;
         }
@@ -115,7 +115,7 @@ public class Shooter extends SubsystemBase {
         }
         @Override
         public void end(boolean interrupted){
-            rpmTarget = 0;
+            targetRpm = 0;
             takeIn.stop();
         }
     }
@@ -125,28 +125,28 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean readyToShoot() {
-        return (rpmTarget > 0 && Math.abs(currentRpm - rpmTarget) < RPM_TOLERANCE);
+        return (targetRpm > 0 && Math.abs(currentRpm - targetRpm) < RPM_TOLERANCE);
     }
 
     @Override
     public void periodic() {
-        appliedVoltage = (kv * rpmTarget) + ks;
+        appliedVoltage = (kv * targetRpm) + ks;
         power = appliedVoltage / voltage;
         //power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
-        if (currentRpm < (rpmTarget - BAND) && !powerOn) {
+        if (currentRpm < (targetRpm - BAND) && !powerOn) {
             powerOn = true;
         }
-        else if (currentRpm > (rpmTarget + BAND) && powerOn) {
+        else if (currentRpm > (targetRpm + BAND) && powerOn) {
             powerOn = false;
         }
         if (powerOn) power = BANG_POWER;
-        if (rpmTarget == 0) power = 0;
+        if (targetRpm == 0) power = 0;
         if (power < 0) power = 0;
 
         shooterMotor.set(power);
 
         // indicator lights
-        if (rpmTarget > 0) {
+        if (targetRpm > 0) {
             if (readyToShoot()) {
                 indicatorLight.setPosition(GREEN);
             } else {
@@ -169,12 +169,12 @@ public class Shooter extends SubsystemBase {
 
     public void addTelemetry(HyperTelemetry telem) {
         telem.logBoth("motor0", power); //what you see on the screen
-        telem.logBoth("rpmTarget", rpmTarget);
+        telem.logBoth("targetRpm", targetRpm);
         telem.logBoth("Current RPM", currentRpm);
         telem.logBoth("Applied Voltage", appliedVoltage);
         telem.logBoth("Shots Fired" , shotsFired);
        // pack.put("ticksPerSecond", ticksPerSecond);
-        telem.log("shooter-rpm-target", rpmTarget);
+        telem.log("shooter-rpm-target", targetRpm);
         telem.log("shooter-rpm-current", currentRpm);
         telem.log("shooter-power", power);
     }
@@ -197,24 +197,24 @@ public class Shooter extends SubsystemBase {
             // and "hood" controls?
 
            /* if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
-                rpmTarget = NEAR_RPM;
+                targetRpm = NEAR_RPM;
             }
             if (driver.wasJustPressed(GamepadKeys.Button.A)){
-                rpmTarget = 0;
+                targetRpm = 0;
             }
             */
             if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
-                if (rpmTarget == 0) {
-                    rpmTarget = NEAR_RPM;
-                } else if (rpmTarget == NEAR_RPM) {
-                    rpmTarget = FAR_RPM;
+                if (targetRpm == 0) {
+                    targetRpm = NEAR_RPM;
+                } else if (targetRpm == NEAR_RPM) {
+                    targetRpm = FAR_RPM;
                 } else {
-                    rpmTarget = 0;
+                    targetRpm = 0;
                 }
             }
 
-            // clip our rpmTarget .. do this LAST after all command processing
-            if(rpmTarget > MAX_RPM) rpmTarget = MAX_RPM;
+            // clip our targetRpm .. do this LAST after all command processing
+            if(targetRpm > MAX_RPM) targetRpm = MAX_RPM;
         }
     }
 }
