@@ -53,6 +53,7 @@ public class Turret extends SubsystemBase {
     }
 
     public void faceRobotAngle(double angle) {
+        angle = Math.max(-90, Math.min(angle, 90));
         turretHeadingControl.setSetPoint(angle);
     }
 
@@ -150,7 +151,7 @@ public class Turret extends SubsystemBase {
         }
 
        // @Override
-        public void lockedturrentfornow_execute() {
+        public void execute() {
             // decide what to do based on sensors and human inputs from controller
 
             // face turret the same way the joystick is facing ... and

@@ -140,42 +140,31 @@ public abstract class Auto extends OpMode {
         // OPTION 2: starting position is over the center of a launch line touching own alliance's goal:
         if (isFar){
             drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.404 : -0.404, -1.552, AngleUnit.DEGREES, 0));
+            SequentialCommandGroup auto_commands = new SequentialCommandGroup(
+                    pause(pauseTime),
+                    drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.390, isRedAlliance ? -22 : 22).withTimeout(1500),
+                    shooter.shoot(spindexer, intake),
+                    shooter.shoot(spindexer, intake),
+                    shooter.shoot(spindexer, intake)
+            );
             if (parkingDefault) {
-                SequentialCommandGroup auto_commands = new SequentialCommandGroup(
-                        pause(pauseTime),
-                        drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.390, isRedAlliance ? -22 : 22).withTimeout(1500),
-                        shooter.shoot(spindexer, intake),
-                        shooter.shoot(spindexer, intake),
-                        shooter.shoot(spindexer, intake),
+                auto_commands.addCommands(
                         drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.182, isRedAlliance ? -90 : 90)
                 );
-                CommandScheduler.getInstance().schedule(auto_commands);
-            } else {
-                SequentialCommandGroup auto_commands = new SequentialCommandGroup(
-                        pause(pauseTime),
-                        drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 0.6, 180).withTimeout(1500),
-                        drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(4000),
-                        //shooter.shoot(3),  FIXME
-                        drive.moveQuickly(isRedAlliance ? 1.2 : -1.2,0.6, 180)
-                );
-                CommandScheduler.getInstance().schedule(auto_commands);
             }
+            CommandScheduler.getInstance().schedule(auto_commands);
         } else {
-            drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.3 : -1.3, 1.3, AngleUnit.DEGREES, isRedAlliance ? 135 : -135));
+            drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.191 : -1.191, 1.457, AngleUnit.DEGREES, isRedAlliance ? 135 : -135));
+            SequentialCommandGroup auto_commands = new SequentialCommandGroup(
+                    pause(pauseTime),
+                    drive.moveQuickly(isRedAlliance ? 1.0 : -1.0, 1.0, isRedAlliance ? 135 : -135).withTimeout(2500),
+                    shooter.shoot(spindexer, intake),
+                    shooter.shoot(spindexer, intake),
+                    shooter.shoot(spindexer, intake)
+            );
             if (parkingDefault) {
-                SequentialCommandGroup auto_commands = new SequentialCommandGroup(
-                        pause(pauseTime),
-                        drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(2500),
-                        //shooter.shoot(3), // FIXME
-                        drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 1.4, 180)
-                );
-                CommandScheduler.getInstance().schedule(auto_commands);
-            } else {
-                SequentialCommandGroup auto_commands = new SequentialCommandGroup(
-                        pause(pauseTime),
-                        drive.moveQuickly(isRedAlliance ? 1.0 : -1.0,1.0, isRedAlliance ? 135 : -135).withTimeout(2500),
-                        //shooter.shoot(3), // FIXME
-                        drive.moveQuickly(isRedAlliance ? 1.2 : -1.2,0.6, 180)
+                auto_commands.addCommands(
+                        drive.moveQuickly(isRedAlliance ? 0.381 : -0.381, 1.4, 90)
                 );
                 CommandScheduler.getInstance().schedule(auto_commands);
             }
