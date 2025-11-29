@@ -390,6 +390,13 @@ public class Drive extends SubsystemBase {
                 desired_heading = april_bearing;
             if (driver.wasJustPressed((GamepadKeys.Button.RIGHT_BUMPER)))
                 cameraOn = !cameraOn;
+            if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
+                double tx = isRedAlliance ? 1.29 : -1.29;
+                double ty = 1.47;
+                double x = getPosition().getX(DISTANCE_UNIT);
+                double y = getPosition().getY(DISTANCE_UNIT);
+                desired_heading = -Math.toDegrees(Math.atan2(tx - x, ty - y));
+            }
 
              // Anjalika wants "turbo" mode ... so if we're holding
             // left trigger _currently_, we go to Turbo -- otherwise
