@@ -143,9 +143,9 @@ public abstract class Auto extends OpMode {
             SequentialCommandGroup auto_commands = new SequentialCommandGroup(
                     pause(pauseTime),
                     drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.390, isRedAlliance ? -22 : 22).withTimeout(1500),
-                    shooter.shoot(spindexer, intake),
-                    shooter.shoot(spindexer, intake),
-                    shooter.shoot(spindexer, intake)
+                    shooter.shootFar(spindexer, intake),
+                    shooter.shootFar(spindexer, intake),
+                    shooter.shootFar(spindexer, intake)
             );
             if (parkingDefault) {
                 auto_commands.addCommands(
@@ -154,13 +154,14 @@ public abstract class Auto extends OpMode {
             }
             CommandScheduler.getInstance().schedule(auto_commands);
         } else {
-            drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.191 : -1.191, 1.457, AngleUnit.DEGREES, isRedAlliance ? 135 : -135));
+            drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.191 : -1.191, 1.457, AngleUnit.DEGREES, isRedAlliance ? -45 : 45));
             SequentialCommandGroup auto_commands = new SequentialCommandGroup(
                     pause(pauseTime),
-                    drive.moveQuickly(isRedAlliance ? 1.0 : -1.0, 1.0, isRedAlliance ? 135 : -135).withTimeout(2500),
-                    shooter.shoot(spindexer, intake),
-                    shooter.shoot(spindexer, intake),
-                    shooter.shoot(spindexer, intake)
+                    //intake.takeIn(),
+                    drive.moveQuickly(isRedAlliance ? 0.4 : -0.4, 0.4, isRedAlliance ? -45 : 45).withTimeout(2500),
+                    shooter.shootNear(spindexer, intake),
+                    shooter.shootNear(spindexer, intake)
+                    //shooter.shoot(spindexer, intake)
             );
             if (parkingDefault) {
                 auto_commands.addCommands(

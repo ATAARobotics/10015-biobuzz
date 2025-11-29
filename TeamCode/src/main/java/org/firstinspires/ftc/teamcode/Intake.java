@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -35,6 +36,20 @@ public class Intake extends SubsystemBase {
             intake.set(-0.5);
         } else {
             intake.set(0.0);
+        }
+    }
+
+    public Command takeIn() {
+        return new TakeIn();
+    }
+
+    public class TakeIn extends CommandBase {
+        @Override
+        public void initialize() {
+            grab();
+        }
+        public boolean isFinished(boolean interrupted) {
+            return true;
         }
     }
 

@@ -83,17 +83,24 @@ public class Shooter extends SubsystemBase {
         private Spindexer spinner;
         private Intake takeIn;
         private boolean didShoot;
+        private boolean near;
         private int shots;
 
-        public Shoot(Spindexer s, Intake i) {
+        public Shoot(Spindexer s, Intake i, boolean n) {
             spinner = s;
             takeIn = i;
             didShoot = false;
+            this.near=n;
         }
 
         @Override
         public void initialize() {
-            targetRpm = FAR_RPM;
+            if (near){
+                targetRpm = NEAR_RPM;
+            }
+            else {
+                targetRpm = FAR_RPM;
+            }
             shots = shotsFired;
             didShoot = false;
         }
@@ -120,8 +127,11 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    public CommandBase shoot(Spindexer s, Intake i){
-        return new Shoot(s,i);
+    public CommandBase shootFar(Spindexer s, Intake i){
+        return new Shoot(s,i,false);
+    }
+    public CommandBase shootNear(Spindexer s, Intake i){
+        return new Shoot(s,i,true);
     }
 
     public boolean readyToShoot() {
