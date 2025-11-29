@@ -28,7 +28,7 @@ public class Shooter extends SubsystemBase {
     public static double LOW_STATE_OFFSET = -500;
     //Tuned on November 27:
     public static double FAR_RPM = 4950;
-    public static double NEAR_RPM = 4500;
+    public static double NEAR_RPM = 4200;
     double RED = 0.28;
     double GREEN = 0.5;
     double BAND = 10; //not tested
