@@ -28,9 +28,10 @@ public class Shooter extends SubsystemBase {
     public static double LOW_STATE_OFFSET = -500;
     //Tuned on November 27:
     public static double FAR_RPM = 4950;
-    public static double NEAR_RPM = 4200;
+    public static double NEAR_RPM = 4000;
     double RED = 0.28;
     double GREEN = 0.5;
+    double PINK = 0.71;
     double BAND = 10; //not tested
     double BANG_POWER = 1.0;
     public static double RPM_TOLERANCE = 250;
@@ -157,9 +158,13 @@ public class Shooter extends SubsystemBase {
 
         // indicator lights
         if (targetRpm > 0) {
-            if (readyToShoot()) {
+            if (readyToShoot() && targetRpm == FAR_RPM) {
                 indicatorLight.setPosition(GREEN);
-            } else {
+            }
+            if (readyToShoot() && targetRpm == NEAR_RPM){
+                indicatorLight.setPosition(PINK);
+            }
+            if (! readyToShoot()) {
                 indicatorLight.setPosition(RED);
             }
         } else {
