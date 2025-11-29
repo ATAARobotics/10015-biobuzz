@@ -149,7 +149,7 @@ public abstract class Auto extends OpMode {
             );
             if (parkingDefault) {
                 auto_commands.addCommands(
-                        drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.182, isRedAlliance ? -90 : 90)
+                        drive.moveQuickly(isRedAlliance ? 0.604 : -0.604, -1.162, isRedAlliance ? -90 : 90)
                 );
             }
             CommandScheduler.getInstance().schedule(auto_commands);
