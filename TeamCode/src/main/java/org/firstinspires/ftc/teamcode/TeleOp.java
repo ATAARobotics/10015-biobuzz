@@ -131,9 +131,6 @@ public abstract class TeleOp extends OpMode {
         //turret.read_sensors(time);
         //intake.read_sensors(time);
 
-        // Send telemetry messages to explain controls and show robot status
-        Pose2D drivePosition = drive.getPosition();
-
         drive.april_bearing = Math.toDegrees(Math.atan2(
                 target.distanceUnit.toMeters(target.fieldPosition.get(1))-drive.getPosition().getX(DistanceUnit.METER),
                 target.distanceUnit.toMeters(target.fieldPosition.get(0))+drive.getPosition().getY(DistanceUnit.METER)));
@@ -169,9 +166,9 @@ public abstract class TeleOp extends OpMode {
         turret.addTelemetry(telem);
         intake.addTelemetry(telem);
         spindexer.addTelemetry(telem);
-        FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // log some drivetrain information always too
+        Pose2D drivePosition = drive.getPosition();
         double x = drivePosition.getX(DistanceUnit.METER);
         double y = drivePosition.getY(DistanceUnit.METER);
         double h = drivePosition.getHeading(AngleUnit.DEGREES);
@@ -179,7 +176,9 @@ public abstract class TeleOp extends OpMode {
         telem.log("position-y", y);
         telem.log("position-heading", h);
         telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
+
         telemetry.update();
+        FtcDashboard.getInstance().sendTelemetryPacket(pack);
     }
 
     @Override
