@@ -134,10 +134,6 @@ public abstract class Auto extends OpMode {
         turret.reset();
         spindexer.reset();
         intake.reset();
-        // OPTION 1: starting position is touching audience field perimeter wall
-//        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.381 : -0.381, -1.556, AngleUnit.DEGREES, 180));
-
-        // OPTION 2: starting position is over the center of a launch line touching own alliance's goal:
         if (isFar){
             drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.404 : -0.404, -1.552, AngleUnit.DEGREES, 0));
             SequentialCommandGroup auto_commands = new SequentialCommandGroup(
@@ -170,9 +166,8 @@ public abstract class Auto extends OpMode {
                 CommandScheduler.getInstance().schedule(auto_commands);
             }
         }
-
-        // schedule all our commands
     }
+
     public Command pause(double seconds){
         return new WaitUntil(time + seconds);
     }
@@ -206,7 +201,6 @@ public abstract class Auto extends OpMode {
         turret.addTelemetry(telem);
         intake.addTelemetry(telem);
         spindexer.addTelemetry(telem);
-        FtcDashboard.getInstance().sendTelemetryPacket(pack);
 
         // log some drivetrain information always too
         Pose2D drivePosition = drive.getPosition();
@@ -217,6 +211,8 @@ public abstract class Auto extends OpMode {
         telem.log("position-y", y);
         telem.log("position-heading", h);
         telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
+
+        FtcDashboard.getInstance().sendTelemetryPacket(pack);
         telemetry.update();
     }
 
@@ -229,6 +225,7 @@ public abstract class Auto extends OpMode {
         editor.putFloat("x", (float)drive.getPosition().getX(DistanceUnit.METER));
         editor.putFloat("y", (float)drive.getPosition().getY(DistanceUnit.METER));
         editor.putFloat("turret", (float)turret.getServoAngle());
+        editor.putFloat("spindex", (float)spindexer.targetAngle);
         editor.apply();
         drive.stop();
         shooter.stop();
