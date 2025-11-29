@@ -110,12 +110,8 @@ public abstract class TeleOp extends OpMode {
         runtime.reset();
         turret.reset();
         spindexer.reset();
-        //drive.reset();
-        // OPTION 1: starting position is touching audience field perimeter wall
-        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.435 : -0.435, -1.61, AngleUnit.DEGREES, 0));
-
-        // OPTION 2: starting position is over the center of a launch line touching own alliance's goal:
-//        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.3 : -1.3, 1.3, AngleUnit.DEGREES, isRedAlliance ? 135 : -135));
+        // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
+        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.404 : -0.404, -1.552, AngleUnit.DEGREES, 0));
     }
 
     @Override
