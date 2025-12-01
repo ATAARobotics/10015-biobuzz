@@ -156,8 +156,8 @@ public abstract class Auto extends OpMode {
                     //intake.takeIn(),
                     drive.moveQuickly(isRedAlliance ? 0.4 : -0.4, 0.4, isRedAlliance ? -45 : 45).withTimeout(2500),
                     shooter.shootNear(spindexer, intake),
+                    shooter.shootNear(spindexer, intake),
                     shooter.shootNear(spindexer, intake)
-                    //shooter.shoot(spindexer, intake)
             );
             if (parkingDefault) {
                 auto_commands.addCommands(

@@ -24,6 +24,6 @@ public class TeleOpNoResetBlue extends TeleOp {
         //float t = prefs.getFloat("turret", 0.0f);
         //turret.setAngleReset(t);
         turret.angleReset();
-        //spindexer.reset();
+        spindexer.reset();
     }
 }
