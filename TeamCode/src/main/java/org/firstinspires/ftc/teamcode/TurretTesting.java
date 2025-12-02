@@ -115,16 +115,18 @@ public class TurretTesting extends OpMode {
         //intake.read_sensors(time);
 
 //      target.fieldOrientation.toOrientation(AxesReference.EXTRINSIC,AxesOrder.XYZ,AngleUnit.DEGREES).thirdAngle-90
+        TelemetryPacket pack = new TelemetryPacket();
+        HyperTelemetry telem = new HyperTelemetry(telemetry, pack);
 
         List<AprilTagDetection> detections = april_tags.getDetections();
         for (AprilTagDetection tag : detections) {
             if (tag.id == target.id){
                 //  drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) - tag.ftcPose.bearing;
-                telemetry.addData("target", tag.ftcPose.range);
+                telem.log("april tag target", tag.ftcPose.range);
                 //range(distance)is in inches, maybe convert to centi
-                telemetry.addData("bearing", tag.ftcPose.bearing);
+                telem.log("april tag bearing", tag.ftcPose.bearing);
                 distToAprilTag = tag.ftcPose.range;
-                telemetry.addData("distance to april tag", distToAprilTag);
+                telem.log("distance to april tag", distToAprilTag);
             }
         }
 
@@ -135,8 +137,7 @@ public class TurretTesting extends OpMode {
         // correct place to do "per-loop" things)
         CommandScheduler.getInstance().run();
 
-        TelemetryPacket pack = new TelemetryPacket();
-        HyperTelemetry telem = new HyperTelemetry(telemetry, pack);
+
         telem.log("elapsed", runtime.toString());
         telem.log("time", time);
         telem.log("battery", battery.getVoltage());
