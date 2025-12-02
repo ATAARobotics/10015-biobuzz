@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 @Config
 public class Shooter extends SubsystemBase {
-    private final Servo indicatorLight;
+    //private final Servo indicatorLight;
     MotorEx motor0;
     MotorEx motor1;
     MotorGroup shooterMotor;
@@ -61,7 +61,7 @@ public class Shooter extends SubsystemBase {
 
         shooterMotor = new MotorGroup(motor0, motor1);
         targetRpm = 0;
-        indicatorLight = hardwareMap.get(Servo.class, "indicator");
+       // indicatorLight = hardwareMap.get(Servo.class, "indicator");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
     }
 
@@ -157,7 +157,7 @@ public class Shooter extends SubsystemBase {
         shooterMotor.set(power);
 
         // indicator lights
-        if (targetRpm > 0) {
+       /* if (targetRpm > 0) {
             if (readyToShoot() && targetRpm == FAR_RPM) {
                 indicatorLight.setPosition(GREEN);
             }
@@ -171,7 +171,7 @@ public class Shooter extends SubsystemBase {
             // turn off the light if we're not spinning
             indicatorLight.setPosition(0);
         }
-
+        */
         // count shots
         if (targetRpm > 0 && currentRpm > targetRpm + HIGH_STATE_OFFSET) {
             readyToCount = true;
