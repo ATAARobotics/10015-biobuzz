@@ -16,7 +16,7 @@ public class Turret extends SubsystemBase {
     AnalogInput encoder;
 
     public PIDController turretHeadingControl;
-    private double lastServoAngle, servoPower, currentTurretAngle;
+    public double lastServoAngle, servoPower, currentTurretAngle;
     private double resetAngle;
     private int servoTurnCount;
     double joystickAngle;
@@ -151,7 +151,7 @@ public class Turret extends SubsystemBase {
         }
 
        // @Override
-        public void execute() {
+        public void disabled_execute() {
             // decide what to do based on sensors and human inputs from controller
 
             // face turret the same way the joystick is facing ... and

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Size;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -11,9 +13,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
@@ -32,7 +36,7 @@ public class TurretTesting extends OpMode {
 
     // prototyping with some AprilTags, Sept 15
     AprilTagProcessor april_tags;
-    //VisionPortal portal;
+    VisionPortal portal;
 
     public enum Alliance {RED, BLUE}
     public Alliance getAlliance(){return Alliance.BLUE;}
@@ -43,7 +47,8 @@ public class TurretTesting extends OpMode {
     @Override
     public void init() {
         isRedAlliance = getAlliance() == Alliance.RED;
-        target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
+      //  target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
+        target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(21);
 
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
@@ -58,14 +63,14 @@ public class TurretTesting extends OpMode {
                 .setDrawCubeProjection(true)
                 .build();
 
-        /*portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class,"DubbleBubble Webcam"))
+        portal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class,"elp"))
                 .addProcessor(april_tags)
-                .setCameraResolution(new Size(640, 480))
-                //.setStreamFormat(VisionPortal.StreamFormat.YUY2)
+                .setCameraResolution(new Size(800, 600))
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setAutoStopLiveView(true)
                 .build();
-*/
+
         turret = new Turret(hardwareMap);
         shooter = new Shooter(hardwareMap);
 
@@ -119,14 +124,16 @@ public class TurretTesting extends OpMode {
         HyperTelemetry telem = new HyperTelemetry(telemetry, pack);
 
         List<AprilTagDetection> detections = april_tags.getDetections();
+        telem.logBoth("april-tags", detections.size());
         for (AprilTagDetection tag : detections) {
             if (tag.id == target.id){
                 //  drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) - tag.ftcPose.bearing;
-                telem.log("april tag target", tag.ftcPose.range);
+                telem.logBoth("april-tag-target", tag.ftcPose.range);
                 //range(distance)is in inches, maybe convert to centi
-                telem.log("april tag bearing", tag.ftcPose.bearing);
+                telem.logBoth("april-tag-bearing", tag.ftcPose.bearing);
                 distToAprilTag = tag.ftcPose.range;
-                telem.log("distance to april tag", distToAprilTag);
+                turret.faceRobotAngle(tag.ftcPose.bearing + turret.currentTurretAngle);
+                telem.logBoth("april-tag-distance", distToAprilTag);
             }
         }
 
