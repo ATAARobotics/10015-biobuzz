@@ -111,7 +111,7 @@ public abstract class TeleOp extends OpMode {
         turret.reset();
         spindexer.reset();
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
-        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.404 : -0.404, -1.552, AngleUnit.DEGREES, 0));
+        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.281 : -0.281, -1.552, AngleUnit.DEGREES, 0));
     }
 
     @Override
@@ -136,7 +136,7 @@ public abstract class TeleOp extends OpMode {
 
         drive.april_bearing = Math.toDegrees(Math.atan2(
                 target.distanceUnit.toMeters(target.fieldPosition.get(1))-drive.getPosition().getX(DistanceUnit.METER),
-                target.distanceUnit.toMeters(target.fieldPosition.get(0))+drive.getPosition().getY(DistanceUnit.METER)));
+                target.distanceUnit.toMeters(target.fieldPosition.get(0))-drive.getPosition().getY(DistanceUnit.METER)));
 //      target.fieldOrientation.toOrientation(AxesReference.EXTRINSIC,AxesOrder.XYZ,AngleUnit.DEGREES).thirdAngle-90
         if (drive.cameraOn) {
             List<AprilTagDetection> detections = april_tags.getDetections();

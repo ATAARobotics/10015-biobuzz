@@ -142,14 +142,14 @@ public abstract class Auto extends OpMode {
             drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.404 : -0.404, -1.552, AngleUnit.DEGREES, 0));
             SequentialCommandGroup auto_commands = new SequentialCommandGroup(
                     pause(pauseTime),
-                    drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.390, isRedAlliance ? -22 : 22).withTimeout(1500),
+                    drive.moveQuickly(isRedAlliance ? 0.281 : -0.281, -1.390, isRedAlliance ? -22 : 22).withTimeout(1500),
                     shooter.shootFar(spindexer, intake),
                     shooter.shootFar(spindexer, intake),
                     shooter.shootFar(spindexer, intake)
             );
             if (parkingDefault) {
                 auto_commands.addCommands(
-                        drive.moveQuickly(isRedAlliance ? 0.404 : -0.404, -1.182, isRedAlliance ? -90 : 90)
+                        drive.moveQuickly(isRedAlliance ? 0.281 : -0.281, -1.182, isRedAlliance ? -90 : 90)
                 );
             }
             CommandScheduler.getInstance().schedule(auto_commands);
