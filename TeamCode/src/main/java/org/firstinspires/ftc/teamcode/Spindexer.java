@@ -14,8 +14,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class Spindexer extends SubsystemBase {
     public MotorEx spindexerMotor;
     public PIDController spindexerPID;
-    double targetAngle;
-    double currentAngle;
+    public double targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
+    double currentAngle;    // computed from our encoder
     public static double TOLERENCE_DEG = 1.0;
     public static double STEP_DEG = 120;
     // tuned november 24 end of session

@@ -16,13 +16,13 @@ public class Turret extends SubsystemBase {
     AnalogInput encoder;
 
     public PIDController turretHeadingControl;
-    private double lastServoAngle, servoPower, currentTurretAngle;
+    public double lastServoAngle, servoPower, currentTurretAngle;
     private double resetAngle;
     private int servoTurnCount;
     double joystickAngle;
 
     private static final double GEAR_RATIO = 0.8; // 1 servo rotation equals 0.8 turret rotations
-    public static double turretP = 0.0035, turretI = 0, turretD = 0, turretF = 0.05; // Tuned 2025.11.23 with goBILDA 6V Servo Power Injector
+    public static double turretP = 0.005, turretI = 0.04, turretD = 0.0003, turretF = 0.055; // Tuned 2025.11.23 with goBILDA 6V Servo Power Injector
     public static double TURRET_TOLERANCE = 1.0; // in degrees
 //    private static FileWriter writer;
 
@@ -151,7 +151,7 @@ public class Turret extends SubsystemBase {
         }
 
        // @Override
-        public void execute() {
+        public void disabled_execute() {
             // decide what to do based on sensors and human inputs from controller
 
             // face turret the same way the joystick is facing ... and
@@ -164,10 +164,18 @@ public class Turret extends SubsystemBase {
                 joystickAngle = Math.toDegrees(Math.atan2(rx, ry));
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
-                joystickAngle += 10;
+                //joystickAngle += 10;
+                joystickAngle = 90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
-                joystickAngle -= 10;
+               // joystickAngle -= 10;
+                joystickAngle = -90;
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
+                joystickAngle = 0;
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
+                joystickAngle = 180;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
                 reset();
