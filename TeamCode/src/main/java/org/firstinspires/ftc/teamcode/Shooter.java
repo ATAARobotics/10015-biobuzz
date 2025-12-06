@@ -49,12 +49,12 @@ public class Shooter extends SubsystemBase {
     public Shooter(HardwareMap hardwareMap) {
         // do any one-time initialization here
 
-        motor0 = new MotorEx(hardwareMap, "shooter0", Motor.GoBILDA.BARE);
+        motor0 = new MotorEx(hardwareMap, "shooterL", Motor.GoBILDA.BARE);
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         motor0.setInverted(true);
 
-        motor1 = new MotorEx(hardwareMap, "shooter1", Motor.GoBILDA.BARE);
+        motor1 = new MotorEx(hardwareMap, "shooterR", Motor.GoBILDA.BARE);
         motor1.setRunMode(Motor.RunMode.RawPower);
         motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         motor1.setInverted(false);
@@ -76,7 +76,7 @@ public class Shooter extends SubsystemBase {
     }
     public void read_sensors(double time) {
         // get any inputs from our encoders or other sensors
-        ticksPerSecond = motor0.getVelocity();
+        ticksPerSecond = motor1.getVelocity();
         currentRpm = (ticksPerSecond * 60) / TICKS_PER_REV;
         voltage = battery.getVoltage();
     }

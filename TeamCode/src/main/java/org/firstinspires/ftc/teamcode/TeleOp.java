@@ -144,11 +144,11 @@ public abstract class TeleOp extends OpMode {
             for (AprilTagDetection tag : detections) {
                 if (tag.id == target.id){
                     drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) - tag.ftcPose.bearing;
-                    telemetry.addData("target", tag.ftcPose.range);
+                    turret.faceRobotAngle(tag.ftcPose.bearing + turret.currentTurretAngle);
                     //range(distance)is in inches, maybe convert to centi
                     telemetry.addData("bearing", tag.ftcPose.bearing);
-                    distToAprilTag = tag.ftcPose.range;
-                    telemetry.addData("distance to april tag", distToAprilTag);
+                    telemetry.addData("distance to april tag", tag.ftcPose.range);
+                    telemetry.addData("april-tags", detections.size());
                 }
             }
         }
@@ -180,19 +180,6 @@ public abstract class TeleOp extends OpMode {
         telem.log("position-y", y);
         telem.log("position-heading", h);
         telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
-        List<AprilTagDetection> detections = april_tags.getDetections();
-        telem.logBoth("april-tags", detections.size());
-        for (AprilTagDetection tag : detections) {
-            if (tag.id == target.id){
-                //  drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) - tag.ftcPose.bearing;
-                telem.logBoth("april-tag-target", tag.ftcPose.range);
-                //range(distance)is in inches, maybe convert to centi
-                telem.logBoth("april-tag-bearing", tag.ftcPose.bearing);
-                distToAprilTag = tag.ftcPose.range;
-                turret.faceRobotAngle(tag.ftcPose.bearing + turret.currentTurretAngle);
-                telem.logBoth("april-tag-distance", distToAprilTag);
-            }
-        }
         telemetry.update();
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
     }
