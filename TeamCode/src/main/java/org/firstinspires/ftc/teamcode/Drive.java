@@ -16,6 +16,8 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
+import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 
 @Config
 public class Drive extends SubsystemBase {
@@ -38,8 +40,6 @@ public class Drive extends SubsystemBase {
     public static double STATIC_F_FORWARD = 0.04; // 0.09;
     public static double STATIC_F_STRAFE = 0.08; // 0.15;
 
-    public boolean cameraOn = false;
-
     //public static double LINEAR_SCALAR = 1.018;
     //public static double ANGULAR_SCALAR = 0.995;
 
@@ -58,8 +58,8 @@ public class Drive extends SubsystemBase {
     double forward; // +Fwd/-Rev
     double strafe; // +Right/-Left
     double turn; // +CW/-CCW
-    public double april_bearing;
-    public double desired_heading;
+    double desired_heading;
+    public double apriltag_heading;
     double ff_forward;
     double ff_strafe;
     Command parking; //Null if we're not parking
@@ -90,11 +90,11 @@ public class Drive extends SubsystemBase {
     //double x_velocity;
     //double y_velocity;
 
-    boolean april_lock = false;
     boolean isRedAlliance;
-
+    AprilTagMetadata target;
     public Drive(HardwareMap hardwareMap, boolean isRedAlliance) {
         this.isRedAlliance = isRedAlliance;
+        target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
         // BIG NOTE: since we still have the "broken" goBilda
         // floodgate switch, we NEED to wrap our motors so that they
         // don't change power "too fast" (you can potentially trigger
@@ -127,6 +127,7 @@ public class Drive extends SubsystemBase {
                 GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
         pinpoint.resetPosAndIMU();
+
         /*otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
         otos.setLinearUnit(DISTANCE_UNIT);
         otos.setAngularUnit(ANGLE_UNIT);
@@ -280,7 +281,6 @@ public class Drive extends SubsystemBase {
             super.end(interupted);
             parking = null;
             desired_heading = -180;
-            april_lock = false;
         }
     }
     public Command parkAt (GamepadEx driver, double x, double y, double heading){
@@ -384,19 +384,8 @@ public class Drive extends SubsystemBase {
             if (driver.wasJustPressed(GamepadKeys.Button.DPAD_UP) || driver.wasJustPressed(GamepadKeys.Button.DPAD_DOWN) || driver.wasJustPressed(GamepadKeys.Button.DPAD_LEFT) || driver.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
                 desired_heading += ANGLE_TWEAK;
             }
-            if (driver.wasJustPressed(GamepadKeys.Button.Y))
-                april_lock = !april_lock;
-            if (april_lock)
-                desired_heading = april_bearing;
-            if (driver.wasJustPressed((GamepadKeys.Button.RIGHT_BUMPER)))
-                cameraOn = !cameraOn;
-            if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
-                double tx = isRedAlliance ? 1.29 : -1.29;
-                double ty = 1.47;
-                double x = getPosition().getX(DISTANCE_UNIT);
-                double y = getPosition().getY(DISTANCE_UNIT);
-                desired_heading = -Math.toDegrees(Math.atan2(tx - x, ty - y));
-            }
+            if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
+                desired_heading = apriltag_heading;
 
              // Anjalika wants "turbo" mode ... so if we're holding
             // left trigger _currently_, we go to Turbo -- otherwise
@@ -441,6 +430,10 @@ public class Drive extends SubsystemBase {
         //current_position = otos.getPosition();
         pinpoint.update();
         current_position = pinpoint.getPosition();
+
+        apriltag_heading = Math.toDegrees(Math.atan2(
+                current_position.getX(DistanceUnit.METER) - target.distanceUnit.toMeters(target.fieldPosition.get(1)),
+                -current_position.getY(DistanceUnit.METER) - target.distanceUnit.toMeters(target.fieldPosition.get(0))));
         /*
         current_left_distance= dist_left.getDistance(DistanceUnit.INCH);
         dist_left_avg.add_sample(current_left_distance);

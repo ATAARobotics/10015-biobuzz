@@ -51,7 +51,7 @@ public abstract class Auto extends OpMode {
     public abstract Alliance getAlliance();
     boolean isRedAlliance;
     boolean parkingDefault = true;
-    AprilTagMetadata target;
+    AprilTagMetadata obelisk;
 
     @Override
     public void init() {
@@ -64,7 +64,7 @@ public abstract class Auto extends OpMode {
         // Cancel all previous commands
         CommandScheduler.getInstance().reset();
 
-        target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
+        /*
         april_tags = new AprilTagProcessor.Builder()
                 //.setTagLibrary(decode_tags)
                 .setDrawTagID(true)
@@ -73,7 +73,7 @@ public abstract class Auto extends OpMode {
                 .setDrawCubeProjection(true)
                 .build();
 
-       /* portal = new VisionPortal.Builder()
+       portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class,"DubbleBubble Webcam"))
                 .addProcessor(april_tags)
                 .setCameraResolution(new Size(640, 480))
@@ -83,7 +83,7 @@ public abstract class Auto extends OpMode {
 */
         // todo: a lot of this repeats in Auto and TeleOp -- can we combine?
         drive = new Drive(hardwareMap, isRedAlliance);
-        turret = new Turret(hardwareMap);
+        turret = new Turret(hardwareMap, isRedAlliance);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);

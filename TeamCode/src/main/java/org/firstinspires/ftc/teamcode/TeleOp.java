@@ -1,30 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Size;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
-//import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-
-import java.util.List;
-
 
 @Config
 public abstract class TeleOp extends OpMode {
@@ -38,45 +28,19 @@ public abstract class TeleOp extends OpMode {
     Spindexer spindexer;
     ElapsedTime  runtime = new ElapsedTime();
 
-    // prototyping with some AprilTags, Sept 15
-    AprilTagProcessor april_tags;
-    VisionPortal portal;
-
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
     boolean isRedAlliance;
 
-    AprilTagMetadata target;
-    double distToAprilTag;
-
     @Override
     public void init() {
         isRedAlliance = getAlliance() == Alliance.RED;
-        target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
 
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
-        //AprilTagLibrary decode_tags = ;
-        // game manual says april tag family is 36h11
-        april_tags = new AprilTagProcessor.Builder()
-                //.setTagLibrary(decode_tags)
-                .setDrawTagID(true)
-                .setDrawTagOutline(true)
-                .setDrawAxes(true)
-                .setDrawCubeProjection(true)
-                .build();
-
-        portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class,"elp"))
-                .addProcessor(april_tags)
-                .setCameraResolution(new Size(800, 600))
-                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .setAutoStopLiveView(true)
-                .build();
-
         drive = new Drive(hardwareMap, isRedAlliance);
-        turret = new Turret(hardwareMap);
+        turret = new Turret(hardwareMap, isRedAlliance);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);
@@ -116,6 +80,8 @@ public abstract class TeleOp extends OpMode {
         spindexer.reset();
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
         drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.281 : -0.281, -1.552, AngleUnit.DEGREES, 0));
+        // this is the near-goal position inside the launch zone aligned along the outside edge of the launch line
+//        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.191 : -1.191, 1.457, AngleUnit.DEGREES, isRedAlliance ? -45 : 45));
     }
 
     @Override
@@ -134,25 +100,8 @@ public abstract class TeleOp extends OpMode {
         shooter.read_sensors(time);
         //turret.read_sensors(time);
         //intake.read_sensors(time);
-
-        drive.april_bearing = Math.toDegrees(Math.atan2(
-                target.distanceUnit.toMeters(target.fieldPosition.get(1))-drive.getPosition().getX(DistanceUnit.METER),
-                target.distanceUnit.toMeters(target.fieldPosition.get(0))-drive.getPosition().getY(DistanceUnit.METER)));
-//      target.fieldOrientation.toOrientation(AxesReference.EXTRINSIC,AxesOrder.XYZ,AngleUnit.DEGREES).thirdAngle-90
-        if (drive.cameraOn) {
-            List<AprilTagDetection> detections = april_tags.getDetections();
-            for (AprilTagDetection tag : detections) {
-                if (tag.id == target.id){
-                    drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) - tag.ftcPose.bearing;
-                    turret.faceRobotAngle(tag.ftcPose.bearing + turret.currentTurretAngle);
-                    //range(distance)is in inches, maybe convert to centi
-                    telemetry.addData("bearing", tag.ftcPose.bearing);
-                    telemetry.addData("distance to april tag", tag.ftcPose.range);
-                    telemetry.addData("april-tags", detections.size());
-                }
-            }
-        }
-        telemetry.addData("Camera", drive.cameraOn);
+        turret.apriltag_heading = drive.apriltag_heading;
+        turret.robot_heading = drive.getPosition().getHeading(AngleUnit.DEGREES);
 
         // Run the CommandScheduler instance (note: this will call
         // ".periodic()" on all registered subsystems, which is the

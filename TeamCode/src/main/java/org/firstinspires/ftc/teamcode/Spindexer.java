@@ -21,7 +21,7 @@ public class Spindexer extends SubsystemBase {
     // tuned november 24 end of session
     public static double spindexerP = 0.026, spindexerI = 0.01, spindexerD = 0.0005;
     public Spindexer (HardwareMap hardwareMap){
-        spindexerMotor = new MotorEx(hardwareMap, "spindexerMotor", Motor.GoBILDA.RPM_312);
+        spindexerMotor = new MotorEx(hardwareMap, "spindexer", Motor.GoBILDA.RPM_312);
         spindexerPID = new PIDController(spindexerP,spindexerI,spindexerD);
         spindexerPID.setTolerance(TOLERENCE_DEG);
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
