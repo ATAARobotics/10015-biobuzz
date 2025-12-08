@@ -92,7 +92,7 @@ public class Turret extends SubsystemBase {
     }
 
     public void faceRobotAngle(double angle) {
-        angle = Math.max(-90, Math.min(angle, 90));
+        angle = Math.max(-135, Math.min(angle, 135));
         turretHeadingControl.setSetPoint(angle);
     }
 
@@ -127,10 +127,10 @@ public class Turret extends SubsystemBase {
             currentTurretAngle = (servoTurnCount * 360 + servoAngle)*GEAR_RATIO;
 
         // Forward wrap detection (jumped from +180 → -180)
-        if (delta < -4000) servoTurnCount++;
+        if (delta < -4500) servoTurnCount++;
 
         // Reverse wrap detection (jumped from -180 → +180)
-        if (delta > 4000) servoTurnCount--;
+        if (delta > 4500) servoTurnCount--;
 
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
