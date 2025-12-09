@@ -32,6 +32,7 @@ public class Turret extends SubsystemBase {
 
     public PIDController turretHeadingControl;
     public double lastServoAngle, servoPower, currentTurretAngle;
+    private double servoAngle;
     private double resetAngle;
     private int servoTurnCount;
     double joystickAngle;
@@ -118,7 +119,7 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-        double servoAngle = getServoAngle() - resetAngle;
+        servoAngle = getServoAngle() - resetAngle;
         double delta = (servoAngle - lastServoAngle)/turretHeadingControl.getPeriod();
         lastServoAngle = servoAngle;
 
@@ -166,6 +167,8 @@ public class Turret extends SubsystemBase {
         telem.log("turret-power", servoPower);
         telem.log("turret-error", turretHeadingControl.getPositionError());
         telem.log("turret-joystick", joystickAngle);
+        telem.log("turret-servo-angle", servoAngle);
+        telem.log("turret-last-servo-angle", lastServoAngle);
 
         telem.logDrivers("Heading Lock Mode", mode);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
