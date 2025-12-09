@@ -41,7 +41,7 @@ public class Turret extends SubsystemBase {
     public static double TURRET_TOLERANCE = 1.0; // in degrees
     public double apriltag_heading, robot_heading;
 
-    public enum HeadingLockMode { Trig, Camera, Off }
+    public enum HeadingLockMode { Trig, Camera, Off, Both }
     private HeadingLockMode mode = HeadingLockMode.Off;
 
     // prototyping with some AprilTags, Sept 15
@@ -135,8 +135,8 @@ public class Turret extends SubsystemBase {
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
         servoPower = turretHeadingControl.calculate(currentTurretAngle) + turretF*Math.signum(turretHeadingControl.getPositionError());
-        servo1.set(servoPower);
-        servo2.set(servoPower);
+        //servo1.set(servoPower);
+        //servo2.set(servoPower);
 //        try { writer.write(servoAngle+"\t"+currentTurretAngle+"\t"+delta+"\n"); } catch (IOException e) { e.printStackTrace(); }
     }
 
@@ -190,9 +190,7 @@ public class Turret extends SubsystemBase {
         public void execute() {
             if (operator.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
                 if (mode == HeadingLockMode.Off) {
-                    mode = HeadingLockMode.Trig;
-                } else if (mode == HeadingLockMode.Trig) {
-                    mode = HeadingLockMode.Camera;
+                    mode = HeadingLockMode.Both;
                 } else {
                     mode = HeadingLockMode.Off;
                 }
@@ -202,15 +200,11 @@ public class Turret extends SubsystemBase {
             if (mode == HeadingLockMode.Trig)
                 faceFieldAngle(apriltag_heading);
             if (mode == HeadingLockMode.Camera) {
-                List<AprilTagDetection> detections = april_tags.getDetections();
-                for (AprilTagDetection tag : detections) {
-                    if (tag.id == target.id){
-                        //drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) + tag.ftcPose.bearing;
-                        faceRobotAngle(tag.ftcPose.bearing + currentTurretAngle);
-                        //telem.log("bearing", tag.ftcPose.bearing);
-                        //range(distance)is in inches, maybe convert to centi
-                        //telem.log("distance to april tag, inches", tag.ftcPose.range);
-                    }
+                aprilTagLock();
+            }
+            if (mode == HeadingLockMode.Both){
+                if(! aprilTagLock()){
+                    faceFieldAngle(apriltag_heading);
                 }
             }
 
@@ -248,5 +242,20 @@ public class Turret extends SubsystemBase {
 
              */
         }
+    }
+
+    private boolean aprilTagLock() {
+        List<AprilTagDetection> detections = april_tags.getDetections();
+        for (AprilTagDetection tag : detections) {
+            if (tag.id == target.id){
+                //drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) + tag.ftcPose.bearing;
+                faceRobotAngle(tag.ftcPose.bearing + currentTurretAngle);
+                //telem.log("bearing", tag.ftcPose.bearing);
+                //range(distance)is in inches, maybe convert to centi
+                //telem.log("distance to april tag, inches", tag.ftcPose.range);
+                return true;
+            }
+        }
+        return false;
     }
 }

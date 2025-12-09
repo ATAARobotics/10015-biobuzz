@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
@@ -14,11 +15,11 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 @Config
 public class Shooter extends SubsystemBase {
-    //private final Servo indicatorLight;
+    Servo indicatorLight;
     MotorEx motor0;
     MotorEx motor1;
     MotorGroup shooterMotor;
-
+    Servo hood;
     double ticksPerSecond;
     double power;
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
@@ -29,6 +30,8 @@ public class Shooter extends SubsystemBase {
     //Tuned on November 27:
     public static double FAR_RPM = 4950;
     public static double NEAR_RPM = 4000;
+    public static double HOOD_MAX = 0.75;
+    public static double HOOD_MIN = 0.35;
     double RED = 0.28;
     double GREEN = 0.5;
     double PINK = 0.71;
@@ -40,6 +43,7 @@ public class Shooter extends SubsystemBase {
     VoltageSensor battery;
     double MAX_RPM = 5250;
     double targetRpm;
+    double targetHood = HOOD_MIN;
     double currentRpm;
     double voltage; // current battery voltage
 
@@ -61,8 +65,10 @@ public class Shooter extends SubsystemBase {
 
         shooterMotor = new MotorGroup(motor0, motor1);
         targetRpm = 0;
-       // indicatorLight = hardwareMap.get(Servo.class, "indicator");
+        indicatorLight = hardwareMap.get(Servo.class, "indicator");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
+
+        hood = hardwareMap.get(Servo.class, "hood");
     }
 
     public void reset() {
@@ -154,10 +160,12 @@ public class Shooter extends SubsystemBase {
         if (targetRpm == 0) power = 0;
         if (power < 0) power = 0;
 
+        hood.setPosition(targetHood);
+
         shooterMotor.set(power);
 
         // indicator lights
-       /* if (targetRpm > 0) {
+        if (targetRpm > 0) {
             if (readyToShoot() && targetRpm == FAR_RPM) {
                 indicatorLight.setPosition(GREEN);
             }
@@ -171,7 +179,7 @@ public class Shooter extends SubsystemBase {
             // turn off the light if we're not spinning
             indicatorLight.setPosition(0);
         }
-        */
+
         // count shots
         if (targetRpm > 0 && currentRpm > targetRpm + HIGH_STATE_OFFSET) {
             readyToCount = true;
@@ -221,8 +229,10 @@ public class Shooter extends SubsystemBase {
             if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
                 if (targetRpm == 0) {
                     targetRpm = NEAR_RPM;
+                    targetHood = HOOD_MIN;
                 } else if (targetRpm == NEAR_RPM) {
                     targetRpm = FAR_RPM;
+                    targetHood = HOOD_MAX;
                 } else {
                     targetRpm = 0;
                 }

@@ -8,12 +8,17 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.arcrobotics.ftclib.util.Timing;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import java.util.concurrent.TimeUnit;
 
 @Config
 public class Spindexer extends SubsystemBase {
     public MotorEx spindexerMotor;
+    Timing.Timer stuckTime;
     public PIDController spindexerPID;
+    double spindexerPower;
     public double targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
     double currentAngle;    // computed from our encoder
     public static double TOLERENCE_DEG = 1.0;
@@ -25,6 +30,7 @@ public class Spindexer extends SubsystemBase {
         spindexerPID = new PIDController(spindexerP,spindexerI,spindexerD);
         spindexerPID.setTolerance(TOLERENCE_DEG);
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        stuckTime = new Timing.Timer(600, TimeUnit.MILLISECONDS);
 
     }
 
@@ -44,14 +50,24 @@ public class Spindexer extends SubsystemBase {
         targetAngle += STEP_DEG;
     }
 
+    public boolean isStuck(){
+        if (stuckTime.done()){
+            double diff = targetAngle - currentAngle;
+            if (diff > 10){
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void periodic() {
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
         spindexerPID.setPID(spindexerP, spindexerI, spindexerD);
-        double power = spindexerPID.calculate(currentAngle - targetAngle);
-        if (power > 0.5) power = 0.5;
-        if (power < -0.5) power = -0.5;
-        spindexerMotor.set(power);
+        spindexerPower = spindexerPID.calculate(currentAngle - targetAngle);
+       // if (spindexerPower > 0.5) spindexerPower = 0.5;
+        if (spindexerPower < -0.5) spindexerPower = -0.5;
+        spindexerMotor.set(spindexerPower);
     }
 
     public void addTelemetry(HyperTelemetry telem) {
@@ -61,6 +77,8 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-p", spindexerP);
         telem.log("spindexer-i", spindexerI);
         telem.log("spindexer-d", spindexerD);
+        telem.log("spindexerPower", spindexerPower);
+        telem.log("spindexer-stuck", isStuck());
     }
 
 // TODO: there's a nicer way to do this, which may be more reusable in Auto
@@ -89,7 +107,15 @@ public class Spindexer extends SubsystemBase {
         @Override
         public void execute() {
             if (operator.wasJustPressed(GamepadKeys.Button.A)){
-                targetAngle += STEP_DEG;
+                double dif = targetAngle - currentAngle;
+                if (dif < 10) {
+                    targetAngle += STEP_DEG;
+                    stuckTime.start();
+                }
+                else {
+                    operator.gamepad.rumble(100);
+
+                }
             }
             if (operator.wasJustPressed(GamepadKeys.Button.Y)){
                 targetAngle -= STEP_DEG;
