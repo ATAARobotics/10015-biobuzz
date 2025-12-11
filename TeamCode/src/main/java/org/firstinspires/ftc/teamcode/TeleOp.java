@@ -98,6 +98,7 @@ public abstract class TeleOp extends OpMode {
         operator.readButtons();
         drive.read_sensors(time);
         shooter.read_sensors(time);
+        spindexer.read_sensors(time);
         //turret.read_sensors(time);
         //intake.read_sensors(time);
         turret.apriltag_heading = drive.apriltag_heading;

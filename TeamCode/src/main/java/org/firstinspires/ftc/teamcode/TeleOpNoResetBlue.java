@@ -20,7 +20,7 @@ public class TeleOpNoResetBlue extends TeleOp {
         float h = prefs.getFloat("heading", 0.0f);
         drive.setPosition(new Pose2D(DistanceUnit.METER, x, y, AngleUnit.DEGREES, h));
         float spin = prefs.getFloat("spindex", 0.0f);
-        spindexer.targetAngle = spin;
+        spindexer.targetAngle = (int)spin;
         turret.angleReset();
         spindexer.reset();
     }

@@ -136,8 +136,8 @@ public class Turret extends SubsystemBase {
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
         servoPower = turretHeadingControl.calculate(currentTurretAngle) + turretF*Math.signum(turretHeadingControl.getPositionError());
-        //servo1.set(servoPower);
-        //servo2.set(servoPower);
+        servo1.set(servoPower);
+        servo2.set(servoPower);
 //        try { writer.write(servoAngle+"\t"+currentTurretAngle+"\t"+delta+"\n"); } catch (IOException e) { e.printStackTrace(); }
     }
 
@@ -169,6 +169,7 @@ public class Turret extends SubsystemBase {
         telem.log("turret-joystick", joystickAngle);
         telem.log("turret-servo-angle", servoAngle);
         telem.log("turret-last-servo-angle", lastServoAngle);
+        telem.log("turret-servo-turn-count", servoTurnCount);
 
         telem.logDrivers("Heading Lock Mode", mode);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
@@ -191,15 +192,20 @@ public class Turret extends SubsystemBase {
 
         @Override
         public void execute() {
+            // for ease-of-use we have just two modes:
+            // - "use april tag if available, else trig"
+            // - "off (lock at 0)"
             if (operator.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
                 if (mode == HeadingLockMode.Off) {
                     mode = HeadingLockMode.Both;
                 } else {
                     mode = HeadingLockMode.Off;
+                    joystickAngle = 0;
+                    // reset operator desired angle when switching mode
                 }
             }
             if (mode == HeadingLockMode.Off)
-                faceRobotAngle(0);
+                faceRobotAngle(joystickAngle);
             if (mode == HeadingLockMode.Trig)
                 faceFieldAngle(apriltag_heading);
             if (mode == HeadingLockMode.Camera) {
