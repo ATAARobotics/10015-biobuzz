@@ -181,12 +181,12 @@ public class Shooter extends SubsystemBase {
         }
 
         // count shots
-        if (targetRpm > 0 && currentRpm > targetRpm + HIGH_STATE_OFFSET) {
-            readyToCount = true;
-        }
         if (targetRpm > 0 && readyToCount && currentRpm < targetRpm + LOW_STATE_OFFSET){
             shotsFired += 1;
             readyToCount = false;
+        }
+        if (targetRpm > 0 && currentRpm > targetRpm + HIGH_STATE_OFFSET) {
+            readyToCount = true;
         }
     }
 
@@ -230,11 +230,14 @@ public class Shooter extends SubsystemBase {
                 if (targetRpm == 0) {
                     targetRpm = NEAR_RPM;
                     targetHood = HOOD_MIN;
+                    readyToCount = false;
                 } else if (targetRpm == NEAR_RPM) {
                     targetRpm = FAR_RPM;
                     targetHood = HOOD_MAX;
+                    readyToCount = false;
                 } else {
                     targetRpm = 0;
+                    readyToCount = false;
                 }
             }
 

@@ -96,7 +96,9 @@ public class Turret extends SubsystemBase {
     }
 
     public void faceRobotAngle(double angle) {
-        angle = Math.max(-135, Math.min(angle, 135));
+        // +/- 90 is easier to see obvious issues with turret angle/tracking
+        angle = Math.max(-90, Math.min(angle, 90));
+        //angle = Math.max(-135, Math.min(angle, 135));
         turretHeadingControl.setSetPoint(angle);
     }
 

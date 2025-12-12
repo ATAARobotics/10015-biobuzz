@@ -114,6 +114,18 @@ public class Spindexer extends SubsystemBase {
         return false;
     }
 
+    public boolean isFull() {
+        return !hasOpenSlot();
+    }
+
+    public boolean hasOpenSlot() {
+        for (SlotContent s : slots) {
+            if (s == SlotContent.Nothing)
+                return true;
+        }
+        return false;
+    }
+
     public boolean atTarget(){
         if (spin == SpinDirection.Index) {
             return storeControl.atSetPoint();
@@ -124,7 +136,7 @@ public class Spindexer extends SubsystemBase {
 
     public void read_sensors(double time) {
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
-        artifactColor = brushland.getNormalizedColors();
+        //artifactColor = brushland.getNormalizedColors();
         artifactDistance = ((OpticalDistanceSensor)brushland).getLightDetected();
     }
 
@@ -132,12 +144,25 @@ public class Spindexer extends SubsystemBase {
     public void periodic() {
         // for CCW ("shoot") direction, we use a separate PID .. so we
         // ned to know "which direction" we're spinning.
-        PIDController control = spin == SpinDirection.Index ? storeControl : shootControl;
+        PIDController control = (spin == SpinDirection.Index ? storeControl : shootControl);
         spindexerPower = control.calculate(currentAngle - targetAngle);
 
         // note: it's important to call .calculate() on our controller
         // _before_ we ask "atTarget()" so we have current information
         // from _this_ loop
+
+        // if we're spinning in the "shot" direction, AND have arrived
+        // at our target .. then we can be fairly sure that we've shot
+        // that ball. ideally we would double-check by having the
+        // Shooter tell us that a shot went up.
+        if (spin == SpinDirection.Shoot) {
+            int shootIndex = currentSlot() + 1;
+            if (shootIndex > 2) shootIndex = 0;
+            if (atTarget() && slots[shootIndex] != SlotContent.Nothing) {
+                // we probably shot
+                slots[shootIndex] = SlotContent.Nothing;
+            }
+        }
 
         // prelim tests show that we get distance values like 0.0xxx
         // values with nothing, and 0.25 to 0.30 ish values when
@@ -145,12 +170,14 @@ public class Spindexer extends SubsystemBase {
         // ...also we don't want to try detections when we're
         // "between" slots
         haveArtifact = false;
-        if (atTarget()) {
+        if (spin == SpinDirection.Index && atTarget()) {
             haveArtifact = artifactDistance > 0.19;
             if (haveArtifact) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
                     slots[currentSlot()] = SlotContent.Purple;
-                    targetAngle -= STEP_DEG;
+                    if (!isFull()) {
+                        targetAngle -= STEP_DEG;
+                    }
                 }
             }
         }
@@ -175,9 +202,6 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-target-angle", targetAngle);
         telem.log("spindexer-current-angle", currentAngle);
         telem.log("spindexer-have-artifact", haveArtifact);
-        telem.log("spindexer-artifact-red", artifactColor.red);
-        telem.log("spindexer-artifact-green", artifactColor.green);
-        telem.log("spindexer-artifact-blue", artifactColor.blue);
         telem.log("spindexer-artifact-distance", artifactDistance);
         telem.log("spindexer-current-slot", currentSlot());
         telem.log("spindexer-at-target", atTarget());
@@ -222,10 +246,6 @@ public class Spindexer extends SubsystemBase {
                 else {
                     operator.gamepad.rumble(100);
                 }
-            }
-            if (operator.wasJustPressed(GamepadKeys.Button.B)) {
-                storeControl.setPID(storePid.p, storePid.i, storePid.d);
-                shootControl.setPID(shootPid.p, shootPid.i, shootPid.d);
             }
             if (operator.wasJustPressed(GamepadKeys.Button.Y)){
                 spin = SpinDirection.Index;

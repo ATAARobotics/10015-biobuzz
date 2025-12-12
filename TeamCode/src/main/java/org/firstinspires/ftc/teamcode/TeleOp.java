@@ -27,6 +27,7 @@ public abstract class TeleOp extends OpMode {
     Turret turret;
     Spindexer spindexer;
     ElapsedTime  runtime = new ElapsedTime();
+    int loops;
 
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
@@ -82,6 +83,7 @@ public abstract class TeleOp extends OpMode {
         drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.281 : -0.281, -1.552, AngleUnit.DEGREES, 0));
         // this is the near-goal position inside the launch zone aligned along the outside edge of the launch line
 //        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.191 : -1.191, 1.457, AngleUnit.DEGREES, isRedAlliance ? -45 : 45));
+        loops = 0;
     }
 
     @Override
@@ -93,6 +95,7 @@ public abstract class TeleOp extends OpMode {
 
     @Override
     public void loop() {
+        loops++;
         // read controls and sensors
         driver.readButtons();
         operator.readButtons();
@@ -130,6 +133,8 @@ public abstract class TeleOp extends OpMode {
         telem.log("position-y", y);
         telem.log("position-heading", h);
         telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
+        double fps = loops / time;
+        telem.logDrivers("frames per second", fps);
         telemetry.update();
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
     }
