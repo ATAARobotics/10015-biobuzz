@@ -130,28 +130,34 @@ public class Spindexer extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // prelim tests show that we get like 0.0xxx values with
-        // nothing, and 0.25 to 0.30 ish values when there's a ball
-        // (but NOT when a hole is rotated there)
-        // ...also we don't want to try detections when we're "between" slots
+        // for CCW ("shoot") direction, we use a separate PID .. so we
+        // ned to know "which direction" we're spinning.
+        PIDController control = spin == SpinDirection.Index ? storeControl : shootControl;
+        spindexerPower = control.calculate(currentAngle - targetAngle);
+
+        // note: it's important to call .calculate() on our controller
+        // _before_ we ask "atTarget()" so we have current information
+        // from _this_ loop
+
+        // prelim tests show that we get distance values like 0.0xxx
+        // values with nothing, and 0.25 to 0.30 ish values when
+        // there's a ball (but NOT when a hole is rotated there)
+        // ...also we don't want to try detections when we're
+        // "between" slots
         haveArtifact = false;
         if (atTarget()) {
             haveArtifact = artifactDistance > 0.19;
             if (haveArtifact) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
                     slots[currentSlot()] = SlotContent.Purple;
-                    //targetAngle -= STEP_DEG;
+                    targetAngle -= STEP_DEG;
                 }
             }
         }
 
-//        storeControl.setPID(storePid.p, storePid.i, storePid.d);
-//        shootControl.setPID(shootPid.p, shootPid.i, shootPid.d);
+        storeControl.setPID(storePid.p, storePid.i, storePid.d);
+        shootControl.setPID(shootPid.p, shootPid.i, shootPid.d);
 
-        // for CCW ("shoot") direction, we use a separate PID .. so we
-        // ned to know "which direction" we're spinning.
-        PIDController control = spin == SpinDirection.Index ? storeControl : shootControl;
-        spindexerPower = control.calculate(currentAngle - targetAngle);
         //if (spindexerPower > 0.5) spindexerPower = 0.5;
         //if (spindexerPower < -0.5) spindexerPower = -0.5;
         spindexerMotor.set(spindexerPower);
