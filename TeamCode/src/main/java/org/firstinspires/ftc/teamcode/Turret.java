@@ -31,14 +31,17 @@ public class Turret extends SubsystemBase {
     AnalogInput encoder;
 
     public PIDController turretHeadingControl;
-    public double lastServoAngle, servoPower, currentTurretAngle;
+    public double servoPower, currentTurretAngle;
     private double servoAngle;
+    private double servoDelta = Double.NaN;
+    private double lastServoAngle = Double.NaN;
     private double resetAngle;
     private int servoTurnCount;
     double joystickAngle;
 
     private static final double GEAR_RATIO = 0.8; // 1 servo rotation equals 0.8 turret rotations
-    public static double turretP = 0.005, turretI = 0.04, turretD = 0.0003, turretF = 0.055; // Tuned 2025.11.23 with goBILDA 6V Servo Power Injector
+    // tuned december 11, bare servos for PID, attach turret for F
+    public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
     public static double TURRET_TOLERANCE = 1.0; // in degrees
     public double apriltag_heading, robot_heading;
 
@@ -120,22 +123,20 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic() {
         servoAngle = getServoAngle() - resetAngle;
-        double delta = (servoAngle - lastServoAngle)/turretHeadingControl.getPeriod();
+        servoDelta = lastServoAngle - servoAngle;
         lastServoAngle = servoAngle;
 
-        // Multi-turn total rotation angle of the turret
-        if (Math.abs(delta)<500) // ignore hysteresis
-            currentTurretAngle = (servoTurnCount * 360 + servoAngle)*GEAR_RATIO;
+        // did we just "wrap around"?
+        if (servoDelta < -180) servoTurnCount--;
+        if (servoDelta > 180) servoTurnCount++;
 
-        // Forward wrap detection (jumped from +180 → -180)
-        if (delta < -4500) servoTurnCount++;
-
-        // Reverse wrap detection (jumped from -180 → +180)
-        if (delta > 4500) servoTurnCount--;
+        currentTurretAngle = (servoTurnCount * 360 + servoAngle)*GEAR_RATIO;
 
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
         servoPower = turretHeadingControl.calculate(currentTurretAngle) + turretF*Math.signum(turretHeadingControl.getPositionError());
+        if (servoPower > 1.0) servoPower = 1.0;
+        if (servoPower < -1.0) servoPower = -1.0;
         servo1.set(servoPower);
         servo2.set(servoPower);
 //        try { writer.write(servoAngle+"\t"+currentTurretAngle+"\t"+delta+"\n"); } catch (IOException e) { e.printStackTrace(); }
@@ -170,6 +171,8 @@ public class Turret extends SubsystemBase {
         telem.log("turret-servo-angle", servoAngle);
         telem.log("turret-last-servo-angle", lastServoAngle);
         telem.log("turret-servo-turn-count", servoTurnCount);
+        telem.log("turrent-servo-last", lastServoAngle);
+        telem.log("turret-servo-delta", servoDelta);
 
         telem.logDrivers("Heading Lock Mode", mode);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
@@ -217,7 +220,6 @@ public class Turret extends SubsystemBase {
                 }
             }
 
-            /*
             // decide what to do based on sensors and human inputs from controller
 
             // face turret the same way the joystick is facing ... and
@@ -246,10 +248,6 @@ public class Turret extends SubsystemBase {
             if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
                 reset();
             }
-
-            faceRobotAngle(joystickAngle);
-
-             */
         }
     }
 
