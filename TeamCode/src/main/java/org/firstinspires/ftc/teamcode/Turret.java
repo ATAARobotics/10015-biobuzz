@@ -232,21 +232,15 @@ public class Turret extends SubsystemBase {
                 joystickAngle = Math.toDegrees(Math.atan2(rx, ry));
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
-                //joystickAngle += 10;
-                joystickAngle = 90;
+                joystickAngle += 10;
+                //joystickAngle = 90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
-               // joystickAngle -= 10;
-                joystickAngle = -90;
+                joystickAngle -= 10;
+                //joystickAngle = -90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
                 joystickAngle = 0;
-            }
-            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
-                joystickAngle = 180;
-            }
-            if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
-                reset();
             }
         }
     }
