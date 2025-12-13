@@ -43,14 +43,14 @@ public class BallDetector extends OpenCvPipeline {
 
         // "Erode and Dilate"
         hsvBinaryMat.copyTo(hsvBinaryMatErodedDilated);
-        if(erodeValue > 0) {
+        if (erodeValue > 0) {
             this.element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(erodeValue, erodeValue));
             Imgproc.erode(hsvBinaryMatErodedDilated, hsvBinaryMatErodedDilated, element);
 
             element.release();
         }
 
-        if(dilateValue > 0) {
+        if (dilateValue > 0) {
             this.element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(dilateValue, dilateValue));
             Imgproc.dilate(hsvBinaryMatErodedDilated, hsvBinaryMatErodedDilated, element);
 
@@ -63,14 +63,14 @@ public class BallDetector extends OpenCvPipeline {
 
         // "Erode and Dilate"
         hsvBinaryMat1.copyTo(hsvBinaryMat1ErodedDilated);
-        if(erodeValue1 > 0) {
+        if (erodeValue1 > 0) {
             this.element1 = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(erodeValue1, erodeValue1));
             Imgproc.erode(hsvBinaryMat1ErodedDilated, hsvBinaryMat1ErodedDilated, element1);
 
             element1.release();
         }
 
-        if(dilateValue1 > 0) {
+        if (dilateValue1 > 0) {
             this.element1 = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(dilateValue1, dilateValue1));
             Imgproc.dilate(hsvBinaryMat1ErodedDilated, hsvBinaryMat1ErodedDilated, element1);
 
