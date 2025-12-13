@@ -38,6 +38,8 @@ public class Spindexer extends SubsystemBase {
     // different PID tunings for "shoot" versus normal spin
     public PIDController storeControl;
     public PIDController shootControl;
+    public boolean boostF = false;
+    public static double boostAmount = 0.85;
 
     double spindexerPower;
     public int targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
@@ -187,6 +189,23 @@ public class Spindexer extends SubsystemBase {
 
         //if (spindexerPower > 0.5) spindexerPower = 0.5;
         //if (spindexerPower < -0.5) spindexerPower = -0.5;
+
+        // temporary "boost" for the shoot-direction .. if we've "not
+        // yet passed our goal" _AND_ boostF is still true, we add
+        // extra power (because the launched needs to have more power
+        // right when it's super close to its goal). the "+11" is
+        // because the point where it actually shoots is also pretty
+        // close to our target spindex location.
+        if (boostF && spin == SpinDirection.Shoot) {
+            if (currentAngle < targetAngle + 11) {//(spindexerPower > 0.0) {
+                spindexerPower += boostAmount;
+            } else {
+                // we've passed our setpoint (at least once) because
+                // power went negative
+                boostF = false;
+            }
+        }
+
         spindexerMotor.set(spindexerPower);
     }
 
@@ -241,6 +260,7 @@ public class Spindexer extends SubsystemBase {
                     spin = SpinDirection.Shoot;
                     shootControl.reset();
                     targetAngle += STEP_DEG;
+                    boostF = true;
                     stuckTime.start();
                 }
                 else {
