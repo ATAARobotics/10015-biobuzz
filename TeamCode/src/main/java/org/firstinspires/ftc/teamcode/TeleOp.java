@@ -133,7 +133,7 @@ public abstract class TeleOp extends OpMode {
         telem.log("position-y", y);
         telem.log("position-heading", h);
         telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
-        double fps = loops / time;
+        double fps = loops / runtime.seconds();
         telem.logDrivers("frames per second", fps);
         telemetry.update();
         FtcDashboard.getInstance().sendTelemetryPacket(pack);

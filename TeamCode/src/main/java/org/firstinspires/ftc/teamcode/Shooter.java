@@ -160,6 +160,9 @@ public class Shooter extends SubsystemBase {
         if (targetRpm == 0) power = 0;
         if (power < 0) power = 0;
 
+        if (targetHood < 0.35){
+            targetHood = 0.35;
+        }
         hood.setPosition(targetHood);
 
         shooterMotor.set(power);
@@ -240,6 +243,14 @@ public class Shooter extends SubsystemBase {
                     readyToCount = false;
                 }
             }
+
+        /*    if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
+                targetHood += 0.05;
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
+                targetHood -= 0.05;
+            }
+*/
 
             // clip our targetRpm .. do this LAST after all command processing
             if(targetRpm > MAX_RPM) targetRpm = MAX_RPM;
