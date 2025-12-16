@@ -15,6 +15,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 @TeleOp
 public class ConfigureColorRangefinder extends LinearOpMode {
 
@@ -35,7 +37,7 @@ public class ConfigureColorRangefinder extends LinearOpMode {
             crf.setPin0Digital(ColorRangefinder.DigitalMode.HSV, 150 / 360.0 * 255, 200 / 360.0 * 255); // purple
 
             // setup pin 1 for JUST distance (0 -> 20mm)
-            crf.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 20);
+            crf.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
         }
 
         if (false) {
@@ -51,6 +53,7 @@ public class ConfigureColorRangefinder extends LinearOpMode {
                 Color.colorToHSV(colors.toColor(), hsv);
                 telemetry.addData("rgb: ", colors.red + " " + colors.blue + " " + colors.green);
                 telemetry.addData("hsv: ", hsv[0] + " " + hsv[1] + " " + hsv[2]);
+                telemetry.addData ("distance", sensor.getDistance(DistanceUnit.MM));
                 telemetry.update();
             }
         }
