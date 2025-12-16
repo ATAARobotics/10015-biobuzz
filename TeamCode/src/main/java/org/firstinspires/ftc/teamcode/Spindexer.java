@@ -91,8 +91,19 @@ public class Spindexer extends SubsystemBase {
        double motorRevs = ticks/spindexerMotor.getCPR();
        return motorRevs * 360;
     }
-    public void spinccw(){
+
+    public void spinShoot(){
+        spin = SpinDirection.Shoot;
+        shootControl.reset();
         targetAngle += STEP_DEG;
+        boostF = true;
+        stuckTime.start();
+    }
+
+    public void spinIndex(){
+        spin = SpinDirection.Index;
+        storeControl.reset();
+        targetAngle -= STEP_DEG;
     }
 
     // returns the index of the slot that's at the front of the robot;
@@ -211,6 +222,43 @@ public class Spindexer extends SubsystemBase {
         spindexerMotor.set(spindexerPower);
     }
 
+
+
+    // leave this here for easy copy-pasting when creating a new command
+    public class CommandTemplate extends CommandBase {
+        //public void initialize() {}
+        //public void execute() {}
+        //public boolean isFinished() { return false; }
+        //public void end(boolean interrupted){}
+    }
+
+
+
+    // spins in the Index direction once, and waits for completion
+    public class IndexOnce extends CommandBase {
+        public IndexOnce() {
+            addRequirements(Spindexer.this);
+        }
+        public void initialize() {
+            spinIndex();
+        }
+        public boolean isFinished() {
+            return atTarget();
+        }
+    }
+
+    public class ShootOnce extends CommandBase {
+        public ShootOnce() {
+            addRequirements(Spindexer.this);
+        }
+        public void initialize() {
+            spinShoot();
+        }
+        public boolean isFinished() {
+            return atTarget();
+        }
+    }
+
     private String renderSlot(int i) {
         String s = "[ ";
         if (slots[i] == SlotContent.Nothing) s += "  ]";
@@ -228,58 +276,6 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
 
-        telem.logBoth("Loaded", renderSlot(0) + " " + renderSlot(1) + " " + renderSlot(2));    }
-
-// TODO: there's a nicer way to do this, which may be more reusable in Auto
-// we can bind buttons / etc to "run commands"
-// e.g.:
-//     operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(new SpindexCCW());
-//
-// we must take care to think about when new commands will run, what gets "taken over", etc
-// (remember: one subsystem may only run one command at a time).
-// figure out: does e.g. a subsequent "Y" press "override" the command? e.g. cancel the previous?
-//
-// this could be better for "spindex" e.g. because we could have a
-// "timeout" (and maybe even "cancel" back to the previous target
-// angle?)
-
-    public class HumanInputs extends CommandBase {
-        GamepadEx driver;
-        GamepadEx operator;
-
-        public HumanInputs(GamepadEx operator, GamepadEx driver) {
-            this.operator = operator;
-            this.driver = driver;
-            addRequirements(Spindexer.this);
-        }
-
-        @Override
-        public void execute() {
-            if (operator.wasJustPressed(GamepadKeys.Button.A)){
-                double dif = targetAngle - currentAngle;
-                if (dif < 10) {
-                    spin = SpinDirection.Shoot;
-                    shootControl.reset();
-                    targetAngle += STEP_DEG;
-                    boostF = true;
-                    stuckTime.start();
-                }
-                else {
-                    operator.gamepad.rumble(100);
-                }
-            }
-            if (operator.wasJustPressed(GamepadKeys.Button.Y)){
-                spin = SpinDirection.Index;
-                storeControl.reset();
-                targetAngle -= STEP_DEG;
-            }
-            if (operator.wasJustPressed(GamepadKeys.Button.X)){
-                spin = SpinDirection.Shoot;
-                shootControl.reset();
-                targetAngle += (3 * STEP_DEG);
-                stuckTime.start();
-            }
-
-        }
+        telem.logBoth("Loaded", renderSlot(0) + " " + renderSlot(1) + " " + renderSlot(2));
     }
 }
