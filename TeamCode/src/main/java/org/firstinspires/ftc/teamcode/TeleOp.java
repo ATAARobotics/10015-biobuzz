@@ -4,8 +4,10 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -66,12 +68,29 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().registerSubsystem(intake);
         CommandScheduler.getInstance().registerSubsystem(spindexer);
 
+        // set up Operator controls
+        bindOperatorControls();
+
         // "mostly" we want to run the HumanInputs commands during teleop
         CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
         CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
-        CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
+        //CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
+    }
+
+    private void bindOperatorControls() {
+        // spindexer
+        operator.getGamepadButton(GamepadKeys.Button.A).whenPressed(
+            new SequentialCommandGroup(
+                shooter.new NearZone(),
+                spindexer.new ShootOnce(),
+                shooter.new WaitForShot()
+                )
+            );
+        operator.getGamepadButton(GamepadKeys.Button.X).whenPressed(
+            spindexer.new IndexOnce()
+            );
     }
 
     @Override
