@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.util.Timing;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -22,15 +23,14 @@ import java.util.concurrent.TimeUnit;
 @Config
 public class Spindexer extends SubsystemBase {
     public MotorEx spindexerMotor;
-    public NormalizedColorSensor brushland;
 
     // stuff we read from sensors
     double currentAngle;    // computed from our encoder
-    double artifactDistance;  // raw distance guess from the sensor
-    NormalizedRGBA artifactColor;  // raw colour from the sensor
-
+    DigitalChannel artifact_color;
+    DigitalChannel artifact_distance;
     // stuff we derive
     boolean haveArtifact = false;
+    boolean purple;
     public enum SpinDirection {Shoot, Index}
     SpinDirection spin = SpinDirection.Index;
     Timing.Timer stuckTime;
@@ -67,7 +67,8 @@ public class Spindexer extends SubsystemBase {
 
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         stuckTime = new Timing.Timer(600, TimeUnit.MILLISECONDS);
-        brushland = hardwareMap.get(NormalizedColorSensor.class, "brushland");
+        artifact_color = hardwareMap.digitalChannel.get("artifact_color");
+        artifact_distance = hardwareMap.digitalChannel.get("artifact_distance");
         // we always have 3 slots in this array
         slots = new SlotContent[]{
                 SlotContent.Nothing,
@@ -138,8 +139,8 @@ public class Spindexer extends SubsystemBase {
 
     public void read_sensors(double time) {
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
-        //artifactColor = brushland.getNormalizedColors();
-        artifactDistance = ((OpticalDistanceSensor)brushland).getLightDetected();
+        purple = artifact_color.getState();
+        haveArtifact = artifact_distance.getState();
     }
 
     @Override
@@ -173,7 +174,6 @@ public class Spindexer extends SubsystemBase {
         // "between" slots
         haveArtifact = false;
         if (spin == SpinDirection.Index && atTarget()) {
-            haveArtifact = artifactDistance > 0.19;
             if (haveArtifact) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
                     slots[currentSlot()] = SlotContent.Purple;
@@ -221,7 +221,6 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-target-angle", targetAngle);
         telem.log("spindexer-current-angle", currentAngle);
         telem.log("spindexer-have-artifact", haveArtifact);
-        telem.log("spindexer-artifact-distance", artifactDistance);
         telem.log("spindexer-current-slot", currentSlot());
         telem.log("spindexer-at-target", atTarget());
         telem.log("spindexer-power", spindexerPower);
