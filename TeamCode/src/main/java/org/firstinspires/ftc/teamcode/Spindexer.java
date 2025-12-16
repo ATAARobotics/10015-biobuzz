@@ -257,7 +257,23 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
+    private String renderSlot(int i) {
+        String s = "[ ";
+        if (slots[i] == SlotContent.Nothing) s += "  ]";
+        if (slots[i] == SlotContent.Purple) s +=  "P ]";
+        if (slots[i] == SlotContent.Green) s += "G ]";
+        return s;
+    }
 
+    public void addTelemetry(HyperTelemetry telem) {
+        telem.log("spindexer-target-angle", targetAngle);
+        telem.log("spindexer-current-angle", currentAngle);
+        telem.log("spindexer-have-artifact", haveArtifact);
+        telem.log("spindexer-current-slot", currentSlot());
+        telem.log("spindexer-at-target", atTarget());
+        telem.log("spindexer-power", spindexerPower);
+        telem.log("spindexer-stuck", isStuck());
+    }
 
 //temp
     public class HumanInputs extends CommandBase {
@@ -297,28 +313,5 @@ public class Spindexer extends SubsystemBase {
                 }
             }
         }
-    }
-//temp ^^^
-
-
-    private String renderSlot(int i) {
-        String s = "[ ";
-        if (slots[i] == SlotContent.Nothing) s += "  ]";
-        if (slots[i] == SlotContent.Purple) s +=  "P ]";
-        if (slots[i] == SlotContent.Green) s += "G ]";
-        return s;
-    }
-
-    public void addTelemetry(HyperTelemetry telem) {
-        telem.log("spindexer-target-angle", targetAngle);
-        telem.log("spindexer-current-angle", currentAngle);
-        telem.log("spindexer-have-artifact", haveArtifact);
-        telem.log("spindexer-is-purple", purple);
-        telem.log("spindexer-current-slot", currentSlot());
-        telem.log("spindexer-at-target", atTarget());
-        telem.log("spindexer-power", spindexerPower);
-        telem.log("spindexer-stuck", isStuck());
-
-        telem.logBoth("Loaded", renderSlot(0) + " " + renderSlot(1) + " " + renderSlot(2));
     }
 }
