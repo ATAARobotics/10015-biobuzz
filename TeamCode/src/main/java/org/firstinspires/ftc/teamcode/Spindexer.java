@@ -176,7 +176,7 @@ public class Spindexer extends SubsystemBase {
         if (spin == SpinDirection.Index && atTarget()) {
             if (haveArtifact) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
-                    slots[currentSlot()] = SlotContent.Purple;
+                    slots[currentSlot()] = purple ? SlotContent.Purple : SlotContent.Green;
                     if (!isFull()) {
                         targetAngle -= STEP_DEG;
                     }
@@ -221,6 +221,7 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-target-angle", targetAngle);
         telem.log("spindexer-current-angle", currentAngle);
         telem.log("spindexer-have-artifact", haveArtifact);
+        telem.log("spindexer-is-purple", purple);
         telem.log("spindexer-current-slot", currentSlot());
         telem.log("spindexer-at-target", atTarget());
         telem.log("spindexer-power", spindexerPower);

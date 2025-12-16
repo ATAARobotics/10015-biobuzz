@@ -39,6 +39,9 @@ public class Turret extends SubsystemBase {
     private int servoTurnCount;
     double joystickAngle;
 
+    double april_bearing;
+    double april_distance;
+
     private static final double GEAR_RATIO = 0.8; // 1 servo rotation equals 0.8 turret rotations
     // tuned december 11, bare servos for PID, attach turret for F
     public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
@@ -175,6 +178,8 @@ public class Turret extends SubsystemBase {
         telem.log("turret-servo-turn-count", servoTurnCount);
         telem.log("turrent-servo-last", lastServoAngle);
         telem.log("turret-servo-delta", servoDelta);
+        telem.log("turret-april-bearing", april_bearing);
+        telem.log("turret-april-distance", april_distance);
 
         telem.logDrivers("Heading Lock Mode", mode);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
@@ -253,6 +258,8 @@ public class Turret extends SubsystemBase {
             if (tag.id == target.id){
                 //drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) + tag.ftcPose.bearing;
                 faceRobotAngle(tag.ftcPose.bearing + currentTurretAngle);
+                april_bearing = tag.ftcPose.bearing;
+                april_distance = tag.ftcPose.range;
                 //telem.log("bearing", tag.ftcPose.bearing);
                 //range(distance)is in inches, maybe convert to centi
                 //telem.log("distance to april tag, inches", tag.ftcPose.range);

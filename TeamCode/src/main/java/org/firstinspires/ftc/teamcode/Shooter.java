@@ -203,6 +203,7 @@ public class Shooter extends SubsystemBase {
         telem.log("shooter-rpm-target", targetRpm);
         telem.log("shooter-rpm-current", currentRpm);
         telem.log("shooter-power", power);
+        telem.log("shooter-hood-angle", targetHood);
     }
 
     public class HumanInputs extends CommandBase {
