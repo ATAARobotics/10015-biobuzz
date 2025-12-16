@@ -51,7 +51,7 @@ public class Spindexer extends SubsystemBase {
     public enum SlotContent {Nothing, Purple, Green};
     SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
-    public static double TOLERENCE_DEG = 10.0;
+    public static double TOLERENCE_DEG = 2.0;
     public static double STEP_DEG = 120;
     // tuned December 10 with latest hardware rev (target collar, ramps, etc)
     public static PIDCoefficients shootPid = new PIDCoefficients(0.006, 0.02, 0.0003);
