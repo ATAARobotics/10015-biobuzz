@@ -76,19 +76,19 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
-        //CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
+        CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
     }
 
     private void bindOperatorControls() {
         // spindexer
-        operator.getGamepadButton(GamepadKeys.Button.A).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.A).whenPressed(
             new SequentialCommandGroup(
                 shooter.new NearZone(),
                 spindexer.new ShootOnce(),
                 shooter.new WaitForShot()
                 )
             );
-        operator.getGamepadButton(GamepadKeys.Button.X).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.Y).whenPressed(
             spindexer.new IndexOnce()
             );
     }

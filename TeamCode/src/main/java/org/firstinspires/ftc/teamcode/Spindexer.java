@@ -257,6 +257,50 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
+
+
+//temp
+    public class HumanInputs extends CommandBase {
+        GamepadEx driver;
+        GamepadEx operator;
+
+        public HumanInputs(GamepadEx operator, GamepadEx driver) {
+            this.operator = operator;
+            this.driver = driver;
+            addRequirements(Spindexer.this);
+        }
+
+        @Override
+        public void execute() {
+            if (operator.wasJustPressed(GamepadKeys.Button.A)){
+                double dif = targetAngle - currentAngle;
+                if (dif < 10) {
+                    spin = SpinDirection.Shoot;
+                    shootControl.reset();
+                    targetAngle += STEP_DEG;
+                    boostF = true;
+                    stuckTime.start();
+                }
+                else {
+                    operator.gamepad.rumble(100);
+                }
+                if (operator.wasJustPressed(GamepadKeys.Button.Y)){
+                    spin = SpinDirection.Index;
+                    storeControl.reset();
+                    targetAngle -= STEP_DEG;
+                }
+                if (operator.wasJustPressed(GamepadKeys.Button.X)){
+                    spin = SpinDirection.Shoot;
+                    shootControl.reset();
+                    targetAngle += (3 * STEP_DEG);
+                    stuckTime.start();
+                }
+            }
+        }
+    }
+//temp ^^^
+
+
     private String renderSlot(int i) {
         String s = "[ ";
         if (slots[i] == SlotContent.Nothing) s += "  ]";
