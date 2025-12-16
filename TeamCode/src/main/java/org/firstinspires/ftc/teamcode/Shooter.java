@@ -86,6 +86,47 @@ public class Shooter extends SubsystemBase {
         currentRpm = (ticksPerSecond * 60) / TICKS_PER_REV;
         voltage = battery.getVoltage();
     }
+
+
+
+    // leave this here for easy copy-pasting when creating a new command
+    public class CommandTemplate extends CommandBase {
+        //public void initialize() {}
+        //public void execute() {}
+        //public boolean isFinished() { return false; }
+        //public void end(boolean interrupted){}
+    }
+
+
+    public class FarZone extends CommandBase {
+        public FarZone() {}
+        public void initialize() {
+            targetRpm = FAR_RPM;
+        }
+        public boolean isFinished() {
+            return readyToShoot();
+        }
+    }
+
+    public class NearZone extends CommandBase {
+        public NearZone() {}
+        public void initialize() {
+            targetRpm = NEAR_RPM;
+        }
+        public boolean isFinished() {
+            return readyToShoot();
+        }
+    }
+
+    public class WaitForShot extends CommandBase {
+        int startShots;
+
+        public WaitForShot() {}
+        public boolean isFinished() {
+            return shotsFired > startShots;
+        }
+    }
+
     public class Shoot extends CommandBase {
         private Spindexer spinner;
         private Intake takeIn;
@@ -115,7 +156,7 @@ public class Shooter extends SubsystemBase {
         @Override
         public void execute() {
             if (readyToShoot() && ! didShoot) {
-                spinner.spinccw();
+                spinner.spinShoot();
                 didShoot = true;
             }
             if (didShoot) {
