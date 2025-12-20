@@ -275,7 +275,7 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-stuck", isStuck());
     }
 
-//temp
+    //temp
     public class HumanInputs extends CommandBase {
         GamepadEx driver;
         GamepadEx operator;
@@ -288,7 +288,7 @@ public class Spindexer extends SubsystemBase {
 
         @Override
         public void execute() {
-            if (operator.wasJustPressed(GamepadKeys.Button.A)){
+            if (operator.wasJustPressed(GamepadKeys.Button.A)) {
                 double dif = targetAngle - currentAngle;
                 if (dif < 10) {
                     spin = SpinDirection.Shoot;
@@ -296,21 +296,20 @@ public class Spindexer extends SubsystemBase {
                     targetAngle += STEP_DEG;
                     boostF = true;
                     stuckTime.start();
-                }
-                else {
+                } else {
                     operator.gamepad.rumble(100);
                 }
-                if (operator.wasJustPressed(GamepadKeys.Button.Y)){
-                    spin = SpinDirection.Index;
-                    storeControl.reset();
-                    targetAngle -= STEP_DEG;
-                }
-                if (operator.wasJustPressed(GamepadKeys.Button.X)){
-                    spin = SpinDirection.Shoot;
-                    shootControl.reset();
-                    targetAngle += (3 * STEP_DEG);
-                    stuckTime.start();
-                }
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
+                spin = SpinDirection.Index;
+                storeControl.reset();
+                targetAngle -= STEP_DEG;
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.X)) {
+                spin = SpinDirection.Shoot;
+                shootControl.reset();
+                targetAngle += (3 * STEP_DEG);
+                stuckTime.start();
             }
         }
     }
