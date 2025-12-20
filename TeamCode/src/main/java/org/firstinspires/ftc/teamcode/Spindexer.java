@@ -183,7 +183,6 @@ public class Spindexer extends SubsystemBase {
         // there's a ball (but NOT when a hole is rotated there)
         // ...also we don't want to try detections when we're
         // "between" slots
-        haveArtifact = false;
         if (spin == SpinDirection.Index && atTarget()) {
             if (haveArtifact) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
@@ -268,13 +267,13 @@ public class Spindexer extends SubsystemBase {
     public void addTelemetry(HyperTelemetry telem) {
         telem.log("spindexer-target-angle", targetAngle);
         telem.log("spindexer-current-angle", currentAngle);
-        telem.log("spindexer-have-artifact", haveArtifact);
         telem.log("spindexer-current-slot", currentSlot());
         telem.log("spindexer-at-target", atTarget());
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
         telem.log("spindexer-purple", purple);
         telem.log("spindexer-have-artifact", haveArtifact);
+        telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }
 
     //temp

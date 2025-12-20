@@ -61,8 +61,8 @@ public class ConfigureColorRangefinder extends LinearOpMode {
 
         // test digital mode of the sensor
         if (true) {
-            DigitalChannel pin0 = hardwareMap.digitalChannel.get("digital0");
-            DigitalChannel pin1 = hardwareMap.digitalChannel.get("digital1");
+            DigitalChannel pin0 = hardwareMap.digitalChannel.get("artifact_color");
+            DigitalChannel pin1 = hardwareMap.digitalChannel.get("artifact_distance");
             waitForStart();
             while (opModeIsActive()) {
                 telemetry.addData("artifact_color", pin0.getState());
