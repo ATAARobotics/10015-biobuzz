@@ -46,7 +46,7 @@ public class Shooter extends SubsystemBase {
     double targetHood = HOOD_MIN;
     double currentRpm;
     double voltage; // current battery voltage
-    public boolean autoRpm = true;
+    public boolean autoRpm = false;
     public double aprilDistance;
 
     public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
