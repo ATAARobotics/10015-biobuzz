@@ -273,6 +273,8 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-at-target", atTarget());
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
+        telem.log("spindexer-purple", purple);
+        telem.log("spindexer-have-artifact", haveArtifact);
     }
 
     //temp

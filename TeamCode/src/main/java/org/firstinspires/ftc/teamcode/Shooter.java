@@ -46,6 +46,8 @@ public class Shooter extends SubsystemBase {
     double targetHood = HOOD_MIN;
     double currentRpm;
     double voltage; // current battery voltage
+    public boolean autoRpm = true;
+    public double aprilDistance;
 
     public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
     public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
@@ -232,6 +234,9 @@ public class Shooter extends SubsystemBase {
         if (targetRpm > 0 && currentRpm > targetRpm + HIGH_STATE_OFFSET) {
             readyToCount = true;
         }
+        if (autoRpm){
+            targetRpm = 20.3 * aprilDistance + 2678;
+        }
     }
 
     public void addTelemetry(HyperTelemetry telem) {
@@ -271,7 +276,7 @@ public class Shooter extends SubsystemBase {
                 targetRpm = 0;
             }
             */
-            if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)){
+            if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER) && ! autoRpm){
                 if (targetRpm == 0) {
                     targetRpm = NEAR_RPM;
                     targetHood = HOOD_MIN;

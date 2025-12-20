@@ -125,6 +125,7 @@ public abstract class TeleOp extends OpMode {
         //intake.read_sensors(time);
         turret.apriltag_heading = drive.apriltag_heading;
         turret.robot_heading = drive.getPosition().getHeading(AngleUnit.DEGREES);
+        shooter.aprilDistance = turret.april_distance;
 
         // Run the CommandScheduler instance (note: this will call
         // ".periodic()" on all registered subsystems, which is the

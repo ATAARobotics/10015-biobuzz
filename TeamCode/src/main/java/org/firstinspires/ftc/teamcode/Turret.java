@@ -39,8 +39,8 @@ public class Turret extends SubsystemBase {
     private int servoTurnCount;
     double joystickAngle;
 
-    double april_bearing;
-    double april_distance;
+    public double april_bearing;
+    public double april_distance;
 
     private static final double GEAR_RATIO = 0.8; // 1 servo rotation equals 0.8 turret rotations
     // tuned december 11, bare servos for PID, attach turret for F

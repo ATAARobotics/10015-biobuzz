@@ -47,6 +47,7 @@ public class ConfigureColorRangefinder extends LinearOpMode {
             while (opModeIsActive()) {
                 // read all 3 color channels in one I2C transmission:
                 NormalizedRGBA colors = sensor.getNormalizedColors();
+
                 //Color c = new Color(colors.toColor();
                 //c.convert(Color)
                 float[] hsv = new float[3];
@@ -64,8 +65,8 @@ public class ConfigureColorRangefinder extends LinearOpMode {
             DigitalChannel pin1 = hardwareMap.digitalChannel.get("digital1");
             waitForStart();
             while (opModeIsActive()) {
-                telemetry.addData("digital0", pin0.getState());
-                telemetry.addData("digital1", pin1.getState());
+                telemetry.addData("artifact_color", pin0.getState());
+                telemetry.addData("artifact_distance", pin1.getState());
                 telemetry.update();
             }
         }
