@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -29,8 +29,6 @@ public class Spindexer extends SubsystemBase {
     DigitalChannel artifact_color;
     DigitalChannel artifact_distance;
     // stuff we derive
-    boolean haveArtifact = false;
-    boolean purple;
     public enum SpinDirection {Shoot, Index}
     SpinDirection spin = SpinDirection.Index;
     Timing.Timer stuckTime;
@@ -51,6 +49,9 @@ public class Spindexer extends SubsystemBase {
     public enum SlotContent {Nothing, Purple, Green};
     SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
+    LinkedList<Boolean> recentColors;
+    LinkedList<Boolean> recentDist;
+
     public static double TOLERENCE_DEG_SHOOT = 2.0;
     public static double TOLERENCE_DEG_INDEX = 10.0;
     public static double STEP_DEG = 120;
@@ -70,6 +71,20 @@ public class Spindexer extends SubsystemBase {
         stuckTime = new Timing.Timer(600, TimeUnit.MILLISECONDS);
         artifact_color = hardwareMap.digitalChannel.get("artifact_color");
         artifact_distance = hardwareMap.digitalChannel.get("artifact_distance");
+
+        recentColors = new LinkedList<Boolean>();
+        recentColors.add(false);
+        recentColors.add(false);
+        recentColors.add(false);
+        recentColors.add(false);
+        recentColors.add(false);
+
+        recentDist = new LinkedList<Boolean>();
+        recentDist.add(false);
+        recentDist.add(false);
+        recentDist.add(false);
+
+
         // we always have 3 slots in this array
         slots = new SlotContent[]{
                 SlotContent.Nothing,
@@ -89,6 +104,22 @@ public class Spindexer extends SubsystemBase {
     private double ticksToDeg(int ticks){
        double motorRevs = ticks/spindexerMotor.getCPR();
        return motorRevs * 360;
+    }
+
+    public boolean recentPurple() {
+        boolean x = false;
+        for (boolean rc : recentColors) {
+            x |= rc;
+        }
+        return x;
+    }
+
+    public boolean haveArtifact() {
+        boolean x = true;
+        for (boolean rc : recentDist) {
+            x &= rc;
+        }
+        return x;
     }
 
     public void spinShoot(){
@@ -151,8 +182,10 @@ public class Spindexer extends SubsystemBase {
 
     public void read_sensors(double time) {
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
-        purple = artifact_color.getState();
-        haveArtifact = artifact_distance.getState();
+        recentColors.addLast(artifact_color.getState());
+        recentColors.removeFirst();
+        recentDist.addLast(artifact_distance.getState());
+        recentDist.removeFirst();
     }
 
     @Override
@@ -185,9 +218,9 @@ public class Spindexer extends SubsystemBase {
         // ...also we don't want to try detections when we're
         // "between" slots
         if (/*spin == SpinDirection.Index && */atTarget()) {
-            if (haveArtifact) {
+            if (haveArtifact()) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
-                    slots[currentSlot()] = purple ? SlotContent.Purple : SlotContent.Green;
+                    slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;
                     if (!isFull()) {
                         targetAngle -= STEP_DEG;
                     }
@@ -272,8 +305,8 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-at-target", atTarget());
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
-        telem.log("spindexer-purple", purple);
-        telem.log("spindexer-have-artifact", haveArtifact);
+        telem.log("spindexer-purple", recentColors.getFirst());
+        telem.log("spindexer-have-artifact", recentDist.getFirst());
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }
 

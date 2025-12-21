@@ -5,6 +5,8 @@ import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.tel
 
 import android.graphics.Color;
 
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -30,23 +32,27 @@ public class ConfigureColorRangefinder extends LinearOpMode {
                 mode = "telemetry";
             } else if (operator.wasJustPressed(GamepadKeys.Button.X)) {
                 mode = "program";
-            } else if (operator.wasJustPressed(GamepadKey.Button.B)) {
+            } else if (operator.wasJustPressed(GamepadKeys.Button.B)) {
                 mode = "test";
             }
+            telemetry.addData("A", "telemetry");
+            telemetry.addData("X", "program");
+            telemetry.addData("B", "test");
+            telemetry.update();
         }
 
         // only some of these get set up depending what "mode" we're in
-        RevColorSensorV3 sensor;
-        ColorRangefinder crf;
-        DigitalChannel pin0;
-        DigitalChannel pin1;
+        RevColorSensorV3 sensor = null;
+        ColorRangefinder crf = null;
+        DigitalChannel pin0 = null;
+        DigitalChannel pin1 = null;
 
         if (mode == "telemetry") {
             sensor = hardwareMap.get(RevColorSensorV3.class, "color");
         } else if (mode == "program") {
-            csrf = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color"));
+            crf = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color"));
         } else if (mode == "test") {
-            pin0 = hardwareMap.digitalChannel.get("artifact_purple");
+            pin0 = hardwareMap.digitalChannel.get("artifact_color");
             pin1 = hardwareMap.digitalChannel.get("artifact_distance");
         }
 
@@ -55,15 +61,21 @@ public class ConfigureColorRangefinder extends LinearOpMode {
 
             if (sensor != null) {
                 // read all 3 color channels in one I2C transmission:
-                NormalizedRGBA colors = sensor.getNormalizedColors();
                 float[] hsv = new float[3];
-                Color.colorToHSV(colors.toColor(), hsv);
-                telemetry.addData("rgb: ", colors.red + " " + colors.blue + " " + colors.green);
-                telemetry.addData("hsv: ", hsv[0] + " " + hsv[1] + " " + hsv[2]);
+                Color.RGBToHSV(sensor.red(), sensor.green(), sensor.blue(), hsv);
+                telemetry.addData("rgb: ", sensor.red() + " " + sensor.blue() + " " + sensor.green());
+                telemetry.addData("H  : ", hsv[0]);// + " " + hsv[1] + " " + hsv[2]);
                 telemetry.addData ("distance", sensor.getDistance(DistanceUnit.MM));
-            } else if (csrf != null) {
-                crf.setPin0Digital(ColorRangefinder.DigitalMode.HSV, 150 / 360.0 * 255, 200 / 360.0 * 255); // purple
+            } else if (crf != null) {
+                // purple
+                crf.setPin0Digital(ColorRangefinder.DigitalMode.HSV, 160 / 360.0 * 255, 190 / 360.0 * 255);
+//                crf.setPin0Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
+
+                // distance
+                //crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 140 / 360.0 * 255, 155 / 360.0 * 255);
                 crf.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
+                // we only have to run this once, so stop the while loop
+                break;
             } else if (pin0 != null) {
                 telemetry.addData("pin0", pin0.getState());
                 telemetry.addData("pin1", pin1.getState());
