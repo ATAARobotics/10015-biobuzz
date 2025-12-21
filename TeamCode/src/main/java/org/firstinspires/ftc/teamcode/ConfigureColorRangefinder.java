@@ -10,10 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -23,52 +20,56 @@ public class ConfigureColorRangefinder extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        // "reconfigure" mode for when it's plugged in the i2c port
-        if (false) {
-            ColorRangefinder crf = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color"));
-            /*Using this example configuration, you can detect both artifact colors based on which pin is reading true:
-            pin0 --> purple
-            pin1 --> green */
+        GamepadEx operator = new GamepadEx(gamepad2);
 
-            waitForStart();
-
-            // from our testing, "nothing" is like 60 / 120 or so
-            // thus, we're only looking for "purple" because it's higher angle than green
-            crf.setPin0Digital(ColorRangefinder.DigitalMode.HSV, 150 / 360.0 * 255, 200 / 360.0 * 255); // purple
-
-            // setup pin 1 for JUST distance (0 -> 20mm)
-            crf.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
+        waitForStart();
+        String mode = null;
+        while (opModeIsActive() && mode == null) {
+            operator.readButtons();
+            if (operator.wasJustPressed(GamepadKeys.Button.A)) {
+                mode = "telemetry";
+            } else if (operator.wasJustPressed(GamepadKeys.Button.X)) {
+                mode = "program";
+            } else if (operator.wasJustPressed(GamepadKey.Button.B)) {
+                mode = "test";
+            }
         }
 
-        if (false) {
-            RevColorSensorV3 sensor = hardwareMap.get(RevColorSensorV3.class, "color");
+        // only some of these get set up depending what "mode" we're in
+        RevColorSensorV3 sensor;
+        ColorRangefinder crf;
+        DigitalChannel pin0;
+        DigitalChannel pin1;
 
-            waitForStart();
-            while (opModeIsActive()) {
+        if (mode == "telemetry") {
+            sensor = hardwareMap.get(RevColorSensorV3.class, "color");
+        } else if (mode == "program") {
+            csrf = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color"));
+        } else if (mode == "test") {
+            pin0 = hardwareMap.digitalChannel.get("artifact_purple");
+            pin1 = hardwareMap.digitalChannel.get("artifact_distance");
+        }
+
+        while (opModeIsActive()) {
+            telemetry.addData("mode", mode);
+
+            if (sensor != null) {
                 // read all 3 color channels in one I2C transmission:
                 NormalizedRGBA colors = sensor.getNormalizedColors();
-
-                //Color c = new Color(colors.toColor();
-                //c.convert(Color)
                 float[] hsv = new float[3];
                 Color.colorToHSV(colors.toColor(), hsv);
                 telemetry.addData("rgb: ", colors.red + " " + colors.blue + " " + colors.green);
                 telemetry.addData("hsv: ", hsv[0] + " " + hsv[1] + " " + hsv[2]);
                 telemetry.addData ("distance", sensor.getDistance(DistanceUnit.MM));
-                telemetry.update();
+            } else if (csrf != null) {
+                crf.setPin0Digital(ColorRangefinder.DigitalMode.HSV, 150 / 360.0 * 255, 200 / 360.0 * 255); // purple
+                crf.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
+            } else if (pin0 != null) {
+                telemetry.addData("pin0", pin0.getState());
+                telemetry.addData("pin1", pin1.getState());
             }
-        }
 
-        // test digital mode of the sensor
-        if (true) {
-            DigitalChannel pin0 = hardwareMap.digitalChannel.get("artifact_color");
-            DigitalChannel pin1 = hardwareMap.digitalChannel.get("artifact_distance");
-            waitForStart();
-            while (opModeIsActive()) {
-                telemetry.addData("artifact_color", pin0.getState());
-                telemetry.addData("artifact_distance", pin1.getState());
-                telemetry.update();
-            }
+            telemetry.update();
         }
     }
 }
