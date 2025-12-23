@@ -123,12 +123,6 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void spinShoot(){
-        spin = SpinDirection.Shoot;
-        shootControl.reset();
-        targetAngle += STEP_DEG;
-        boostF = true;
-        stuckTime.start();
-
         // todo: we should use the Shooter's ability to detect shots
         // to tell us when a shot went up .. meantime, we'll be
         // optimistic that anything in the "shoot" slot right now will
@@ -139,6 +133,12 @@ public class Spindexer extends SubsystemBase {
             // we probably shot
             slots[shootIndex] = SlotContent.Nothing;
         }
+
+        spin = SpinDirection.Shoot;
+        shootControl.reset();
+        targetAngle += STEP_DEG;
+        boostF = true;
+        stuckTime.start();
     }
 
     public void spinIndex(){
@@ -329,28 +329,22 @@ public class Spindexer extends SubsystemBase {
         @Override
         public void execute() {
             if (operator.wasJustPressed(GamepadKeys.Button.A)) {
-                double dif = targetAngle - currentAngle;
-                if (dif < 10) {
-                    spin = SpinDirection.Shoot;
-                    shootControl.reset();
-                    targetAngle += STEP_DEG;
-                    boostF = true;
-                    stuckTime.start();
-                } else {
-                    operator.gamepad.rumble(100);
-                }
+                spinShoot();
             }
             if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
                 spin = SpinDirection.Index;
                 storeControl.reset();
                 targetAngle -= STEP_DEG;
             }
+/*
+kind of for high-speed shoot debugging
             if (operator.wasJustPressed(GamepadKeys.Button.X)) {
                 spin = SpinDirection.Shoot;
                 shootControl.reset();
                 targetAngle += (3 * STEP_DEG);
                 stuckTime.start();
             }
+*/
         }
     }
 }
