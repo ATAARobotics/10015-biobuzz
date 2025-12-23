@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
@@ -74,8 +75,9 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().registerSubsystem(intake);
         CommandScheduler.getInstance().registerSubsystem(spindexer);
 
-        // set up Operator controls
+        // set up controls
         bindOperatorControls();
+        bindDriverControls();
 
         // "mostly" we want to run the HumanInputs commands during teleop
         CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
@@ -83,6 +85,44 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
+
+        // set up for bulk-reads of encoders etc (in MANUAL we *must*
+        // remember to clear the cache once per cycle or we'll always
+        // have stale values)
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
+
+
+    }
+
+    public class TriggerHeld extends Trigger {
+        GamepadEx pad;
+        GamepadKeys.Trigger trigger;
+
+        public TriggerHeld(GamepadEx gp, GamepadKeys.Trigger tr) {
+            pad = gp;
+            trigger = tr;
+        }
+
+        @Override
+        public boolean get() {
+            return (pad.getTrigger(trigger) > 0.5);
+        }
+    }
+
+    private void bindDriverControls() {
+        // intake mode
+        TriggerHeld driverRight = new TriggerHeld(driver, GamepadKeys.Trigger.RIGHT_TRIGGER);
+        driverRight.whenActive(
+            new SequentialCommandGroup(
+                intake.new TakeIn()
+                )
+            );
+        driverRight.whenInactive(
+            intake.new TakeNothing()
+            );
     }
 
     private void bindOperatorControls() {

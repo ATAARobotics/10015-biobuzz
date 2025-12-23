@@ -53,6 +53,16 @@ public class Intake extends SubsystemBase {
         }
     }
 
+    public class TakeNothing extends CommandBase {
+        @Override
+        public void initialize() {
+            stop();
+        }
+        public boolean isFinished(boolean interrupted) {
+            return true;
+        }
+    }
+
     public void addTelemetry(HyperTelemetry telem) {
         telem.log("intake-mode", mode);
     }

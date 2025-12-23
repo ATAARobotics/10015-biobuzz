@@ -128,6 +128,17 @@ public class Spindexer extends SubsystemBase {
         targetAngle += STEP_DEG;
         boostF = true;
         stuckTime.start();
+
+        // todo: we should use the Shooter's ability to detect shots
+        // to tell us when a shot went up .. meantime, we'll be
+        // optimistic that anything in the "shoot" slot right now will
+        // get shot...
+        int shootIndex = currentSlot() + 1;
+        if (shootIndex > 2) shootIndex = 0;
+        if (slots[shootIndex] != SlotContent.Nothing) {
+            // we probably shot
+            slots[shootIndex] = SlotContent.Nothing;
+        }
     }
 
     public void spinIndex(){
@@ -204,12 +215,6 @@ public class Spindexer extends SubsystemBase {
         // that ball. ideally we would double-check by having the
         // Shooter tell us that a shot went up.
         if (spin == SpinDirection.Shoot) {
-            int shootIndex = currentSlot() + 1;
-            if (shootIndex > 2) shootIndex = 0;
-            if (atTarget() && slots[shootIndex] != SlotContent.Nothing) {
-                // we probably shot
-                slots[shootIndex] = SlotContent.Nothing;
-            }
         }
 
         // prelim tests show that we get distance values like 0.0xxx
