@@ -84,7 +84,7 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
-        CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
+        //CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
 
         // set up for bulk-reads of encoders etc (in MANUAL we *must*
         // remember to clear the cache once per cycle or we'll always
@@ -117,24 +117,29 @@ public abstract class TeleOp extends OpMode {
         TriggerHeld driverRight = new TriggerHeld(driver, GamepadKeys.Trigger.RIGHT_TRIGGER);
         driverRight.whenActive(
             new SequentialCommandGroup(
-                intake.new TakeIn()
+                intake.new TakeIn(),
+                spindexer.new WaitForBall(),
+                intake.new TakeNothing(),
+                spindexer.new WaitForTarget()
                 )
             );
         driverRight.whenInactive(
             intake.new TakeNothing()
             );
+
+        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
+                new SequentialCommandGroup(
+                        shooter.new AutoRpmMode()
+                )
+        );
     }
 
     private void bindOperatorControls() {
         // spindexer
-        driver.getGamepadButton(GamepadKeys.Button.A).whenPressed(
-            new SequentialCommandGroup(
-                shooter.new NearZone(),
-                spindexer.new ShootOnce(),
-                shooter.new WaitForShot()
-                )
+        operator.getGamepadButton(GamepadKeys.Button.A).whenPressed(
+            spindexer.new ShootOnce()
             );
-        driver.getGamepadButton(GamepadKeys.Button.Y).whenPressed(
+        operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(
             spindexer.new IndexOnce()
             );
     }

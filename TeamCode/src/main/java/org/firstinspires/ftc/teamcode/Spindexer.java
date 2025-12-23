@@ -283,6 +283,7 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
+
     public class ShootOnce extends CommandBase {
         public ShootOnce() {
             addRequirements(Spindexer.this);
@@ -294,6 +295,27 @@ public class Spindexer extends SubsystemBase {
             return atTarget();
         }
     }
+
+
+    public class WaitForBall extends CommandBase {
+        public WaitForBall() {
+            addRequirements(Spindexer.this);
+        }
+        public boolean isFinished() {
+            return haveArtifact();
+        }
+    }
+
+    public class WaitForTarget extends CommandBase {
+        public WaitForTarget() {
+            addRequirements(Spindexer.this);
+        }
+        public boolean isFinished() {
+            return atTarget();
+        }
+    }
+
+
 
     private String renderSlot(int i) {
         String s = "[ ";
@@ -332,9 +354,7 @@ public class Spindexer extends SubsystemBase {
                 spinShoot();
             }
             if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
-                spin = SpinDirection.Index;
-                storeControl.reset();
-                targetAngle -= STEP_DEG;
+                spinIndex();
             }
 /*
 kind of for high-speed shoot debugging

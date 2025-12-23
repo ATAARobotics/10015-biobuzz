@@ -120,6 +120,18 @@ public class Shooter extends SubsystemBase {
         }
     }
 
+    public class AutoRpmMode extends CommandBase {
+        public void initialize() {
+            autoRpm = true;
+        }
+    }
+
+    public class ManualRpmMode extends CommandBase {
+        public void initialize() {
+            autoRpm = false;
+        }
+    }
+
     public class WaitForShot extends CommandBase {
         int startShots;
 
@@ -234,7 +246,7 @@ public class Shooter extends SubsystemBase {
         if (targetRpm > 0 && currentRpm > targetRpm + HIGH_STATE_OFFSET) {
             readyToCount = true;
         }
-        if (autoRpm){
+        if (autoRpm && aprilDistance > 0.5) {
             targetRpm = 20.3 * aprilDistance + 2678;
         }
     }
