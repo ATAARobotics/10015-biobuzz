@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -18,11 +19,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 
+import java.util.List;
+
 @Config
 public abstract class TeleOp extends OpMode {
     GamepadEx driver;
     GamepadEx operator;
+
     VoltageSensor battery;
+    List<LynxModule> allHubs;
+
     Drive drive;
     Shooter shooter;
     Intake intake;
@@ -114,6 +120,11 @@ public abstract class TeleOp extends OpMode {
 
     @Override
     public void loop() {
+        // make sure we get fresh values for all encoders
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
+
         loops++;
         // read controls and sensors
         driver.readButtons();
