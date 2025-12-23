@@ -46,7 +46,9 @@ public class Turret extends SubsystemBase {
     // tuned december 11, bare servos for PID, attach turret for F
     //public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
     // tuned dec 22 from first principals
-    public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
+    //////public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
+    // (and again)
+    public static double turretP = 0.0045, turretI = 0.00, turretD = 0.0002, turretF = 0.07;
     public static double TURRET_TOLERANCE = 1.0; // in degrees
     public double apriltag_heading, robot_heading;
 
