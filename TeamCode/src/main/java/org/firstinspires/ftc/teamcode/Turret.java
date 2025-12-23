@@ -44,7 +44,9 @@ public class Turret extends SubsystemBase {
 
     private static final double GEAR_RATIO = 0.8; // 1 servo rotation equals 0.8 turret rotations
     // tuned december 11, bare servos for PID, attach turret for F
-    public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
+    //public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
+    // tuned dec 22 from first principals
+    public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     public static double TURRET_TOLERANCE = 1.0; // in degrees
     public double apriltag_heading, robot_heading;
 
@@ -104,6 +106,19 @@ public class Turret extends SubsystemBase {
         //angle = Math.max(-135, Math.min(angle, 135));
         turretHeadingControl.setSetPoint(angle);
     }
+
+    /// trying to re-tun december 22
+    // tolerate 0.5
+    // d = 0.0005
+    // f = 0.07
+    // i = 0.0
+    // p = 0.005
+    /// decent behavior at -90 and +90 but jiggled around a lot at about "0"
+    /// looked like P oscillations, but the servo was right near it's "flip" angle
+    /// (and then it did the freak-out thing and went all the way around)
+    // pidf = 0.0055, 0, 0.0005, 0.07
+    // f "just below moving" = 0.11
+    // pidf = 0.003, 0, 0.07, 0.0   <-- seems pretty good?
 
     public void reset() {
         currentTurretAngle = 0;

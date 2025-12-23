@@ -101,7 +101,9 @@ public class Shooter extends SubsystemBase {
 
 
     public class FarZone extends CommandBase {
-        public FarZone() {}
+        public FarZone() {
+            addRequirements(Shooter.this);
+        }
         public void initialize() {
             targetRpm = FAR_RPM;
         }
@@ -111,7 +113,9 @@ public class Shooter extends SubsystemBase {
     }
 
     public class NearZone extends CommandBase {
-        public NearZone() {}
+        public NearZone() {
+            addRequirements(Shooter.this);
+        }
         public void initialize() {
             targetRpm = NEAR_RPM;
         }
@@ -121,21 +125,38 @@ public class Shooter extends SubsystemBase {
     }
 
     public class AutoRpmMode extends CommandBase {
+        public AutoRpmMode() {
+            addRequirements(Shooter.this);
+        }
         public void initialize() {
             autoRpm = true;
         }
     }
 
     public class ManualRpmMode extends CommandBase {
+        public ManualRpmMode() {
+            addRequirements(Shooter.this);
+        }
         public void initialize() {
             autoRpm = false;
+        }
+    }
+
+    public class ToggleRpmMode extends CommandBase {
+        public ToggleRpmMode() {
+            addRequirements(Shooter.this);
+        }
+        public void initialize() {
+            autoRpm = !autoRpm;
         }
     }
 
     public class WaitForShot extends CommandBase {
         int startShots;
 
-        public WaitForShot() {}
+        public WaitForShot() {
+            addRequirements(Shooter.this);
+        }
         public boolean isFinished() {
             return shotsFired > startShots;
         }
@@ -153,6 +174,7 @@ public class Shooter extends SubsystemBase {
             takeIn = i;
             didShoot = false;
             this.near=n;
+            addRequirements(Shooter.this);
         }
 
         @Override
@@ -215,6 +237,17 @@ public class Shooter extends SubsystemBase {
         if (targetRpm == 0) power = 0;
         if (power < 0) power = 0;
 
+        // auto-computed RPM, optional
+        if (autoRpm /*&& aprilDistance > 0.5*/) {
+            targetRpm = 20.3 * aprilDistance + 2678;
+            if (aprilDistance < 100) {
+                targetHood = HOOD_MIN;
+            } else {
+                targetHood = HOOD_MAX;
+            }
+        }
+
+
         if (targetHood < 0.35){
             targetHood = 0.35;
         }
@@ -246,9 +279,6 @@ public class Shooter extends SubsystemBase {
         if (targetRpm > 0 && currentRpm > targetRpm + HIGH_STATE_OFFSET) {
             readyToCount = true;
         }
-        if (autoRpm && aprilDistance > 0.5) {
-            targetRpm = 20.3 * aprilDistance + 2678;
-        }
     }
 
     public void addTelemetry(HyperTelemetry telem) {
@@ -262,6 +292,7 @@ public class Shooter extends SubsystemBase {
         telem.log("shooter-rpm-current", currentRpm);
         telem.log("shooter-power", power);
         telem.log("shooter-hood-angle", targetHood);
+        telem.log("shooter-auto-rpm", autoRpm);
     }
 
     public class HumanInputs extends CommandBase {
@@ -288,7 +319,8 @@ public class Shooter extends SubsystemBase {
                 targetRpm = 0;
             }
             */
-            if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER) && ! autoRpm){
+            if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
+                autoRpm = false;
                 if (targetRpm == 0) {
                     targetRpm = NEAR_RPM;
                     targetHood = HOOD_MIN;

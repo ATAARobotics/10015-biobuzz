@@ -227,7 +227,8 @@ public class Spindexer extends SubsystemBase {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
                     slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;
                     if (!isFull()) {
-                        targetAngle -= STEP_DEG;
+                        spinIndex();
+                        ///targetAngle -= STEP_DEG;
                     }
                 }
             }

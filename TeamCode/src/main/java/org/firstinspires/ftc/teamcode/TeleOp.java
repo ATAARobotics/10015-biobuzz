@@ -114,7 +114,8 @@ public abstract class TeleOp extends OpMode {
 
     private void bindDriverControls() {
         // intake mode
-        TriggerHeld driverRight = new TriggerHeld(driver, GamepadKeys.Trigger.RIGHT_TRIGGER);
+/*
+        TriggerHeld driverRight = new TriggerHeld(driver, GamepadKeys.Trigger.LEFT_TRIGGER);
         driverRight.whenActive(
             new SequentialCommandGroup(
                 intake.new TakeIn(),
@@ -126,12 +127,20 @@ public abstract class TeleOp extends OpMode {
         driverRight.whenInactive(
             intake.new TakeNothing()
             );
-
-        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
-                new SequentialCommandGroup(
-                        shooter.new AutoRpmMode()
+*/
+        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
+            new SequentialCommandGroup(
+                intake.new TakeIn(),
+                spindexer.new WaitForBall(),
+                intake.new TakeNothing(),
+                spindexer.new WaitForTarget()
                 )
-        );
+            );
+        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
+            new SequentialCommandGroup(
+                shooter.new ToggleRpmMode()
+                )
+            );
     }
 
     private void bindOperatorControls() {
