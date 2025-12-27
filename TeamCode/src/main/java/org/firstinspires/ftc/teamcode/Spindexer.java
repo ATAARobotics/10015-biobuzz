@@ -307,11 +307,17 @@ public class Spindexer extends SubsystemBase {
 
 
     public class WaitForBall extends CommandBase {
+        int mySlot = -1;
+
         public WaitForBall() {
             addRequirements(Spindexer.this);
         }
+        public void initialize() {
+            mySlot = currentSlot();
+        }
         public boolean isFinished() {
-            return haveArtifact();
+            // if the slot we started on has something in it, we're done
+            return (slots[mySlot] != SlotContent.Nothing);
         }
     }
 

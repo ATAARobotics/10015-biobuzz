@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.button.Trigger;
@@ -93,8 +94,6 @@ public abstract class TeleOp extends OpMode {
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-
-
     }
 
     public class TriggerHeld extends Trigger {
@@ -112,35 +111,114 @@ public abstract class TeleOp extends OpMode {
         }
     }
 
+    // state-machine to "automatically intake balls"
+    // goal: fill up the spindexer
+    // but: might already have 0, 1, 2 or 3 balls
+    // (so _don't_ want to do anything at all if we e.g. have 3 balls)
+    public enum InState {INTAKE, SPIN, DONE};
+    public class AutoIntake extends CommandBase {
+        private InState state;
+
+        public AutoIntake() {
+            addRequirements(spindexer);
+            addRequirements(intake);
+        }
+        public void initialize() {
+            state = InState.INTAKE;
+            intake.grab();
+        }
+        public void execute() {
+            if (state == InState.INTAKE) {
+                if (spindexer.haveArtifact()) {
+                    if (spindexer.isFull()) {
+                        state = InState.DONE;
+                    } else {
+                        state = InState.SPIN;
+                        intake.stop();
+                        spindexer.spinIndex();
+                    }
+                }
+            } else if (state == InState.SPIN) {
+                if (spindexer.atTarget()) {
+                    state = InState.INTAKE;
+                    intake.grab();
+                }
+            }
+        }
+        public boolean isFinished() {
+            return state == InState.DONE;
+        }
+        public void end(boolean interrupted){
+            // todo: rumble driver when full?
+        }
+    }
+
+    // state-machine to auto-fire balls
+    // goal: empty the spindexer
+    // but: might already be empty!
+    public enum OutState {WAIT_SHOOT, SHOOT, DONE};
+    public class AutoOuttake extends CommandBase {
+        private OutState state;
+        private int shotSlot = -1;
+        private int lastShots = -1;
+
+        public AutoOuttake() {
+            addRequirements(spindexer);
+            addRequirements(shooter);
+            addRequirements(turret);
+        }
+        public void initialize() {
+            state = OutState.WAIT_SHOOT;
+        }
+        public void execute() {
+            if (state == OutState.WAIT_SHOOT) {
+                shooter.autoShootRpm();
+                turret.autoLock();
+                // we can shoot if:
+                // - we're "at" our RPM
+                // - and have April lock
+                // - and Turret is at its angle
+                if (shooter.readyToShoot() &&
+                    turret.haveAprilLock &&
+                    turret.atTargetAngle()) {
+                    state = OutState.SHOOT;
+                    lastShots = shooter.getCurrentShots();
+                    shotSlot = spindexer.currentSlot();
+                    spindexer.spinShoot();
+                }
+            } else if (state == OutState.SHOOT) {
+                // todo: the spindexer can actually get stuck trying
+                // to "go back" to its target (e.g. we overshot) but
+                // .. maybe we don't care here, we should just keep
+                // shooting essentially?
+                // (what we actually want to do here is ask "did the shooter shoot recently")
+                //if (spindexer.atTarget() && spindexer.currentSlot() != shotSlot) {
+                if (shooter.getCurrentShots() > lastShots) {
+                    if (spindexer.isEmpty()) {
+                        state = OutState.DONE;
+                    } else {
+                        state = OutState.WAIT_SHOOT;
+                    }
+                }
+            }
+        }
+        public boolean isFinished() {
+            return state == OutState.DONE;
+        }
+        public void end(boolean interrupted){
+            if (!interrupted) {
+                turret.noLock();
+                shooter.manualShootRpm();
+            }
+        }
+    }
+
     private void bindDriverControls() {
-        // intake mode
-/*
+        // auto intake mode
         TriggerHeld driverRight = new TriggerHeld(driver, GamepadKeys.Trigger.LEFT_TRIGGER);
-        driverRight.whenActive(
-            new SequentialCommandGroup(
-                intake.new TakeIn(),
-                spindexer.new WaitForBall(),
-                intake.new TakeNothing(),
-                spindexer.new WaitForTarget()
-                )
-            );
-        driverRight.whenInactive(
-            intake.new TakeNothing()
-            );
-*/
-        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
-            new SequentialCommandGroup(
-                intake.new TakeIn(),
-                spindexer.new WaitForBall(),
-                intake.new TakeNothing(),
-                spindexer.new WaitForTarget()
-                )
-            );
-        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
-            new SequentialCommandGroup(
-                shooter.new ToggleRpmMode()
-                )
-            );
+        driverRight.whileActiveOnce(new AutoIntake());
+        // auto outtake mode
+        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new AutoOuttake());
     }
 
     private void bindOperatorControls() {

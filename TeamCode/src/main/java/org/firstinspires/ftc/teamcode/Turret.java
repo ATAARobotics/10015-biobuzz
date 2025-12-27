@@ -39,6 +39,7 @@ public class Turret extends SubsystemBase {
     private int servoTurnCount;
     double joystickAngle;
 
+    public boolean haveAprilLock;
     public double april_bearing;
     public double april_distance;
 
@@ -79,9 +80,9 @@ public class Turret extends SubsystemBase {
         april_tags = new AprilTagProcessor.Builder()
                 //.setTagLibrary(decode_tags)
                 .setDrawTagID(true)
-                .setDrawTagOutline(true)
-                .setDrawAxes(true)
-                .setDrawCubeProjection(true)
+                .setDrawTagOutline(false)//true)
+                .setDrawAxes(false)//true)
+                .setDrawCubeProjection(false)//true)
                 .build();
 
         portal = new VisionPortal.Builder()
@@ -109,6 +110,10 @@ public class Turret extends SubsystemBase {
         turretHeadingControl.setSetPoint(angle);
     }
 
+    public boolean atTargetAngle() {
+        return turretHeadingControl.atSetPoint();
+    }
+
     /// trying to re-tun december 22
     // tolerate 0.5
     // d = 0.0005
@@ -133,6 +138,15 @@ public class Turret extends SubsystemBase {
         mode = HeadingLockMode.Off;
     }
 
+    public void autoLock() {
+        //mode = HeadingLockMode.Both;
+        mode = HeadingLockMode.Camera;
+    }
+
+    public void noLock() {
+        mode = HeadingLockMode.Off;
+    }
+
     public void angleReset() {
         resetAngle = getServoAngle();
     }
@@ -144,6 +158,22 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // do some math based on which "mode" we're in
+        if (mode == HeadingLockMode.Off)
+            faceRobotAngle(joystickAngle);
+        if (mode == HeadingLockMode.Trig)
+            faceFieldAngle(apriltag_heading);
+        if (mode == HeadingLockMode.Camera) {
+            haveAprilLock = aprilTagLock();
+        }
+        if (mode == HeadingLockMode.Both){
+            haveAprilLock = aprilTagLock();
+            if(! haveAprilLock){
+                faceFieldAngle(apriltag_heading);
+            }
+        }
+
+        // compute where the servos are, and conclude where the turret is
         servoAngle = getServoAngle() - resetAngle;
         servoDelta = lastServoAngle - servoAngle;
         lastServoAngle = servoAngle;
@@ -197,6 +227,9 @@ public class Turret extends SubsystemBase {
         telem.log("turret-servo-delta", servoDelta);
         telem.log("turret-april-bearing", april_bearing);
         telem.log("turret-april-distance", april_distance);
+        telem.log("turret-april-lock", haveAprilLock);
+        telem.log("turret-april-mode", mode);
+        telem.log("turret-april-fps", portal.getFps());
 
         telem.logDrivers("Heading Lock Mode", mode);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
@@ -231,18 +264,6 @@ public class Turret extends SubsystemBase {
                     // reset operator desired angle when switching mode
                 }
             }
-            if (mode == HeadingLockMode.Off)
-                faceRobotAngle(joystickAngle);
-            if (mode == HeadingLockMode.Trig)
-                faceFieldAngle(apriltag_heading);
-            if (mode == HeadingLockMode.Camera) {
-                aprilTagLock();
-            }
-            if (mode == HeadingLockMode.Both){
-                if(! aprilTagLock()){
-                    faceFieldAngle(apriltag_heading);
-                }
-            }
 
             // decide what to do based on sensors and human inputs from controller
 
@@ -270,7 +291,13 @@ public class Turret extends SubsystemBase {
     }
 
     private boolean aprilTagLock() {
-        List<AprilTagDetection> detections = april_tags.getDetections();
+        List<AprilTagDetection> detections = april_tags.getFreshDetections();
+        if (detections == null) {
+            // there are no _fresh_ detections, but we may have had a
+            // recent lock
+            return haveAprilLock;
+        }
+
         for (AprilTagDetection tag : detections) {
             if (tag.id == target.id){
                 //drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) + tag.ftcPose.bearing;
