@@ -225,20 +225,13 @@ public class Spindexer extends SubsystemBase {
         if (spin == SpinDirection.Shoot) {
         }
 
-        // prelim tests show that we get distance values like 0.0xxx
-        // values with nothing, and 0.25 to 0.30 ish values when
-        // there's a ball (but NOT when a hole is rotated there)
-        // ...also we don't want to try detections when we're
-        // "between" slots
-
-        if (/*spin == SpinDirection.Index && */atTarget()) {
+        // let spindexer decide if there's something at the current
+        // slot (but only if we also believe we are actually AT the
+        // current slot)
+        if (atTarget()) {
             if (haveArtifact()) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
                     slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;
-//                    if (!isFull()) {
-//                        spinIndex();
-//                        ///targetAngle -= STEP_DEG;
-//                    }
                 }
             }
         }
@@ -250,11 +243,9 @@ public class Spindexer extends SubsystemBase {
         //if (spindexerPower < -0.5) spindexerPower = -0.5;
 
         // temporary "boost" for the shoot-direction .. if we've "not
-        // yet passed our goal" _AND_ boostF is still true, we add
-        // extra power (because the launched needs to have more power
-        // right when it's super close to its goal). the "+11" is
-        // because the point where it actually shoots is also pretty
-        // close to our target spindex location.
+        // yet passed our goal" AND boostF is still true, we add extra
+        // power (because the launched needs to have more power right
+        // when it's super close to its goal).
         if (boostF && spin == SpinDirection.Shoot) {
             if (currentAngle < targetAngle) {//(spindexerPower > 0.0) {
                 spindexerPower += boostAmount;
