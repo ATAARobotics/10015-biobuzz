@@ -44,6 +44,9 @@ public class Intake extends SubsystemBase {
     }
 
     public class TakeIn extends CommandBase {
+        public TakeIn() {
+            addRequirements(Intake.this);
+        }
         @Override
         public void initialize() {
             grab();
@@ -54,6 +57,9 @@ public class Intake extends SubsystemBase {
     }
 
     public class TakeNothing extends CommandBase {
+        public TakeNothing() {
+            addRequirements(Intake.this);
+        }
         @Override
         public void initialize() {
             stop();
