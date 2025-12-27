@@ -175,6 +175,14 @@ public class Spindexer extends SubsystemBase {
         return !hasOpenSlot();
     }
 
+    public boolean isEmpty() {
+        for (SlotContent s : slots) {
+            if (s != SlotContent.Nothing)
+                return false;
+        }
+        return true;
+    }
+
     public boolean hasOpenSlot() {
         for (SlotContent s : slots) {
             if (s == SlotContent.Nothing)

@@ -222,6 +222,19 @@ public class Shooter extends SubsystemBase {
         return (targetRpm > 0 && Math.abs(currentRpm - targetRpm) < RPM_TOLERANCE);
     }
 
+    public int getCurrentShots() {
+        return shotsFired;
+    }
+
+    public void autoShootRpm() {
+        autoRpm = true;
+    }
+
+    public void manualShootRpm() {
+        autoRpm = false;
+        targetRpm = 0;
+    }
+
     @Override
     public void periodic() {
         appliedVoltage = (kv * targetRpm) + ks;
