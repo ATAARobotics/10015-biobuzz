@@ -255,7 +255,7 @@ public class Spindexer extends SubsystemBase {
         // because the point where it actually shoots is also pretty
         // close to our target spindex location.
         if (boostF && spin == SpinDirection.Shoot) {
-            if (currentAngle < targetAngle + 11) {//(spindexerPower > 0.0) {
+            if (currentAngle < targetAngle) {//(spindexerPower > 0.0) {
                 spindexerPower += boostAmount;
             } else {
                 // we've passed our setpoint (at least once) because
