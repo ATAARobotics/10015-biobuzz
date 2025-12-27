@@ -230,14 +230,15 @@ public class Spindexer extends SubsystemBase {
         // there's a ball (but NOT when a hole is rotated there)
         // ...also we don't want to try detections when we're
         // "between" slots
+
         if (/*spin == SpinDirection.Index && */atTarget()) {
             if (haveArtifact()) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
                     slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;
-                    if (!isFull()) {
-                        spinIndex();
-                        ///targetAngle -= STEP_DEG;
-                    }
+//                    if (!isFull()) {
+//                        spinIndex();
+//                        ///targetAngle -= STEP_DEG;
+//                    }
                 }
             }
         }
