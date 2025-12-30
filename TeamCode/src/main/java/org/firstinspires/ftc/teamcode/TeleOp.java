@@ -226,6 +226,13 @@ public abstract class TeleOp extends OpMode {
         operator.getGamepadButton(GamepadKeys.Button.A).whenPressed(
             spindexer.new ShootOnce()
             );
+        operator.getGamepadButton(GamepadKeys.Button.X).whenPressed(
+            new SequentialCommandGroup(
+                spindexer.new ShootOnce(),
+                spindexer.new ShootOnce(),
+                spindexer.new ShootOnce()
+                )
+            );
         operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(
             spindexer.new IndexOnce()
             );
