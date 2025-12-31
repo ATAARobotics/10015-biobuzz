@@ -53,10 +53,18 @@ public class ConfigureColorRangefinder extends LinearOpMode {
         AnalogInput analog = null;
 
         if (mode == "telemetry") {
-            sensor0 = hardwareMap.get(RevColorSensorV3.class, "color");
+            try {
+                sensor0 = hardwareMap.get(RevColorSensorV3.class, "color");
+            } catch (IllegalArgumentException e) {
+                sensor0 = null;
+            }
             sensor1 = hardwareMap.get(RevColorSensorV3.class, "color2");
         } else if (mode == "program") {
-            crf0 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color"));
+            try {
+                crf0 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color"));
+            } catch (IllegalArgumentException e) {
+                crf0 = null;
+            }
             crf1 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color2"));
         } else if (mode == "test") {
             pin0 = hardwareMap.digitalChannel.get("artifact_color");
@@ -71,16 +79,19 @@ public class ConfigureColorRangefinder extends LinearOpMode {
                 // read all 3 color channels in one I2C transmission:
                 float[] hsv = new float[3];
                 Color.RGBToHSV(sensor0.red(), sensor0.green(), sensor0.blue(), hsv);
-                telemetry.addData("rgb: ", sensor0.red() + " " + sensor0.blue() + " " + sensor0.green());
-                telemetry.addData("H  : ", hsv[0]);// + " " + hsv[1] + " " + hsv[2]);
-                telemetry.addData ("distance", sensor0.getDistance(DistanceUnit.MM));
-
-                Color.RGBToHSV(sensor1.red(), sensor1.green(), sensor1.blue(), hsv);
-                telemetry.addData("rgb: ", sensor1.red() + " " + sensor1.blue() + " " + sensor1.green());
-                telemetry.addData("H  : ", hsv[0]);// + " " + hsv[1] + " " + hsv[2]);
-                telemetry.addData ("distance", sensor1.getDistance(DistanceUnit.MM));
+                telemetry.addData("0 rgb: ", sensor0.red() + " " + sensor0.blue() + " " + sensor0.green());
+                telemetry.addData("0 H  : ", hsv[0]);// + " " + hsv[1] + " " + hsv[2]);
+                telemetry.addData("0 distance", sensor0.getDistance(DistanceUnit.MM));
             }
-            if (crf0 != null) {
+            if (sensor1 != null) {
+                float[] hsv = new float[3];
+                Color.RGBToHSV(sensor1.red(), sensor1.green(), sensor1.blue(), hsv);
+                telemetry.addData("1 rgb: ", sensor1.red() + " " + sensor1.blue() + " " + sensor1.green());
+                telemetry.addData("1 H  : ", hsv[0]);// + " " + hsv[1] + " " + hsv[2]);
+                telemetry.addData("1 distance", sensor1.getDistance(DistanceUnit.MM));
+            }
+            if (crf1 != null) {
+                /*
                 // purple
                 crf0.setPin0Digital(ColorRangefinder.DigitalMode.HSV, 160 / 360.0 * 255, 190 / 360.0 * 255);
                 //crf.setPin0Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
@@ -88,10 +99,11 @@ public class ConfigureColorRangefinder extends LinearOpMode {
                 // distance
                 //crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 140 / 360.0 * 255, 155 / 360.0 * 255);
                 crf0.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
-
+                */
                 // set it up into analog mode
                 //crf1.setPin0Analog(ColorRangefinder.AnalogMode.HSV);
-                crf1.setPin0Analog(ColorRangefinder.AnalogMode.DISTANCE);
+                crf1.setPin0Analog(ColorRangefinder.AnalogMode.HSV);
+                crf1.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 0, 100);
 
                 // we only have to run this once, so stop the while loop
                 break;
