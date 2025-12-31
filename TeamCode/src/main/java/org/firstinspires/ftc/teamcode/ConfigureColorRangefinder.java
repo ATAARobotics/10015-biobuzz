@@ -9,6 +9,8 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.AnalogSensor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -42,43 +44,65 @@ public class ConfigureColorRangefinder extends LinearOpMode {
         }
 
         // only some of these get set up depending what "mode" we're in
-        RevColorSensorV3 sensor = null;
-        ColorRangefinder crf = null;
+        RevColorSensorV3 sensor0 = null;
+        RevColorSensorV3 sensor1 = null;
+        ColorRangefinder crf0 = null;
+        ColorRangefinder crf1 = null;
         DigitalChannel pin0 = null;
         DigitalChannel pin1 = null;
+        AnalogInput analog = null;
 
         if (mode == "telemetry") {
-            sensor = hardwareMap.get(RevColorSensorV3.class, "color");
+            sensor0 = hardwareMap.get(RevColorSensorV3.class, "color");
+            sensor1 = hardwareMap.get(RevColorSensorV3.class, "color2");
         } else if (mode == "program") {
-            crf = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color"));
+            crf0 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color"));
+            crf1 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color2"));
         } else if (mode == "test") {
             pin0 = hardwareMap.digitalChannel.get("artifact_color");
             pin1 = hardwareMap.digitalChannel.get("artifact_distance");
+            analog = hardwareMap.analogInput.get("artifact_hsv");
         }
 
         while (opModeIsActive()) {
             telemetry.addData("mode", mode);
 
-            if (sensor != null) {
+            if (sensor0 != null) {
                 // read all 3 color channels in one I2C transmission:
                 float[] hsv = new float[3];
-                Color.RGBToHSV(sensor.red(), sensor.green(), sensor.blue(), hsv);
-                telemetry.addData("rgb: ", sensor.red() + " " + sensor.blue() + " " + sensor.green());
+                Color.RGBToHSV(sensor0.red(), sensor0.green(), sensor0.blue(), hsv);
+                telemetry.addData("rgb: ", sensor0.red() + " " + sensor0.blue() + " " + sensor0.green());
                 telemetry.addData("H  : ", hsv[0]);// + " " + hsv[1] + " " + hsv[2]);
-                telemetry.addData ("distance", sensor.getDistance(DistanceUnit.MM));
-            } else if (crf != null) {
+                telemetry.addData ("distance", sensor0.getDistance(DistanceUnit.MM));
+
+                Color.RGBToHSV(sensor1.red(), sensor1.green(), sensor1.blue(), hsv);
+                telemetry.addData("rgb: ", sensor1.red() + " " + sensor1.blue() + " " + sensor1.green());
+                telemetry.addData("H  : ", hsv[0]);// + " " + hsv[1] + " " + hsv[2]);
+                telemetry.addData ("distance", sensor1.getDistance(DistanceUnit.MM));
+            }
+            if (crf0 != null) {
                 // purple
-                crf.setPin0Digital(ColorRangefinder.DigitalMode.HSV, 160 / 360.0 * 255, 190 / 360.0 * 255);
-//                crf.setPin0Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
+                crf0.setPin0Digital(ColorRangefinder.DigitalMode.HSV, 160 / 360.0 * 255, 190 / 360.0 * 255);
+                //crf.setPin0Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
 
                 // distance
                 //crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 140 / 360.0 * 255, 155 / 360.0 * 255);
-                crf.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
+                crf0.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
+
+                // set it up into analog mode
+                //crf1.setPin0Analog(ColorRangefinder.AnalogMode.HSV);
+                crf1.setPin0Analog(ColorRangefinder.AnalogMode.DISTANCE);
+
                 // we only have to run this once, so stop the while loop
                 break;
-            } else if (pin0 != null) {
+            }
+            if (pin0 != null) {
                 telemetry.addData("pin0", pin0.getState());
                 telemetry.addData("pin1", pin1.getState());
+            }
+            if (analog != null) {
+                telemetry.addData("analog (color)", (analog.getVoltage() / 3.3) * 360.0);
+                telemetry.addData("analog (distance)", (analog.getVoltage() / 3.3) * 100.0);
             }
 
             telemetry.update();
