@@ -37,7 +37,7 @@ public class Spindexer extends SubsystemBase {
     public PIDController storeControl;
     public PIDController shootControl;
     public boolean boostF = false;
-    public static double boostAmount = 0.85;
+    public static double boostAmount = 0.5;//0.85;
 
     double spindexerPower;
     public int targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
