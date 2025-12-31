@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.util.Timing;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -28,6 +29,8 @@ public class Spindexer extends SubsystemBase {
     double currentAngle;    // computed from our encoder
     DigitalChannel artifact_color;
     DigitalChannel artifact_distance;
+    AnalogInput analog;
+
     // stuff we derive
     public enum SpinDirection {Shoot, Index}
     SpinDirection spin = SpinDirection.Index;
@@ -49,6 +52,7 @@ public class Spindexer extends SubsystemBase {
     public enum SlotContent {Nothing, Purple, Green};
     SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
+    double lastHue;
     LinkedList<Boolean> recentColors;
     LinkedList<Boolean> recentDist;
 
@@ -83,7 +87,7 @@ public class Spindexer extends SubsystemBase {
         recentDist.add(false);
         recentDist.add(false);
         recentDist.add(false);
-
+        recentDist.add(false);
 
         // we always have 3 slots in this array
         slots = new SlotContent[]{
@@ -91,6 +95,9 @@ public class Spindexer extends SubsystemBase {
                 SlotContent.Nothing,
                 SlotContent.Nothing
         };
+
+        // the second brushland labs sensor, in analog mode
+        analog = hardwareMap.analogInput.get("artifact_hsv");
     }
 
     public void reset() {
@@ -112,6 +119,18 @@ public class Spindexer extends SubsystemBase {
             x |= rc;
         }
         return x;
+    }
+
+    public void clearRecentDist() {
+        recentDist.clear();
+        recentDist.add(false);
+        recentDist.add(false);
+        recentDist.add(false);
+        recentDist.add(false);
+    }
+
+    public boolean artifactInSlot() {
+        return (slots[currentSlot()] != SlotContent.Nothing);
     }
 
     public boolean haveArtifact() {
@@ -201,7 +220,9 @@ public class Spindexer extends SubsystemBase {
 
     public void read_sensors(double time) {
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
-        recentColors.addLast(artifact_color.getState());
+        lastHue = (analog.getVoltage() / 3.3) * 360.0;
+        recentColors.addLast((lastHue >= 150.0 && lastHue <= 185.0));
+        //recentColors.addLast(artifact_color.getState());
         recentColors.removeFirst();
         recentDist.addLast(artifact_distance.getState());
         recentDist.removeFirst();
@@ -218,13 +239,6 @@ public class Spindexer extends SubsystemBase {
         // _before_ we ask "atTarget()" so we have current information
         // from _this_ loop
 
-        // if we're spinning in the "shot" direction, AND have arrived
-        // at our target .. then we can be fairly sure that we've shot
-        // that ball. ideally we would double-check by having the
-        // Shooter tell us that a shot went up.
-        if (spin == SpinDirection.Shoot) {
-        }
-
         // let spindexer decide if there's something at the current
         // slot (but only if we also believe we are actually AT the
         // current slot)
@@ -232,6 +246,7 @@ public class Spindexer extends SubsystemBase {
             if (haveArtifact()) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
                     slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;
+                    clearRecentDist();
                 }
             }
         }
@@ -340,6 +355,7 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
         telem.log("spindexer-purple", recentColors.getFirst());
+        telem.log("spindexer-analog", lastHue);
         telem.log("spindexer-have-artifact", recentDist.getFirst());
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }

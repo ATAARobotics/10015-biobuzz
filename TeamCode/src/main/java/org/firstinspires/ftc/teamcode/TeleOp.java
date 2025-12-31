@@ -129,7 +129,7 @@ public abstract class TeleOp extends OpMode {
         }
         public void execute() {
             if (state == InState.INTAKE) {
-                if (spindexer.haveArtifact()) {
+                if (spindexer.artifactInSlot()) {
                     if (spindexer.isFull()) {
                         state = InState.DONE;
                     } else {
