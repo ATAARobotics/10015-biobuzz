@@ -179,7 +179,7 @@ public abstract class TeleOp extends OpMode {
                 // - and have April lock
                 // - and Turret is at its angle
                 if (shooter.readyToShoot() &&
-                    turret.haveAprilLock &&
+                    //turret.haveAprilLock &&
                     turret.atTargetAngle()) {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
@@ -304,7 +304,7 @@ public abstract class TeleOp extends OpMode {
         telem.log("position-heading", h);
         telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
         double fps = loops / runtime.seconds();
-        telem.logDrivers("frames per second", fps);
+        telem.logDrivers("average fps", fps);
         telemetry.update();
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
     }
