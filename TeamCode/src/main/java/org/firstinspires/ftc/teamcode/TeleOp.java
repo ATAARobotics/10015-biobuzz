@@ -216,9 +216,9 @@ public abstract class TeleOp extends OpMode {
     private void bindDriverControls() {
         // auto intake mode
         TriggerHeld driverRight = new TriggerHeld(driver, GamepadKeys.Trigger.LEFT_TRIGGER);
-        driverRight.whileActiveOnce(new AutoIntake());
+        driverRight.whileActiveOnce(new AutoIntake(), true);
         // auto outtake mode
-        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new AutoOuttake());
+        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new AutoOuttake(), true);
     }
 
     private void bindOperatorControls() {
