@@ -263,6 +263,10 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         appliedVoltage = (kv * targetRpm) + ks;
         power = appliedVoltage / voltage;
+
+        // hack: trying to make this actually be "bang-F" instead of "just F"
+        power = power * 0.9;
+
         //power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
         if (currentRpm < (targetRpm - BAND) && !powerOn) {
             powerOn = true;
