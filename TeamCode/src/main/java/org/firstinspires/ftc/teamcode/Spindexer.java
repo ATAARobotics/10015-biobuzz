@@ -164,6 +164,7 @@ public class Spindexer extends SubsystemBase {
         spin = SpinDirection.Index;
         storeControl.reset();
         targetAngle -= STEP_DEG;
+        clearRecentDist();
     }
 
     // returns the index of the slot that's at the front of the robot;
@@ -172,12 +173,15 @@ public class Spindexer extends SubsystemBase {
         // we go from "targetAngle" because these are always whole
         // numbers .. so it'll be "a lie" until we're "at" a slot
         int norm = targetAngle;
-        if (norm < 0) norm = -norm;
+        // java disagrees with others on what negatuve numbers do here.
+        // for example, -120 % 360 = 240
+        // (which is the same as spinning positive twice) but Java says that's -240
         norm = norm % 360;
-        // integer division by 120 means anything less than 120 will
-        // be 0, anything between 120-240 will be 1, anything from 240
-        // to 360 will be 2
-        return norm / 120;
+        if (norm < 0) norm += 360; // account for weird java behavior
+        if (norm == 0) return 0;
+        if (norm == 240) return 1;
+        if (norm == 120) return 2;
+        return 0;
     }
 
     public boolean isStuck(){
@@ -246,7 +250,6 @@ public class Spindexer extends SubsystemBase {
             if (haveArtifact()) {
                 if (slots[currentSlot()] == SlotContent.Nothing) {
                     slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;
-                    clearRecentDist();
                 }
             }
         }
@@ -356,7 +359,11 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-stuck", isStuck());
         telem.log("spindexer-purple", recentColors.getFirst());
         telem.log("spindexer-analog", lastHue);
-        telem.log("spindexer-have-artifact", recentDist.getFirst());
+        telem.log("spindexer-have-artifact-debug", recentDist);
+        telem.log("spindexer-have-artifact", haveArtifact());
+        telem.log("spindexer-slot-0", slots[0]);
+        telem.log("spindexer-slot-1", slots[1]);
+        telem.log("spindexer-slot-2", slots[2]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }
 
