@@ -49,8 +49,8 @@ public class Shooter extends SubsystemBase {
     public boolean autoRpm = false;
     public double aprilDistance;
 
-    public static double kv = 0.0021; //kv is Feed Forward Model slope, determined experimentally with flywheel
-    public static double ks = 1.4117; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
+    public static double kv = 0.002213; //kv is Feed Forward Model slope, determined experimentally with flywheel
+    public static double ks = 0.129514; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
 
     public Shooter(HardwareMap hardwareMap) {
         // do any one-time initialization here
