@@ -129,7 +129,7 @@ public abstract class TeleOp extends OpMode {
         }
         public void execute() {
             if (state == InState.INTAKE) {
-                if (spindexer.haveArtifact()) {
+                if (spindexer.artifactInSlot()) {
                     if (spindexer.isFull()) {
                         state = InState.DONE;
                     } else {
@@ -179,7 +179,7 @@ public abstract class TeleOp extends OpMode {
                 // - and have April lock
                 // - and Turret is at its angle
                 if (shooter.readyToShoot() &&
-                    turret.haveAprilLock &&
+                    //turret.haveAprilLock &&
                     turret.atTargetAngle()) {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
@@ -216,15 +216,22 @@ public abstract class TeleOp extends OpMode {
     private void bindDriverControls() {
         // auto intake mode
         TriggerHeld driverRight = new TriggerHeld(driver, GamepadKeys.Trigger.LEFT_TRIGGER);
-        driverRight.whileActiveOnce(new AutoIntake());
+        driverRight.whileActiveOnce(new AutoIntake(), true);
         // auto outtake mode
-        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new AutoOuttake());
+        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new AutoOuttake(), true);
     }
 
     private void bindOperatorControls() {
         // spindexer
         operator.getGamepadButton(GamepadKeys.Button.A).whenPressed(
             spindexer.new ShootOnce()
+            );
+        operator.getGamepadButton(GamepadKeys.Button.X).whenPressed(
+            new SequentialCommandGroup(
+                spindexer.new ShootOnce(),
+                spindexer.new ShootOnce(),
+                spindexer.new ShootOnce()
+                )
             );
         operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(
             spindexer.new IndexOnce()
@@ -297,7 +304,7 @@ public abstract class TeleOp extends OpMode {
         telem.log("position-heading", h);
         telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
         double fps = loops / runtime.seconds();
-        telem.logDrivers("frames per second", fps);
+        telem.logDrivers("average fps", fps);
         telemetry.update();
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
     }

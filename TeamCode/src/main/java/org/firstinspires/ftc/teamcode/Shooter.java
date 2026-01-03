@@ -13,6 +13,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
+import java.util.LinkedList;
+
 @Config
 public class Shooter extends SubsystemBase {
     Servo indicatorLight;
@@ -23,10 +25,24 @@ public class Shooter extends SubsystemBase {
     double ticksPerSecond;
     double power;
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
-    boolean readyToCount = false;
+
+    // shot-counter
     int shotsFired = 0;
-    public static double HIGH_STATE_OFFSET = -250;
-    public static double LOW_STATE_OFFSET = -500;
+    class RpmData {
+        public double time;
+        public double rpm;
+        public RpmData(double t, double r) {
+            time = t;
+            rpm = r;
+        }
+    }
+    LinkedList<RpmData> recentRpms;
+    // the algorithm we use is:
+    // - a bucket of recent samples, at most 200ms in length
+    // - if the oldest rpm minus the newest rpm shows a >400 rpm drop, that's a shot
+    // looking at telemetry data, we determined that this only happens
+    // during shots (normal spin-down is slower so the 200ms window can't see it)
+
     //Tuned on November 27:
     public static double FAR_RPM = 4950;
     public static double NEAR_RPM = 4000;
@@ -71,6 +87,7 @@ public class Shooter extends SubsystemBase {
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
 
         hood = hardwareMap.get(Servo.class, "hood");
+        recentRpms = new LinkedList<RpmData>();
     }
 
     public void reset() {
@@ -87,6 +104,13 @@ public class Shooter extends SubsystemBase {
         ticksPerSecond = motor1.getVelocity();
         currentRpm = (ticksPerSecond * 60) / TICKS_PER_REV;
         voltage = battery.getVoltage();
+
+        // recent RPM data for shot-counter.
+        recentRpms.addLast(new RpmData(time, currentRpm));
+        // ensure we only have 200ms or less worth of data
+        while (time - recentRpms.getFirst().time > 0.200) {
+            recentRpms.removeFirst();
+        }
     }
 
 
@@ -97,125 +121,6 @@ public class Shooter extends SubsystemBase {
         //public void execute() {}
         //public boolean isFinished() { return false; }
         //public void end(boolean interrupted){}
-    }
-
-
-    public class FarZone extends CommandBase {
-        public FarZone() {
-            addRequirements(Shooter.this);
-        }
-        public void initialize() {
-            targetRpm = FAR_RPM;
-        }
-        public boolean isFinished() {
-            return readyToShoot();
-        }
-    }
-
-    public class NearZone extends CommandBase {
-        public NearZone() {
-            addRequirements(Shooter.this);
-        }
-        public void initialize() {
-            targetRpm = NEAR_RPM;
-        }
-        public boolean isFinished() {
-            return readyToShoot();
-        }
-    }
-
-    public class AutoRpmMode extends CommandBase {
-        public AutoRpmMode() {
-            addRequirements(Shooter.this);
-        }
-        public void initialize() {
-            autoRpm = true;
-        }
-    }
-
-    public class ManualRpmMode extends CommandBase {
-        public ManualRpmMode() {
-            addRequirements(Shooter.this);
-        }
-        public void initialize() {
-            autoRpm = false;
-        }
-    }
-
-    public class ToggleRpmMode extends CommandBase {
-        public ToggleRpmMode() {
-            addRequirements(Shooter.this);
-        }
-        public void initialize() {
-            autoRpm = !autoRpm;
-        }
-    }
-
-    public class WaitForShot extends CommandBase {
-        int startShots;
-
-        public WaitForShot() {
-            addRequirements(Shooter.this);
-        }
-        public boolean isFinished() {
-            return shotsFired > startShots;
-        }
-    }
-
-    public class Shoot extends CommandBase {
-        private Spindexer spinner;
-        private Intake takeIn;
-        private boolean didShoot;
-        private boolean near;
-        private int shots;
-
-        public Shoot(Spindexer s, Intake i, boolean n) {
-            spinner = s;
-            takeIn = i;
-            didShoot = false;
-            this.near=n;
-            addRequirements(Shooter.this);
-        }
-
-        @Override
-        public void initialize() {
-            if (near){
-                targetRpm = NEAR_RPM;
-            }
-            else {
-                targetRpm = FAR_RPM;
-            }
-            shots = shotsFired;
-            didShoot = false;
-        }
-
-        @Override
-        public void execute() {
-            if (readyToShoot() && ! didShoot) {
-                spinner.spinShoot();
-                didShoot = true;
-            }
-            if (didShoot) {
-                takeIn.grab();
-            }
-        }
-
-        @Override
-        public boolean isFinished() {
-            return shotsFired > shots;
-        }
-        @Override
-        public void end(boolean interrupted){
-            targetRpm = 0;
-            takeIn.stop();
-        }
-    }
-
-    public CommandBase shootFar(Spindexer s, Intake i){
-        return new Shoot(s,i,false);
-    }
-    public CommandBase shootNear(Spindexer s, Intake i){
-        return new Shoot(s,i,true);
     }
 
     public boolean readyToShoot() {
@@ -239,6 +144,10 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         appliedVoltage = (kv * targetRpm) + ks;
         power = appliedVoltage / voltage;
+
+        // hack: trying to make this actually be "bang-F" instead of "just F"
+        power = power * 0.9;
+
         //power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
         if (currentRpm < (targetRpm - BAND) && !powerOn) {
             powerOn = true;
@@ -285,12 +194,12 @@ public class Shooter extends SubsystemBase {
         }
 
         // count shots
-        if (targetRpm > 0 && readyToCount && currentRpm < targetRpm + LOW_STATE_OFFSET){
-            shotsFired += 1;
-            readyToCount = false;
-        }
-        if (targetRpm > 0 && currentRpm > targetRpm + HIGH_STATE_OFFSET) {
-            readyToCount = true;
+        if (recentRpms.size() > 2) {
+            double rpmDrop = recentRpms.getFirst().rpm - recentRpms.getLast().rpm;
+            if (rpmDrop > 400) {
+                shotsFired += 1;
+                recentRpms.clear();
+            }
         }
     }
 
@@ -337,14 +246,11 @@ public class Shooter extends SubsystemBase {
                 if (targetRpm == 0) {
                     targetRpm = NEAR_RPM;
                     targetHood = HOOD_MIN;
-                    readyToCount = false;
                 } else if (targetRpm == NEAR_RPM) {
                     targetRpm = FAR_RPM;
                     targetHood = HOOD_MAX;
-                    readyToCount = false;
                 } else {
                     targetRpm = 0;
-                    readyToCount = false;
                 }
             }
 

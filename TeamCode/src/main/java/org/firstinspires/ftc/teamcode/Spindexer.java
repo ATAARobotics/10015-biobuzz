@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.util.Timing;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -28,6 +29,8 @@ public class Spindexer extends SubsystemBase {
     double currentAngle;    // computed from our encoder
     DigitalChannel artifact_color;
     DigitalChannel artifact_distance;
+    AnalogInput analog;
+
     // stuff we derive
     public enum SpinDirection {Shoot, Index}
     SpinDirection spin = SpinDirection.Index;
@@ -37,7 +40,7 @@ public class Spindexer extends SubsystemBase {
     public PIDController storeControl;
     public PIDController shootControl;
     public boolean boostF = false;
-    public static double boostAmount = 0.85;
+    public static double boostAmount = 0.5;//0.85;
 
     double spindexerPower;
     public int targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
@@ -49,6 +52,7 @@ public class Spindexer extends SubsystemBase {
     public enum SlotContent {Nothing, Purple, Green};
     SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
+    double lastHue;
     LinkedList<Boolean> recentColors;
     LinkedList<Boolean> recentDist;
 
@@ -83,7 +87,7 @@ public class Spindexer extends SubsystemBase {
         recentDist.add(false);
         recentDist.add(false);
         recentDist.add(false);
-
+        recentDist.add(false);
 
         // we always have 3 slots in this array
         slots = new SlotContent[]{
@@ -91,6 +95,9 @@ public class Spindexer extends SubsystemBase {
                 SlotContent.Nothing,
                 SlotContent.Nothing
         };
+
+        // the second brushland labs sensor, in analog mode
+        analog = hardwareMap.analogInput.get("artifact_hsv");
     }
 
     public void reset() {
@@ -112,6 +119,18 @@ public class Spindexer extends SubsystemBase {
             x |= rc;
         }
         return x;
+    }
+
+    public void clearRecentDist() {
+        recentDist.clear();
+        recentDist.add(false);
+        recentDist.add(false);
+        recentDist.add(false);
+        recentDist.add(false);
+    }
+
+    public boolean artifactInSlot() {
+        return (slots[currentSlot()] != SlotContent.Nothing);
     }
 
     public boolean haveArtifact() {
@@ -145,6 +164,7 @@ public class Spindexer extends SubsystemBase {
         spin = SpinDirection.Index;
         storeControl.reset();
         targetAngle -= STEP_DEG;
+        clearRecentDist();
     }
 
     // returns the index of the slot that's at the front of the robot;
@@ -153,12 +173,15 @@ public class Spindexer extends SubsystemBase {
         // we go from "targetAngle" because these are always whole
         // numbers .. so it'll be "a lie" until we're "at" a slot
         int norm = targetAngle;
-        if (norm < 0) norm = -norm;
+        // java disagrees with others on what negatuve numbers do here.
+        // for example, -120 % 360 = 240
+        // (which is the same as spinning positive twice) but Java says that's -240
         norm = norm % 360;
-        // integer division by 120 means anything less than 120 will
-        // be 0, anything between 120-240 will be 1, anything from 240
-        // to 360 will be 2
-        return norm / 120;
+        if (norm < 0) norm += 360; // account for weird java behavior
+        if (norm == 0) return 0;
+        if (norm == 240) return 1;
+        if (norm == 120) return 2;
+        return 0;
     }
 
     public boolean isStuck(){
@@ -201,7 +224,9 @@ public class Spindexer extends SubsystemBase {
 
     public void read_sensors(double time) {
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
-        recentColors.addLast(artifact_color.getState());
+        lastHue = (analog.getVoltage() / 3.3) * 360.0;
+        recentColors.addLast((lastHue >= 150.0 && lastHue <= 185.0));
+        //recentColors.addLast(artifact_color.getState());
         recentColors.removeFirst();
         recentDist.addLast(artifact_distance.getState());
         recentDist.removeFirst();
@@ -217,13 +242,6 @@ public class Spindexer extends SubsystemBase {
         // note: it's important to call .calculate() on our controller
         // _before_ we ask "atTarget()" so we have current information
         // from _this_ loop
-
-        // if we're spinning in the "shot" direction, AND have arrived
-        // at our target .. then we can be fairly sure that we've shot
-        // that ball. ideally we would double-check by having the
-        // Shooter tell us that a shot went up.
-        if (spin == SpinDirection.Shoot) {
-        }
 
         // let spindexer decide if there's something at the current
         // slot (but only if we also believe we are actually AT the
@@ -297,33 +315,6 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
-
-    public class WaitForBall extends CommandBase {
-        int mySlot = -1;
-
-        public WaitForBall() {
-            addRequirements(Spindexer.this);
-        }
-        public void initialize() {
-            mySlot = currentSlot();
-        }
-        public boolean isFinished() {
-            // if the slot we started on has something in it, we're done
-            return (slots[mySlot] != SlotContent.Nothing);
-        }
-    }
-
-    public class WaitForTarget extends CommandBase {
-        public WaitForTarget() {
-            addRequirements(Spindexer.this);
-        }
-        public boolean isFinished() {
-            return atTarget();
-        }
-    }
-
-
-
     private String renderSlot(int i) {
         String s = "[ ";
         if (slots[i] == SlotContent.Nothing) s += "  ]";
@@ -340,7 +331,12 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
         telem.log("spindexer-purple", recentColors.getFirst());
-        telem.log("spindexer-have-artifact", recentDist.getFirst());
+        telem.log("spindexer-analog", lastHue);
+        telem.log("spindexer-have-artifact-debug", recentDist);
+        telem.log("spindexer-have-artifact", haveArtifact());
+        telem.log("spindexer-slot-0", slots[0]);
+        telem.log("spindexer-slot-1", slots[1]);
+        telem.log("spindexer-slot-2", slots[2]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }
 

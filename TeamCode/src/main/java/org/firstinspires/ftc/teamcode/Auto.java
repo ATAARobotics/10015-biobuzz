@@ -139,10 +139,10 @@ public abstract class Auto extends OpMode {
             drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 0.404 : -0.404, -1.552, AngleUnit.DEGREES, 0));
             SequentialCommandGroup auto_commands = new SequentialCommandGroup(
                     pause(pauseTime),
-                    drive.moveQuickly(isRedAlliance ? 0.281 : -0.281, -1.390, isRedAlliance ? -22 : 22).withTimeout(1500),
-                    shooter.shootFar(spindexer, intake),
-                    shooter.shootFar(spindexer, intake),
-                    shooter.shootFar(spindexer, intake)
+                    drive.moveQuickly(isRedAlliance ? 0.281 : -0.281, -1.390, isRedAlliance ? -22 : 22).withTimeout(1500)
+//                    shooter.shootFar(spindexer, intake),
+//                    shooter.shootFar(spindexer, intake),
+//                    shooter.shootFar(spindexer, intake)
             );
             if (parkingDefault) {
                 auto_commands.addCommands(
@@ -155,10 +155,10 @@ public abstract class Auto extends OpMode {
             SequentialCommandGroup auto_commands = new SequentialCommandGroup(
                     pause(pauseTime),
                     //intake.takeIn(),
-                    drive.moveQuickly(isRedAlliance ? 0.4 : -0.4, 0.4, isRedAlliance ? -45 : 45).withTimeout(2500),
-                    shooter.shootNear(spindexer, intake),
-                    shooter.shootNear(spindexer, intake),
-                    shooter.shootNear(spindexer, intake)
+                    drive.moveQuickly(isRedAlliance ? 0.4 : -0.4, 0.4, isRedAlliance ? -45 : 45).withTimeout(2500)
+//                    shooter.shootNear(spindexer, intake),
+//                    shooter.shootNear(spindexer, intake),
+//                    shooter.shootNear(spindexer, intake)
             );
             if (parkingDefault) {
                 auto_commands.addCommands(

@@ -50,7 +50,7 @@ public class Turret extends SubsystemBase {
     //////public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
     public static double turretP = 0.0045, turretI = 0.00, turretD = 0.0002, turretF = 0.07;
-    public static double TURRET_TOLERANCE = 1.0; // in degrees
+    public static double TURRET_TOLERANCE = 2.5; // in degrees
     public double apriltag_heading, robot_heading;
 
     public enum HeadingLockMode { Trig, Camera, Off, Both }
