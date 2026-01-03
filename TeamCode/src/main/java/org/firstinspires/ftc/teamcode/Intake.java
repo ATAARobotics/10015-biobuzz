@@ -39,35 +39,6 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public Command takeIn() {
-        return new TakeIn();
-    }
-
-    public class TakeIn extends CommandBase {
-        public TakeIn() {
-            addRequirements(Intake.this);
-        }
-        @Override
-        public void initialize() {
-            grab();
-        }
-        public boolean isFinished(boolean interrupted) {
-            return true;
-        }
-    }
-
-    public class TakeNothing extends CommandBase {
-        public TakeNothing() {
-            addRequirements(Intake.this);
-        }
-        @Override
-        public void initialize() {
-            stop();
-        }
-        public boolean isFinished(boolean interrupted) {
-            return true;
-        }
-    }
 
     public void addTelemetry(HyperTelemetry telem) {
         telem.log("intake-mode", mode);

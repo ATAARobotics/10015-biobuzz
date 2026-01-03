@@ -315,33 +315,6 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
-
-    public class WaitForBall extends CommandBase {
-        int mySlot = -1;
-
-        public WaitForBall() {
-            addRequirements(Spindexer.this);
-        }
-        public void initialize() {
-            mySlot = currentSlot();
-        }
-        public boolean isFinished() {
-            // if the slot we started on has something in it, we're done
-            return (slots[mySlot] != SlotContent.Nothing);
-        }
-    }
-
-    public class WaitForTarget extends CommandBase {
-        public WaitForTarget() {
-            addRequirements(Spindexer.this);
-        }
-        public boolean isFinished() {
-            return atTarget();
-        }
-    }
-
-
-
     private String renderSlot(int i) {
         String s = "[ ";
         if (slots[i] == SlotContent.Nothing) s += "  ]";
