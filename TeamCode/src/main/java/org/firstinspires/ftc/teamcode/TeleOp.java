@@ -179,7 +179,7 @@ public abstract class TeleOp extends OpMode {
                 // - and have April lock
                 // - and Turret is at its angle
                 if (shooter.readyToShoot() &&
-                    //turret.haveAprilLock &&
+                    turret.haveAprilLock &&
                     turret.atTargetAngle()) {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
@@ -200,6 +200,9 @@ public abstract class TeleOp extends OpMode {
                         state = OutState.WAIT_SHOOT;
                     }
                 }
+            }
+            if (driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+                state = OutState.DONE;
             }
         }
         public boolean isFinished() {

@@ -48,6 +48,12 @@ public class Shooter extends SubsystemBase {
     public static double NEAR_RPM = 4000;
     public static double HOOD_MAX = 0.75;
     public static double HOOD_MIN = 0.35;
+
+    // until we re-tune with the 4x flywheel weights, change the
+    // percentage of auto-rpm
+    public static double AUTO_RPM_PERCENT = 1.0;
+    public static int RPM_DROP_FOR_SHOT = 225;  // how many RPMs must drop for "a shot" to be counted
+
     double RED = 0.28;
     double GREEN = 0.5;
     double PINK = 0.71;
@@ -162,6 +168,9 @@ public class Shooter extends SubsystemBase {
         // auto-computed RPM, optional
         if (autoRpm /*&& aprilDistance > 0.5*/) {
             targetRpm = 20.3 * aprilDistance + 2678;
+
+            targetRpm *= AUTO_RPM_PERCENT;
+
             if (aprilDistance < 100) {
                 targetHood = HOOD_MIN;
             } else {
@@ -196,7 +205,7 @@ public class Shooter extends SubsystemBase {
         // count shots
         if (recentRpms.size() > 2) {
             double rpmDrop = recentRpms.getFirst().rpm - recentRpms.getLast().rpm;
-            if (rpmDrop > 400) {
+            if (rpmDrop > RPM_DROP_FOR_SHOT) {
                 shotsFired += 1;
                 recentRpms.clear();
             }
