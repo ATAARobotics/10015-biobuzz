@@ -34,6 +34,9 @@ public class Spindexer extends SubsystemBase {
     // stuff we derive
     public enum SpinDirection {Shoot, Index}
     SpinDirection spin = SpinDirection.Index;
+    public enum Mode {Auto, Manual}
+    Mode mode = Mode.Auto;
+    double manualPower;
     Timing.Timer stuckTime;
 
     // different PID tunings for "shoot" versus normal spin
@@ -58,6 +61,7 @@ public class Spindexer extends SubsystemBase {
 
     public static double TOLERENCE_DEG_SHOOT = 2.0;
     public static double TOLERENCE_DEG_INDEX = 10.0;
+    public static double MANUAL_DIVISOR = 10;
     public static double STEP_DEG = 120;
     // tuned December 10 with latest hardware rev (target collar, ramps, etc)
     public static PIDCoefficients shootPid = new PIDCoefficients(0.006, 0.02, 0.0003);
@@ -234,44 +238,50 @@ public class Spindexer extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // for CCW ("shoot") direction, we use a separate PID .. so we
-        // ned to know "which direction" we're spinning.
-        PIDController control = (spin == SpinDirection.Index ? storeControl : shootControl);
-        spindexerPower = control.calculate(currentAngle - targetAngle);
+        if (mode == Mode.Manual){
+            spindexerPower = manualPower;
+        }
+        else{
+            // for CCW ("shoot") direction, we use a separate PID .. so we
+            // ned to know "which direction" we're spinning.
+            PIDController control = (spin == SpinDirection.Index ? storeControl : shootControl);
+            spindexerPower = control.calculate(currentAngle - targetAngle);
 
-        // note: it's important to call .calculate() on our controller
-        // _before_ we ask "atTarget()" so we have current information
-        // from _this_ loop
+            // note: it's important to call .calculate() on our controller
+            // _before_ we ask "atTarget()" so we have current information
+            // from _this_ loop
 
-        // let spindexer decide if there's something at the current
-        // slot (but only if we also believe we are actually AT the
-        // current slot)
-        if (atTarget()) {
-            if (haveArtifact()) {
-                if (slots[currentSlot()] == SlotContent.Nothing) {
-                    slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;
+            // let spindexer decide if there's something at the current
+            // slot (but only if we also believe we are actually AT the
+            // current slot)
+            if (atTarget()) {
+                if (haveArtifact()) {
+                    if (slots[currentSlot()] == SlotContent.Nothing) {
+                        slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;
+                    }
                 }
             }
-        }
 
-        storeControl.setPID(storePid.p, storePid.i, storePid.d);
-        shootControl.setPID(shootPid.p, shootPid.i, shootPid.d);
+            storeControl.setPID(storePid.p, storePid.i, storePid.d);
+            shootControl.setPID(shootPid.p, shootPid.i, shootPid.d);
 
-        //if (spindexerPower > 0.5) spindexerPower = 0.5;
-        //if (spindexerPower < -0.5) spindexerPower = -0.5;
+            //if (spindexerPower > 0.5) spindexerPower = 0.5;
+            //if (spindexerPower < -0.5) spindexerPower = -0.5;
 
-        // temporary "boost" for the shoot-direction .. if we've "not
-        // yet passed our goal" AND boostF is still true, we add extra
-        // power (because the launched needs to have more power right
-        // when it's super close to its goal).
-        if (boostF && spin == SpinDirection.Shoot) {
-            if (currentAngle < targetAngle) {//(spindexerPower > 0.0) {
-                spindexerPower += boostAmount;
-            } else {
-                // we've passed our setpoint (at least once) because
-                // power went negative
-                boostF = false;
+            // temporary "boost" for the shoot-direction .. if we've "not
+            // yet passed our goal" AND boostF is still true, we add extra
+            // power (because the launched needs to have more power right
+            // when it's super close to its goal).
+            if (boostF && spin == SpinDirection.Shoot) {
+                if (currentAngle < targetAngle) {//(spindexerPower > 0.0) {
+                    spindexerPower += boostAmount;
+                } else {
+                    // we've passed our setpoint (at least once) because
+                    // power went negative
+                    boostF = false;
+                }
             }
+
         }
 
         spindexerMotor.set(spindexerPower);
@@ -358,6 +368,21 @@ public class Spindexer extends SubsystemBase {
             }
             if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
                 spinIndex();
+            }
+            manualPower = operator.getLeftX()/ MANUAL_DIVISOR;
+            if (operator.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)){
+                if (mode == Mode.Auto){
+                    mode = Mode.Manual;
+                }
+                else{
+                    mode = Mode.Auto;
+                    reset();
+                }
+            }
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
+                slots [0] = SlotContent.Nothing;
+                slots [1] = SlotContent.Nothing;
+                slots [2] = SlotContent.Nothing;
             }
 /*
 kind of for high-speed shoot debugging

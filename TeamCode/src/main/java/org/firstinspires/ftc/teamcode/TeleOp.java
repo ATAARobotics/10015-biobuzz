@@ -77,7 +77,7 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().registerSubsystem(spindexer);
 
         // set up controls
-        bindOperatorControls();
+       // bindOperatorControls();
         bindDriverControls();
 
         // "mostly" we want to run the HumanInputs commands during teleop
@@ -85,7 +85,7 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
-        //CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
+        CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
 
         // set up for bulk-reads of encoders etc (in MANUAL we *must*
         // remember to clear the cache once per cycle or we'll always
