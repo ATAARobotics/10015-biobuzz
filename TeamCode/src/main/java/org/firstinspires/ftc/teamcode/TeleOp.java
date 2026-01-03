@@ -179,7 +179,7 @@ public abstract class TeleOp extends OpMode {
                 // - and have April lock
                 // - and Turret is at its angle
                 if (shooter.readyToShoot() &&
-                    turret.haveAprilLock &&
+                   // turret.haveAprilLock &&
                     turret.atTargetAngle()) {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
@@ -276,9 +276,24 @@ public abstract class TeleOp extends OpMode {
         spindexer.read_sensors(time);
         //turret.read_sensors(time);
         //intake.read_sensors(time);
+        double robotX = drive.getPosition().getX(DistanceUnit.METER);
+        double robotY = drive.getPosition().getY(DistanceUnit.METER);
+        double targetX = turret.target.fieldPosition.get(0);
+        double targetY = turret.target.fieldPosition.get(1);
+        targetX = turret.target.distanceUnit.toMeters(targetX);
+        targetY = turret.target.distanceUnit.toMeters(targetY);
+        double distanceA = targetX - robotX;
+        double distanceB = targetY - robotY;
+        double distance = Math.sqrt((distanceA * distanceA) + (distanceB * distanceB));
+        //shooter.geometricDistance = distance;
         turret.apriltag_heading = drive.apriltag_heading;
         turret.robot_heading = drive.getPosition().getHeading(AngleUnit.DEGREES);
-        shooter.aprilDistance = turret.april_distance;
+        if (turret.haveAprilLock){
+            shooter.aprilDistance = turret.april_distance;
+        }
+        else{
+            shooter.aprilDistance = distance;
+        }
 
         // Run the CommandScheduler instance (note: this will call
         // ".periodic()" on all registered subsystems, which is the

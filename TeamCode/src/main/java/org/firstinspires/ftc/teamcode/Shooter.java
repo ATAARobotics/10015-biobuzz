@@ -48,6 +48,7 @@ public class Shooter extends SubsystemBase {
     public static double NEAR_RPM = 4000;
     public static double HOOD_MAX = 0.75;
     public static double HOOD_MIN = 0.35;
+    public static double MANUAL_RPM = 0;
 
     // until we re-tune with the 4x flywheel weights, change the
     // percentage of auto-rpm
@@ -70,6 +71,7 @@ public class Shooter extends SubsystemBase {
     double voltage; // current battery voltage
     public boolean autoRpm = false;
     public double aprilDistance;
+    //public double geometricDistance;
 
     public static double kv = 0.002213; //kv is Feed Forward Model slope, determined experimentally with flywheel
     public static double ks = 0.129514; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
@@ -148,6 +150,9 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (MANUAL_RPM > 1.0){
+            targetRpm = MANUAL_RPM;
+        }
         appliedVoltage = (kv * targetRpm) + ks;
         power = appliedVoltage / voltage;
 
@@ -170,6 +175,7 @@ public class Shooter extends SubsystemBase {
             targetRpm = 20.3 * aprilDistance + 2678;
 
             targetRpm *= AUTO_RPM_PERCENT;
+            targetRpm = MANUAL_RPM;
 
             if (aprilDistance < 100) {
                 targetHood = HOOD_MIN;

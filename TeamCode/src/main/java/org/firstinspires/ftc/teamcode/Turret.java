@@ -59,7 +59,7 @@ public class Turret extends SubsystemBase {
     // prototyping with some AprilTags, Sept 15
     AprilTagProcessor april_tags;
     VisionPortal portal;
-    AprilTagMetadata target;
+    public AprilTagMetadata target;
 
 
 //    private static FileWriter writer;
@@ -139,8 +139,8 @@ public class Turret extends SubsystemBase {
     }
 
     public void autoLock() {
-        //mode = HeadingLockMode.Both;
-        mode = HeadingLockMode.Camera;
+        mode = HeadingLockMode.Both;
+        //mode = HeadingLockMode.Camera;
     }
 
     public void noLock() {
