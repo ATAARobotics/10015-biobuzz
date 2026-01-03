@@ -278,17 +278,17 @@ public abstract class TeleOp extends OpMode {
         //intake.read_sensors(time);
         double robotX = drive.getPosition().getX(DistanceUnit.METER);
         double robotY = drive.getPosition().getY(DistanceUnit.METER);
-        double targetX = turret.target.fieldPosition.get(0);
-        double targetY = turret.target.fieldPosition.get(1);
+        double targetX = turret.target.fieldPosition.get(1);
+        double targetY = -turret.target.fieldPosition.get(0);
         targetX = turret.target.distanceUnit.toMeters(targetX);
         targetY = turret.target.distanceUnit.toMeters(targetY);
         double distanceA = targetX - robotX;
         double distanceB = targetY - robotY;
         double distance = Math.sqrt((distanceA * distanceA) + (distanceB * distanceB));
-        //shooter.geometricDistance = distance;
+        distance = DistanceUnit.INCH.fromMeters(distance);
         turret.apriltag_heading = drive.apriltag_heading;
         turret.robot_heading = drive.getPosition().getHeading(AngleUnit.DEGREES);
-        if (turret.haveAprilLock){
+        if (false && turret.haveAprilLock){
             shooter.aprilDistance = turret.april_distance;
         }
         else{

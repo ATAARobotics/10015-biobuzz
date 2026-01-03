@@ -49,16 +49,20 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MAX = 0.75;
     public static double HOOD_MIN = 0.35;
     public static double MANUAL_RPM = 0;
+    static double RPM_VS_DIST_SLOPE = 18.941;
+    static double RPM_VS_DIST_INTERCEPT = 2327.9;
+    static double HOOD_COEF = 0.0732;
+    static double HOOD_EXP = 0.4768;
 
     // until we re-tune with the 4x flywheel weights, change the
     // percentage of auto-rpm
     public static double AUTO_RPM_PERCENT = 1.0;
-    public static int RPM_DROP_FOR_SHOT = 225;  // how many RPMs must drop for "a shot" to be counted
+    public static int RPM_DROP_FOR_SHOT = 150;  // how many RPMs must drop for "a shot" to be counted
 
     double RED = 0.28;
     double GREEN = 0.5;
     double PINK = 0.71;
-    double BAND = 10; //not tested
+    double BAND = 10;
     double BANG_POWER = 1.0;
     public static double RPM_TOLERANCE = 250;
     boolean powerOn = false;
@@ -122,7 +126,6 @@ public class Shooter extends SubsystemBase {
     }
 
 
-
     // leave this here for easy copy-pasting when creating a new command
     public class CommandTemplate extends CommandBase {
         //public void initialize() {}
@@ -150,9 +153,24 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // auto-computed RPM, optional
+        if (autoRpm /*&& aprilDistance > 0.5*/) {
+            targetRpm = RPM_VS_DIST_SLOPE * aprilDistance + RPM_VS_DIST_INTERCEPT;
+
+            targetRpm *= AUTO_RPM_PERCENT;
+            // targetRpm = MANUAL_RPM;
+
+          /*  if (aprilDistance < 100) {
+                targetHood = HOOD_MIN;
+            } else {
+                targetHood = HOOD_MAX;
+            }*/
+            targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
+        }
         if (MANUAL_RPM > 1.0){
             targetRpm = MANUAL_RPM;
         }
+
         appliedVoltage = (kv * targetRpm) + ks;
         power = appliedVoltage / voltage;
 
@@ -170,23 +188,11 @@ public class Shooter extends SubsystemBase {
         if (targetRpm == 0) power = 0;
         if (power < 0) power = 0;
 
-        // auto-computed RPM, optional
-        if (autoRpm /*&& aprilDistance > 0.5*/) {
-            targetRpm = 20.3 * aprilDistance + 2678;
-
-            targetRpm *= AUTO_RPM_PERCENT;
-            targetRpm = MANUAL_RPM;
-
-            if (aprilDistance < 100) {
-                targetHood = HOOD_MIN;
-            } else {
-                targetHood = HOOD_MAX;
-            }
+        if (targetHood < HOOD_MIN){
+            targetHood = HOOD_MIN;
         }
-
-
-        if (targetHood < 0.35){
-            targetHood = 0.35;
+        if (targetHood > HOOD_MAX){
+            targetHood = HOOD_MAX;
         }
         hood.setPosition(targetHood);
 
@@ -230,6 +236,7 @@ public class Shooter extends SubsystemBase {
         telem.log("shooter-power", power);
         telem.log("shooter-hood-angle", targetHood);
         telem.log("shooter-auto-rpm", autoRpm);
+        telem.log("shooter-distance", aprilDistance);
     }
 
     public class HumanInputs extends CommandBase {

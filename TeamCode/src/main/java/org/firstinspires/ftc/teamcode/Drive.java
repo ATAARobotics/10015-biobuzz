@@ -33,6 +33,8 @@ public class Drive extends SubsystemBase {
     public static final double ANGLE_TWEAK = 0;
     public static double TURBO_FAST_SPEED = 1.0;
     public static double TURBO_SLOW_SPEED = 0.75;
+    public static double TARGET_X_OFFSET = 0;
+    public static double TARGET_Y_OFFSET = 0;
 
     public static double STATIC_F_SENSITIVE = 0.005; //0.001; //0.04;
     // jan 15, 2025: re-tuned these with the higher "careful_pid"
@@ -432,8 +434,8 @@ public class Drive extends SubsystemBase {
         current_position = pinpoint.getPosition();
 
         apriltag_heading = Math.toDegrees(Math.atan2(
-                current_position.getX(DistanceUnit.METER) - target.distanceUnit.toMeters(target.fieldPosition.get(1)),
-                -current_position.getY(DistanceUnit.METER) - target.distanceUnit.toMeters(target.fieldPosition.get(0))));
+                current_position.getX(DistanceUnit.METER) - (TARGET_X_OFFSET + target.distanceUnit.toMeters(target.fieldPosition.get(1))),
+                -current_position.getY(DistanceUnit.METER) - (TARGET_Y_OFFSET + target.distanceUnit.toMeters(target.fieldPosition.get(0)))));
         /*
         current_left_distance= dist_left.getDistance(DistanceUnit.INCH);
         dist_left_avg.add_sample(current_left_distance);
