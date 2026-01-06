@@ -363,18 +363,18 @@ public class Spindexer extends SubsystemBase {
 
         @Override
         public void execute() {
-            if (operator.wasJustPressed(GamepadKeys.Button.A)) {
+           /* if (operator.wasJustPressed(GamepadKeys.Button.A)) {
                 spinShoot();
             }
             if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
                 spinIndex();
-            }
+            }*/
             manualPower = operator.getLeftX()/ MANUAL_DIVISOR;
-            if (operator.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)){
-                if (mode == Mode.Auto){
+            if (operator.isDown(GamepadKeys.Button.LEFT_STICK_BUTTON)){
                     mode = Mode.Manual;
-                }
-                else{
+            }
+            else{
+                if (mode == Mode.Manual){
                     mode = Mode.Auto;
                     reset();
                 }

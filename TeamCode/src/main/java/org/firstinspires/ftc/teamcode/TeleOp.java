@@ -77,7 +77,7 @@ public abstract class TeleOp extends OpMode {
         CommandScheduler.getInstance().registerSubsystem(spindexer);
 
         // set up controls
-       // bindOperatorControls();
+        bindOperatorControls();
         bindDriverControls();
 
         // "mostly" we want to run the HumanInputs commands during teleop
@@ -215,6 +215,20 @@ public abstract class TeleOp extends OpMode {
             }
         }
     }
+    public class PrepareToShoot extends CommandBase{
+        public PrepareToShoot() {
+            addRequirements(shooter);
+            addRequirements(turret);
+        }
+
+        public void initialize(){
+            shooter.autoShootRpm();
+            turret.autoLock();
+        }
+        public boolean isFinished(){
+            return true;
+        }
+    }
 
     private void bindDriverControls() {
         // auto intake mode
@@ -238,7 +252,10 @@ public abstract class TeleOp extends OpMode {
             );
         operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(
             spindexer.new IndexOnce()
-            );
+        );
+        operator.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
+                new PrepareToShoot()
+        );
     }
 
     @Override

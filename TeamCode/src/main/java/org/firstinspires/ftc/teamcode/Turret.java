@@ -38,6 +38,7 @@ public class Turret extends SubsystemBase {
     private double resetAngle;
     private int servoTurnCount;
     double joystickAngle;
+    double operatorOffset = 0;
 
     public boolean haveAprilLock;
     public double april_bearing;
@@ -51,6 +52,7 @@ public class Turret extends SubsystemBase {
     // (and again)
     public static double turretP = 0.0045, turretI = 0.00, turretD = 0.0002, turretF = 0.07;
     public static double TURRET_TOLERANCE = 2.5; // in degrees
+    public static double TURRET_TWEAK = 2;
     public double apriltag_heading, robot_heading;
 
     public enum HeadingLockMode { Trig, Camera, Off, Both }
@@ -97,7 +99,7 @@ public class Turret extends SubsystemBase {
 
     public void faceFieldAngle(double fieldAngleDeg) {
         // Robot-relative angle: where turret must point relative to robot frame
-        double robotRelative = wrapAngle(fieldAngleDeg - robot_heading);
+        double robotRelative = wrapAngle(fieldAngleDeg + operatorOffset - robot_heading);
 
         // Reuse existing robot-relative method
         faceRobotAngle(robotRelative);
@@ -172,6 +174,7 @@ public class Turret extends SubsystemBase {
                 faceFieldAngle(apriltag_heading);
             }
         }
+        faceFieldAngle(apriltag_heading);
 
         // compute where the servos are, and conclude where the turret is
         servoAngle = getServoAngle() - resetAngle;
@@ -277,15 +280,15 @@ public class Turret extends SubsystemBase {
                 joystickAngle = Math.toDegrees(Math.atan2(rx, ry));
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
-                joystickAngle += 10;
+                operatorOffset += TURRET_TWEAK;
                 //joystickAngle = 90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
-                joystickAngle -= 10;
+                operatorOffset -= TURRET_TWEAK;
                 //joystickAngle = -90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
-                joystickAngle = 0;
+                operatorOffset = 0;
             }
         }
     }

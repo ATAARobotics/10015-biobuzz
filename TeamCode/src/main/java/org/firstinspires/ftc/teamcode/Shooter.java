@@ -262,7 +262,7 @@ public class Shooter extends SubsystemBase {
             if (driver.wasJustPressed(GamepadKeys.Button.A)){
                 targetRpm = 0;
             }
-            */
+
             if (operator.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
                 autoRpm = false;
                 if (targetRpm == 0) {
@@ -276,7 +276,7 @@ public class Shooter extends SubsystemBase {
                 }
             }
 
-        /*    if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
                 targetHood += 0.05;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
