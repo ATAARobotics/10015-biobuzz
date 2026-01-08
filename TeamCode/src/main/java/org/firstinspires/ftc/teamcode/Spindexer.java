@@ -27,9 +27,8 @@ public class Spindexer extends SubsystemBase {
 
     // stuff we read from sensors
     double currentAngle;    // computed from our encoder
-    DigitalChannel artifact_color;
-    DigitalChannel artifact_distance;
-    AnalogInput analog;
+    AnalogInput analog_hsv;
+    AnalogInput analog_distance;
 
     // stuff we derive
     public enum SpinDirection {Shoot, Index}
@@ -56,6 +55,7 @@ public class Spindexer extends SubsystemBase {
     SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
     double lastHue;
+    double lastDistance;
     LinkedList<Boolean> recentColors;
     LinkedList<Boolean> recentDist;
 
@@ -63,6 +63,7 @@ public class Spindexer extends SubsystemBase {
     public static double TOLERENCE_DEG_INDEX = 10.0;
     public static double MANUAL_DIVISOR = 10;
     public static double STEP_DEG = 120;
+    public static double DISTANCE_THRESHOLD = 20.0;
     // tuned December 10 with latest hardware rev (target collar, ramps, etc)
     public static PIDCoefficients shootPid = new PIDCoefficients(0.006, 0.02, 0.0003);
     public static PIDCoefficients storePid = new PIDCoefficients(0.005, 0.00, 0.0003);
@@ -77,8 +78,6 @@ public class Spindexer extends SubsystemBase {
 
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         stuckTime = new Timing.Timer(600, TimeUnit.MILLISECONDS);
-        artifact_color = hardwareMap.digitalChannel.get("artifact_color");
-        artifact_distance = hardwareMap.digitalChannel.get("artifact_distance");
 
         recentColors = new LinkedList<Boolean>();
         recentColors.add(false);
@@ -100,8 +99,9 @@ public class Spindexer extends SubsystemBase {
                 SlotContent.Nothing
         };
 
-        // the second brushland labs sensor, in analog mode
-        analog = hardwareMap.analogInput.get("artifact_hsv");
+        // the two brushland labs sensors, in analog mode (now)
+        analog_hsv = hardwareMap.analogInput.get("artifact_hsv");
+        analog_distance = hardwareMap.analogInput.get("artifact_distance");
     }
 
     public void reset() {
@@ -228,13 +228,23 @@ public class Spindexer extends SubsystemBase {
 
     public void read_sensors(double time) {
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
-        lastHue = (analog.getVoltage() / 3.3) * 360.0;
+        lastHue = (analog_hsv.getVoltage() / 3.3) * 360.0;
         recentColors.addLast((lastHue >= 150.0 && lastHue <= 185.0));
         //recentColors.addLast(artifact_color.getState());
         recentColors.removeFirst();
-        recentDist.addLast(artifact_distance.getState());
+        lastDistance = (analog_distance.getVoltage() / 3.3) * 100.0;
+        recentDist.addLast(lastDistance < DISTANCE_THRESHOLD);
         recentDist.removeFirst();
     }
+
+/*
+
+bug from adrian
+
+feathering "intake" mode
+if interrupt "during" spin then it gets confused about which slot is what
+
+*/
 
     @Override
     public void periodic() {
@@ -327,9 +337,9 @@ public class Spindexer extends SubsystemBase {
 
     private String renderSlot(int i) {
         String s = "[ ";
-        if (slots[i] == SlotContent.Nothing) s += "  ]";
-        if (slots[i] == SlotContent.Purple) s +=  "P ]";
-        if (slots[i] == SlotContent.Green) s += "G ]";
+        if (slots[i] == SlotContent.Nothing) s += "     ]";
+        if (slots[i] == SlotContent.Purple) s +=  "PPPP ]";
+        if (slots[i] == SlotContent.Green) s += "GGGG ]";
         return s;
     }
 
@@ -341,7 +351,8 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
         telem.log("spindexer-purple", recentColors.getFirst());
-        telem.log("spindexer-analog", lastHue);
+        telem.log("spindexer-analog-hue", lastHue);
+        telem.log("spindexer-analog-distance", lastDistance);
         telem.log("spindexer-have-artifact-debug", recentDist);
         telem.log("spindexer-have-artifact", haveArtifact());
         telem.log("spindexer-slot-0", slots[0]);

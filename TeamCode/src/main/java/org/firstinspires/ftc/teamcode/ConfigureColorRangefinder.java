@@ -50,7 +50,8 @@ public class ConfigureColorRangefinder extends LinearOpMode {
         ColorRangefinder crf1 = null;
         DigitalChannel pin0 = null;
         DigitalChannel pin1 = null;
-        AnalogInput analog = null;
+        AnalogInput analog_dist = null;
+        AnalogInput analog_hsv = null;
 
         if (mode == "telemetry") {
             try {
@@ -67,9 +68,10 @@ public class ConfigureColorRangefinder extends LinearOpMode {
             }
             crf1 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color2"));
         } else if (mode == "test") {
-            pin0 = hardwareMap.digitalChannel.get("artifact_color");
-            pin1 = hardwareMap.digitalChannel.get("artifact_distance");
-            analog = hardwareMap.analogInput.get("artifact_hsv");
+            //pin0 = hardwareMap.digitalChannel.get("artifact_color");
+            //pin1 = hardwareMap.digitalChannel.get("artifact_distance");
+            analog_dist = hardwareMap.analogInput.get("artifact_distance");
+            analog_hsv = hardwareMap.analogInput.get("artifact_hsv");
         }
 
         while (opModeIsActive()) {
@@ -100,7 +102,12 @@ public class ConfigureColorRangefinder extends LinearOpMode {
                 //crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 140 / 360.0 * 255, 155 / 360.0 * 255);
                 crf0.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 50);
                 */
-                // set it up into analog mode
+
+                // set first sensor into analog mode, for distance
+                crf0.setPin0Analog(ColorRangefinder.AnalogMode.DISTANCE);
+                crf0.setPin1Digital(ColorRangefinder.DigitalMode.DISTANCE, 0, 100);
+
+                // set second sensor into analog mode
                 //crf1.setPin0Analog(ColorRangefinder.AnalogMode.HSV);
                 crf1.setPin0Analog(ColorRangefinder.AnalogMode.HSV);
                 crf1.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 0, 100);
@@ -112,9 +119,11 @@ public class ConfigureColorRangefinder extends LinearOpMode {
                 telemetry.addData("pin0", pin0.getState());
                 telemetry.addData("pin1", pin1.getState());
             }
-            if (analog != null) {
-                telemetry.addData("analog (color)", (analog.getVoltage() / 3.3) * 360.0);
-                telemetry.addData("analog (distance)", (analog.getVoltage() / 3.3) * 100.0);
+            if (analog_hsv != null) {
+                telemetry.addData("analog HSV", (analog_hsv.getVoltage() / 3.3) * 360.0);
+            }
+            if (analog_dist != null) {
+                telemetry.addData("analog distance", (analog_dist.getVoltage() / 3.3) * 100.0);
             }
 
             telemetry.update();
