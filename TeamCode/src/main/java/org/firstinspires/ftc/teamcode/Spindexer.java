@@ -87,10 +87,7 @@ public class Spindexer extends SubsystemBase {
         recentColors.add(false);
 
         recentDist = new LinkedList<Boolean>();
-        recentDist.add(false);
-        recentDist.add(false);
-        recentDist.add(false);
-        recentDist.add(false);
+        clearRecentDist();
 
         // we always have 3 slots in this array
         slots = new SlotContent[]{
@@ -129,8 +126,8 @@ public class Spindexer extends SubsystemBase {
         recentDist.clear();
         recentDist.add(false);
         recentDist.add(false);
-        recentDist.add(false);
-        recentDist.add(false);
+        //recentDist.add(false);
+        //recentDist.add(false);
     }
 
     public boolean artifactInSlot() {

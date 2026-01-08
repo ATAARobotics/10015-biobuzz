@@ -13,6 +13,7 @@ public class Intake extends SubsystemBase {
     private IntakeMode mode = IntakeMode.Idle;
     public Intake (HardwareMap hardwareMap){
         intake = new MotorEx(hardwareMap, "intake");
+        intake.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
     }
     public void reset(){
         mode = IntakeMode.Idle;
