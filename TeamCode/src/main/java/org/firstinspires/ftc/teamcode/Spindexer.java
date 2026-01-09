@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -24,6 +25,13 @@ import java.util.concurrent.TimeUnit;
 @Config
 public class Spindexer extends SubsystemBase {
     public MotorEx spindexerMotor;
+    Servo indicatorLight;
+
+    // colors for indicator light
+    double RED = 0.28;
+    double YELLOW = 0.35;  // fixme
+    double GREEN = 0.5;
+    double PINK = 0.71;
 
     // stuff we read from sensors
     double currentAngle;    // computed from our encoder
@@ -57,19 +65,21 @@ public class Spindexer extends SubsystemBase {
     double lastHue;
     double lastDistance;
     LinkedList<Boolean> recentColors;
-    LinkedList<Boolean> recentDist;
+    LinkedList<Double> recentDist;
 
     public static double TOLERENCE_DEG_SHOOT = 2.0;
     public static double TOLERENCE_DEG_INDEX = 10.0;
     public static double MANUAL_DIVISOR = 10;
     public static double STEP_DEG = 120;
     public static double DISTANCE_THRESHOLD = 20.0;
+    public static int DISTANCE_WINDOW = 3;
     // tuned December 10 with latest hardware rev (target collar, ramps, etc)
     public static PIDCoefficients shootPid = new PIDCoefficients(0.006, 0.02, 0.0003);
     public static PIDCoefficients storePid = new PIDCoefficients(0.005, 0.00, 0.0003);
 
     public Spindexer (HardwareMap hardwareMap) {
         spindexerMotor = new MotorEx(hardwareMap, "spindexer", Motor.GoBILDA.RPM_312);
+        indicatorLight = hardwareMap.get(Servo.class, "indicator");
 
         storeControl = new PIDController(storePid.p, storePid.i, storePid.d);
         shootControl = new PIDController(shootPid.p, storePid.i, storePid.d);
@@ -86,8 +96,7 @@ public class Spindexer extends SubsystemBase {
         recentColors.add(false);
         recentColors.add(false);
 
-        recentDist = new LinkedList<Boolean>();
-        clearRecentDist();
+        recentDist = new LinkedList<Double>();
 
         // we always have 3 slots in this array
         slots = new SlotContent[]{
@@ -123,23 +132,32 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void clearRecentDist() {
-        recentDist.clear();
-        recentDist.add(false);
-        recentDist.add(false);
-        //recentDist.add(false);
-        //recentDist.add(false);
+        while (recentDist.size() > DISTANCE_WINDOW) {
+            recentDist.removeFirst();
+        }
     }
 
     public boolean artifactInSlot() {
         return (slots[currentSlot()] != SlotContent.Nothing);
     }
 
-    public boolean haveArtifact() {
-        boolean x = true;
-        for (boolean rc : recentDist) {
-            x &= rc;
+    public int artifactCount() {
+        int count = 0;
+        for (SlotContent s : slots) {
+            if (s != SlotContent.Nothing) {
+                count += 1;
+            }
         }
-        return x;
+        return count;
+    }
+
+    public boolean haveArtifact() {
+        double avg = 0.0;
+        for (double rd : recentDist) {
+            avg += rd;
+        }
+        avg /= recentDist.size();
+        return (avg < DISTANCE_THRESHOLD);
     }
 
     public void spinShoot(){
@@ -230,8 +248,8 @@ public class Spindexer extends SubsystemBase {
         //recentColors.addLast(artifact_color.getState());
         recentColors.removeFirst();
         lastDistance = (analog_distance.getVoltage() / 3.3) * 100.0;
-        recentDist.addLast(lastDistance < DISTANCE_THRESHOLD);
-        recentDist.removeFirst();
+        recentDist.addLast(lastDistance);
+        clearRecentDist();
     }
 
 /*
@@ -268,6 +286,29 @@ if interrupt "during" spin then it gets confused about which slot is what
                     }
                 }
             }
+
+            // indicator lights
+            // kind-of traffic lights, by number of balls:
+            // 0 - off
+            // 1 - red
+            // 2 - yellow
+            // 3 - green
+            // additionally, we may do something if we're "currently sorting"
+            switch (artifactCount()) {
+                case 0:
+                    indicatorLight.setPosition(0.0);
+                    break;
+                case 1:
+                    indicatorLight.setPosition(RED);
+                    break;
+                case 2:
+                    indicatorLight.setPosition(YELLOW);
+                    break;
+                case 3:
+                    indicatorLight.setPosition(GREEN);
+                    break;
+            }
+
 
             storeControl.setPID(storePid.p, storePid.i, storePid.d);
             shootControl.setPID(shootPid.p, shootPid.i, shootPid.d);

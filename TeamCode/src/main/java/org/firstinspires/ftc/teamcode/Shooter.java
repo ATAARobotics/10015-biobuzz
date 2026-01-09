@@ -17,7 +17,6 @@ import java.util.LinkedList;
 
 @Config
 public class Shooter extends SubsystemBase {
-    Servo indicatorLight;
     MotorEx motor0;
     MotorEx motor1;
     MotorGroup shooterMotor;
@@ -59,9 +58,6 @@ public class Shooter extends SubsystemBase {
     public static double AUTO_RPM_PERCENT = 1.0;
     public static int RPM_DROP_FOR_SHOT = 150;  // how many RPMs must drop for "a shot" to be counted
 
-    double RED = 0.28;
-    double GREEN = 0.5;
-    double PINK = 0.71;
     double BAND = 10;
     double BANG_POWER = 1.0;
     public static double RPM_TOLERANCE = 250;
@@ -95,7 +91,6 @@ public class Shooter extends SubsystemBase {
 
         shooterMotor = new MotorGroup(motor0, motor1);
         targetRpm = 0;
-        indicatorLight = hardwareMap.get(Servo.class, "indicator");
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
 
         hood = hardwareMap.get(Servo.class, "hood");
@@ -197,22 +192,6 @@ public class Shooter extends SubsystemBase {
         hood.setPosition(targetHood);
 
         shooterMotor.set(power);
-
-        // indicator lights
-        if (targetRpm > 0) {
-            if (readyToShoot() && targetRpm == FAR_RPM) {
-                indicatorLight.setPosition(GREEN);
-            }
-            if (readyToShoot() && targetRpm == NEAR_RPM){
-                indicatorLight.setPosition(PINK);
-            }
-            if (! readyToShoot()) {
-                indicatorLight.setPosition(RED);
-            }
-        } else {
-            // turn off the light if we're not spinning
-            indicatorLight.setPosition(0);
-        }
 
         // count shots
         if (recentRpms.size() > 2) {
