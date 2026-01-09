@@ -115,7 +115,7 @@ public abstract class TeleOp extends OpMode {
     // goal: fill up the spindexer
     // but: might already have 0, 1, 2 or 3 balls
     // (so _don't_ want to do anything at all if we e.g. have 3 balls)
-    public enum InState {INTAKE, SPIN, DONE};
+    public enum InState {INTAKE, SPIN, SORT, DONE};
     public class AutoIntake extends CommandBase {
         private InState state;
 
@@ -131,7 +131,7 @@ public abstract class TeleOp extends OpMode {
             if (state == InState.INTAKE) {
                 if (spindexer.artifactInSlot()) {
                     if (spindexer.isFull()) {
-                        state = InState.DONE;
+                        state = InState.SORT;
                     } else {
                         state = InState.SPIN;
                         intake.stop();
@@ -142,6 +142,20 @@ public abstract class TeleOp extends OpMode {
                 if (spindexer.atTarget()) {
                     state = InState.INTAKE;
                     intake.grab();
+                }
+            } else if (state == InState.SORT) {
+                // for now we just shoot green first, always .. but
+                // we'll want it to be first, second or last depending
+                // on the Obelisk
+                if (spindexer.atTarget()) {
+                    int s = spindexer.currentShootSlot();
+                    // if we have no green, or we're currently going
+                    // to shoot a green next, we're done.
+                    if (!spindexer.haveOneGreen() || spindexer.slots[s] == Spindexer.SlotContent.Green) {
+                        state = InState.DONE;
+                    } else {
+                        spindexer.spinIndex();
+                    }
                 }
             }
         }

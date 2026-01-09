@@ -60,7 +60,7 @@ public class Spindexer extends SubsystemBase {
     // slot 1 is the next one after that if we spindex "backwards" / non-shoot direction (so 1 position CCW from slot 0)
     // slot 2 is the next slot CCW from slot 1 (aka the slot 120degrees CW from slot 0)
     public enum SlotContent {Nothing, Purple, Green};
-    SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
+    public SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
     double lastHue;
     double lastDistance;
@@ -165,8 +165,7 @@ public class Spindexer extends SubsystemBase {
         // to tell us when a shot went up .. meantime, we'll be
         // optimistic that anything in the "shoot" slot right now will
         // get shot...
-        int shootIndex = currentSlot() + 1;
-        if (shootIndex > 2) shootIndex = 0;
+        int shootIndex = currentShootSlot();
         if (slots[shootIndex] != SlotContent.Nothing) {
             // we probably shot
             slots[shootIndex] = SlotContent.Nothing;
@@ -201,6 +200,24 @@ public class Spindexer extends SubsystemBase {
         if (norm == 240) return 1;
         if (norm == 120) return 2;
         return 0;
+    }
+
+    // the "shoot slot" is the next one after the currentSlot() but
+    // wrapping..
+    public int currentShootSlot() {
+        int shootIndex = currentSlot() + 1;
+        if (shootIndex > 2) shootIndex = 0;
+        return shootIndex;
+    }
+
+    // if we have at least one green ball
+    public boolean haveOneGreen() {
+        for (SlotContent sc : slots) {
+            if (sc == SlotContent.Green) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isStuck(){
