@@ -123,13 +123,22 @@ public class Spindexer extends SubsystemBase {
        return motorRevs * 360;
     }
 
-    public boolean recentPurple() {
+     public boolean recentPurple() {
         boolean x = false;
         for (boolean rc : recentColors) {
-            x |= rc;
+         //   x |= rc;
+            x = rc;
         }
         return x;
     }
+
+    /*public boolean recentPurple(){
+        int count = 0;
+        for(boolean rc : recentColors){
+            if (rc) count ++;
+        }
+        return count >= 4; // four out of five samples must be purple
+    }*/
 
     public void clearRecentDist() {
         while (recentDist.size() > DISTANCE_WINDOW) {
@@ -261,7 +270,7 @@ public class Spindexer extends SubsystemBase {
     public void read_sensors(double time) {
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
         lastHue = (analog_hsv.getVoltage() / 3.3) * 360.0;
-        recentColors.addLast((lastHue >= 150.0 && lastHue <= 185.0));
+        recentColors.addLast((lastHue >= 130.0 && lastHue <= 185.0));
         //recentColors.addLast(artifact_color.getState());
         recentColors.removeFirst();
         lastDistance = (analog_distance.getVoltage() / 3.3) * 100.0;
