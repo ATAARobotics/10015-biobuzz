@@ -229,15 +229,20 @@ public abstract class TeleOp extends OpMode {
             }
         }
     }
-    public class PrepareToShoot extends CommandBase{
-        public PrepareToShoot() {
+    public class ToggleShoot extends CommandBase{
+        public ToggleShoot() {
             addRequirements(shooter);
             addRequirements(turret);
         }
 
-        public void initialize(){
-            shooter.autoShootRpm();
-            turret.autoLock();
+        public void initialize() {
+            if (shooter.autoRpm) {
+                shooter.manualShootRpm();
+                turret.noLock();
+            } else {
+                shooter.autoShootRpm();
+                turret.autoLock();
+            }
         }
         public boolean isFinished(){
             return true;
@@ -268,7 +273,7 @@ public abstract class TeleOp extends OpMode {
             spindexer.new IndexOnce()
         );
         operator.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
-                new PrepareToShoot()
+                new ToggleShoot()
         );
     }
 
