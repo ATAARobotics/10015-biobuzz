@@ -4,15 +4,16 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Size;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+//import com.acmerobotics.dashboard.FtcDashboard;
+//import com.acmerobotics.dashboard.config.Config;
+//import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -26,7 +27,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-@Config
+@Configurable
 public abstract class Auto extends OpMode {
     VoltageSensor battery;
     Drive drive;
@@ -192,8 +193,8 @@ public abstract class Auto extends OpMode {
         // Run the CommandScheduler instance
         CommandScheduler.getInstance().run();
 
-        TelemetryPacket pack = new TelemetryPacket();
-        HyperTelemetry telem = new HyperTelemetry(telemetry, pack);
+        //TelemetryPacket pack = new TelemetryPacket();
+        HyperTelemetry telem = new HyperTelemetry(telemetry);//, pack);
         telem.log("elapsed", runtime.toString());
         telem.log("time", time);
         telem.log("battery", battery.getVoltage());
@@ -214,7 +215,7 @@ public abstract class Auto extends OpMode {
         telem.log("position-heading", h);
         telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
 
-        FtcDashboard.getInstance().sendTelemetryPacket(pack);
+//        FtcDashboard.getInstance().sendTelemetryPacket(pack);
         telemetry.update();
     }
 

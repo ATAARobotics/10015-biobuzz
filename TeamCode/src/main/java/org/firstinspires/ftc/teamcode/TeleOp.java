@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+//import com.acmerobotics.dashboard.FtcDashboard;
+//import com.acmerobotics.dashboard.config.Config;
+//import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
@@ -10,6 +10,7 @@ import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -23,7 +24,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 
 import java.util.List;
 
-@Config
+@Configurable
 public abstract class TeleOp extends OpMode {
     GamepadEx driver;
     GamepadEx operator;
@@ -55,9 +56,6 @@ public abstract class TeleOp extends OpMode {
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);
-
-        //telemetry.addData("Pinpoint Firmware Version", drive.pinpoint.getDeviceVersion());
-        //telemetry.update();
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
 
@@ -336,8 +334,8 @@ public abstract class TeleOp extends OpMode {
         // correct place to do "per-loop" things)
         CommandScheduler.getInstance().run();
 
-        TelemetryPacket pack = new TelemetryPacket();
-        HyperTelemetry telem = new HyperTelemetry(telemetry, pack);
+        //TelemetryPacket pack = new TelemetryPacket();
+        HyperTelemetry telem = new HyperTelemetry(telemetry); //, pack);
         telem.log("elapsed", runtime.toString());
         telem.log("time", time);
         telem.log("battery", battery.getVoltage());
@@ -359,8 +357,8 @@ public abstract class TeleOp extends OpMode {
         telem.logDrivers("Robot Position", "x = %4.2f, y = %4.2f, h = %4.2f", x, y, h);
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);
-        telemetry.update();
-        FtcDashboard.getInstance().sendTelemetryPacket(pack);
+        telem.update();
+//        FtcDashboard.getInstance().sendTelemetryPacket(pack);
     }
 
     @Override

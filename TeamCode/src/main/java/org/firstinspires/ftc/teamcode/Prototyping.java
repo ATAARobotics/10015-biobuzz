@@ -1,19 +1,22 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+//import com.acmerobotics.dashboard.FtcDashboard;
+//import com.acmerobotics.dashboard.config.Config;
+//import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-@Config
+
+
+@Configurable
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Prototyping", group="Opmode")
 public class  Prototyping extends OpMode {
     GamepadEx control;
@@ -112,6 +115,7 @@ public class  Prototyping extends OpMode {
         } else {
             indicatorLight.setPosition(RED);
         }
+/*
         TelemetryPacket pack = new TelemetryPacket();
         pack.put("time", time);
         pack.put("ticksPerSecond", ticksPerSecond);
@@ -127,6 +131,7 @@ public class  Prototyping extends OpMode {
         pack.put("velocity_d:", velocity_d);
         //drive.add_telemetry(pack);
         FtcDashboard.getInstance().sendTelemetryPacket(pack);
+*/
         telemetry.update();
     }
 }

@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.CRServo;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -25,7 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-@Config
+@Configurable
 public class Turret extends SubsystemBase {
     private final CRServo servo1, servo2;
     AnalogInput encoder;
