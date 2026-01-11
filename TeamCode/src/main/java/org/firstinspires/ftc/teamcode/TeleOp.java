@@ -192,9 +192,9 @@ public abstract class TeleOp extends OpMode {
                 // - we're "at" our RPM
                 // - and have April lock
                 // - and Turret is at its angle
-                if (shooter.readyToShoot() &&
+                if ((shooter.readyToShoot() &&
                    // turret.haveAprilLock &&
-                    turret.atTargetAngle()) {
+                    turret.atTargetAngle()) || operator.wasJustPressed(GamepadKeys.Button.A)) {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
                     shotSlot = spindexer.currentSlot();
