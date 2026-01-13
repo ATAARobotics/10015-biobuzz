@@ -31,7 +31,8 @@ public class HyperTelemetry {
 
     // log to FTCDashboard and/or log file
     public void log(String key, Object value) {
-        pack.put(key, value);
+        PanelsTelemetry.INSTANCE.getFtcTelemetry().addData(key, value);
+        //pack.put(key, value);
         RobotLog.ii("HyperDroid", "\"%s\", \"%s\"", key, value);
     }
 
