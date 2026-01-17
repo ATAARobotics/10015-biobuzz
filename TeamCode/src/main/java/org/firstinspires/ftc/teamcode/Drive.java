@@ -127,7 +127,7 @@ public class Drive extends SubsystemBase {
         pinpoint.setOffsets(22, -169, DistanceUnit.MM); // Note: Y is forward, X is right
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.REVERSED);
+                GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
         pinpoint.resetPosAndIMU();
 
@@ -433,13 +433,16 @@ public class Drive extends SubsystemBase {
         //current_position = otos.getPosition();
         pinpoint.update();
         current_position = pinpoint.getPosition();
-        double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
-        double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
+        // double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
+       // double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
+        double targetX = 14.5;
+        double targetY = 144 - 12.25;
 
         apriltag_heading = Math.toDegrees(Math.atan2(
                 // We need to rotate the FTC coordinate system 90 degrees to get the pedro pathing system, and Offset by 72 inches
-                current_position.getY(DistanceUnit.INCH) - (TARGET_Y_OFFSET + targetY),
-                -current_position.getX(DistanceUnit.INCH) - (TARGET_X_OFFSET + targetX)));
+                (TARGET_Y_OFFSET + targetY) - current_position.getY(DistanceUnit.INCH),
+                (TARGET_X_OFFSET + targetX) - current_position.getX(DistanceUnit.INCH)
+        ));
         /*
         current_left_distance= dist_left.getDistance(DistanceUnit.INCH);
         dist_left_avg.add_sample(current_left_distance);
@@ -470,8 +473,10 @@ public class Drive extends SubsystemBase {
         telem.log("position-y", current_position.getY(DISTANCE_UNIT));
         //telem.log("position-x-cm", current_position.getX(DistanceUnit.CM));
       //  telem.log("position-y-cm", current_position.getY(DistanceUnit.CM));
-        //telem.log("target-x", fixme);
-        //telem.log("target-y", fixme);
+        double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
+        double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
+        telem.log("target-x", targetX);
+        telem.log("target-y", targetY);
         telem.log("current-heading", current_position.getHeading(ANGLE_UNIT));
         telem.log("desired-heading", desired_heading);
 
