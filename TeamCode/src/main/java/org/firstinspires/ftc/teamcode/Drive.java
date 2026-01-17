@@ -23,7 +23,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 @Configurable
 public class Drive extends SubsystemBase {
     static final AngleUnit ANGLE_UNIT = AngleUnit.DEGREES;
-    static final DistanceUnit DISTANCE_UNIT = DistanceUnit.METER;
+    static final DistanceUnit DISTANCE_UNIT = DistanceUnit.INCH;
 
     public static double DISTANCE_TOLERANCE_LOW = 0.035; // 25mm in DISTANCE_UNITs to target
     public static double DISTANCE_TOLERANCE = 0.010; // 10mm // in DISTANCE_UNITs to target
@@ -366,11 +366,11 @@ public class Drive extends SubsystemBase {
         public void execute() {
             // Run wheels in POV mode: use the Right stick to go forward & strafe, the Left stick to rotate left & right.
             if (isRedAlliance) {
-                strafe = scaleInputs(-driver.getRightY());
-                forward = scaleInputs(-driver.getRightX());
+                strafe = scaleInputs(driver.getRightX());
+                forward = scaleInputs(-driver.getRightY());
             } else {
-                strafe = scaleInputs(driver.getRightY());
-                forward = scaleInputs(driver.getRightX());
+                strafe = scaleInputs(-driver.getRightX());
+                forward = scaleInputs(driver.getRightY());
             }
 
             double leftX = driver.getLeftX();
@@ -433,10 +433,13 @@ public class Drive extends SubsystemBase {
         //current_position = otos.getPosition();
         pinpoint.update();
         current_position = pinpoint.getPosition();
+        double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
+        double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
 
         apriltag_heading = Math.toDegrees(Math.atan2(
-                current_position.getX(DistanceUnit.METER) - (TARGET_X_OFFSET + target.distanceUnit.toMeters(target.fieldPosition.get(1))),
-                -current_position.getY(DistanceUnit.METER) - (TARGET_Y_OFFSET + target.distanceUnit.toMeters(target.fieldPosition.get(0)))));
+                // We need to rotate the FTC coordinate system 90 degrees to get the pedro pathing system, and Offset by 72 inches
+                current_position.getY(DistanceUnit.INCH) - (TARGET_Y_OFFSET + targetY),
+                -current_position.getX(DistanceUnit.INCH) - (TARGET_X_OFFSET + targetX)));
         /*
         current_left_distance= dist_left.getDistance(DistanceUnit.INCH);
         dist_left_avg.add_sample(current_left_distance);

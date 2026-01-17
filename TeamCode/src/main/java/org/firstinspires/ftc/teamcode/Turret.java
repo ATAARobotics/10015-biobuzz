@@ -175,6 +175,7 @@ public class Turret extends SubsystemBase {
                 faceFieldAngle(apriltag_heading);
             }
         }
+        faceFieldAngle(apriltag_heading);
 
         // compute where the servos are, and conclude where the turret is
         servoAngle = getServoAngle() - resetAngle;
