@@ -29,7 +29,11 @@ import java.util.List;
 @Configurable
 public class Turret extends SubsystemBase {
     private final CRServo servo1, servo2;
-    AnalogInput encoder;
+    AnalogInput encoder0;
+    AnalogInput encoder1;
+
+    double voltage0;
+    double voltage1;
 
     public PIDController turretHeadingControl;
     public double servoPower, currentTurretAngle;
@@ -72,7 +76,8 @@ public class Turret extends SubsystemBase {
         // both servos must always run in the same direction
         servo1 = new CRServo(hardwareMap, "left_turret");
         servo2 = new CRServo(hardwareMap, "right_turret");
-        encoder = hardwareMap.get(AnalogInput.class, "left_encoder");
+        encoder0 = hardwareMap.get(AnalogInput.class, "left_encoder");
+        encoder1 = hardwareMap.get(AnalogInput.class, "right_encoder");
         turretHeadingControl = new PIDController(turretP,turretI,turretD);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
 //        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
@@ -156,7 +161,12 @@ public class Turret extends SubsystemBase {
 
     public double getServoAngle() {
         // Read analog voltage, convert to degrees
-        return encoder.getVoltage()/3.3 * 360;
+        return voltage0 / 3.3 * 360;
+    }
+
+    public void read_sensors(double time) {
+        voltage1 = encoder0.getVoltage();
+        voltage0 = encoder1.getVoltage();
     }
 
     @Override
@@ -175,7 +185,8 @@ public class Turret extends SubsystemBase {
                 faceFieldAngle(apriltag_heading);
             }
         }
-        faceFieldAngle(apriltag_heading);
+        // TEMP: always face our april-tag
+        //faceFieldAngle(apriltag_heading);
 
         // compute where the servos are, and conclude where the turret is
         servoAngle = getServoAngle() - resetAngle;
@@ -220,6 +231,8 @@ public class Turret extends SubsystemBase {
 
     public void addTelemetry(HyperTelemetry telem) {
         telem.log("turret-current-angle", currentTurretAngle);
+        telem.log("turret-voltage0", voltage0);
+        telem.log("turret-voltage1", voltage1);
         telem.log("turret-target-angle", turretHeadingControl.getSetPoint());
         telem.log("turret-power", servoPower);
         telem.log("turret-error", turretHeadingControl.getPositionError());

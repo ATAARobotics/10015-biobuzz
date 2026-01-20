@@ -11,6 +11,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -293,6 +294,7 @@ public abstract class TeleOp extends OpMode {
     @Override
     public void init_loop() {
         // runs while the robot is "on" but we haven't pressed "play" yet
+        turret.read_sensors(0.0);
         telemetry.addData("Turret Servo Angle", turret.getServoAngle());
         telemetry.update();
     }
@@ -311,7 +313,7 @@ public abstract class TeleOp extends OpMode {
         drive.read_sensors(time);
         shooter.read_sensors(time);
         spindexer.read_sensors(time);
-        //turret.read_sensors(time);
+        turret.read_sensors(time);
         //intake.read_sensors(time);
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
         double robotY = drive.getPosition().getY(DistanceUnit.INCH);
