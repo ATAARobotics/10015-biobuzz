@@ -29,20 +29,18 @@ public class HyperTelemetry {
         telemetry.addData(key, format, args);
     }
 
-    // log to FTCDashboard and/or log file
     public void log(String key, Object value) {
-        PanelsTelemetry.INSTANCE.getFtcTelemetry().addData(key, value);
+        PanelsTelemetry.INSTANCE.getTelemetry().addData(key, value);
         //pack.put(key, value);
-        RobotLog.ii("HyperDroid", "\"%s\", \"%s\"", key, value);
+        //RobotLog.ii("HyperDroid", "\"%s\", \"%s\"", key, value);
     }
 
-    // log to FTCDashboard and/or log file
     public void logBoth(String key, Object value) {
         log(key, value);
         logDrivers(key, value);
     }
 
     public void update() {
-        this.telemetry.update();
+        telemetry.update();
     }
 }
