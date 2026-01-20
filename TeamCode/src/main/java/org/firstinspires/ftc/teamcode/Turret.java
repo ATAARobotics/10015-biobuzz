@@ -52,6 +52,7 @@ public class Turret extends SubsystemBase {
     public double lastAprilLock;
     public double april_bearing;
     public double april_distance;
+    public double aprilFloorDistance;
 
     private static final double GEAR_RATIO = 0.8; // 1 servo rotation equals 0.8 turret rotations
     // tuned december 11, bare servos for PID, attach turret for F
@@ -152,7 +153,7 @@ public class Turret extends SubsystemBase {
 
     public void autoLock() {
         mode = HeadingLockMode.Both;
-        mode = HeadingLockMode.Camera;
+     //   mode = HeadingLockMode.Camera;
     }
 
     public void noLock() {
@@ -215,7 +216,7 @@ public class Turret extends SubsystemBase {
     }
 
     public boolean isLocked(double time){
-        if (haveAprilLock && (lastAprilLock < 300)){
+        if (haveAprilLock || (time - lastAprilLock) < 0.3){
             return true;
         }
         return false;

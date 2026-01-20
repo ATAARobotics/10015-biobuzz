@@ -435,8 +435,8 @@ public class Drive extends SubsystemBase {
         current_position = pinpoint.getPosition();
         // double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
        // double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
-        double targetX = 14.5;
-        double targetY = 144 - 12.25;
+        double targetX = 14.7;
+        double targetY = 128.7;
 
         apriltag_heading = Math.toDegrees(Math.atan2(
                 // We need to rotate the FTC coordinate system 90 degrees to get the pedro pathing system, and Offset by 72 inches

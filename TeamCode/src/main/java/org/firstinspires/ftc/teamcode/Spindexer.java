@@ -162,6 +162,9 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean haveArtifact() {
+        if (recentDist.size() < DISTANCE_WINDOW){
+            return false;
+        }
         double avg = 0.0;
         for (double rd : recentDist) {
             avg += rd;
@@ -192,7 +195,7 @@ public class Spindexer extends SubsystemBase {
         spin = SpinDirection.Index;
         storeControl.reset();
         targetAngle -= STEP_DEG;
-        clearRecentDist();
+        recentDist.clear();
     }
 
     public void spinModeIndex() {
