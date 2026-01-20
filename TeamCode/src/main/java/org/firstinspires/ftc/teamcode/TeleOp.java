@@ -124,6 +124,7 @@ public abstract class TeleOp extends OpMode {
         public void initialize() {
             state = InState.INTAKE;
             intake.grab();
+            spindexer.spinModeIndex();
         }
         public void execute() {
             if (state == InState.INTAKE) {
@@ -140,6 +141,7 @@ public abstract class TeleOp extends OpMode {
                 if (spindexer.atTarget()) {
                     state = InState.INTAKE;
                     intake.grab();
+                    spindexer.spinModeIndex();
                 }
             } else if (state == InState.SORT) {
                 // for now we just shoot green first, always .. but
@@ -151,6 +153,7 @@ public abstract class TeleOp extends OpMode {
                     // to shoot a green next, we're done.
                     if (!spindexer.haveOneGreen() || spindexer.slots[s] == Spindexer.SlotContent.Green) {
                         state = InState.DONE;
+                        spindexer.spinModeIndex();
                     } else {
                         spindexer.spinIndex();
                     }

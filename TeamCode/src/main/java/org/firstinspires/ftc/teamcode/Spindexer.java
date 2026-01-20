@@ -195,6 +195,11 @@ public class Spindexer extends SubsystemBase {
         clearRecentDist();
     }
 
+    public void spinModeIndex() {
+        spin = SpinDirection.Index;
+        storeControl.reset();
+    }
+
     // returns the index of the slot that's at the front of the robot;
     // at start this is slot 0
     public int currentSlot() {
@@ -290,6 +295,9 @@ if interrupt "during" spin then it gets confused about which slot is what
 
     @Override
     public void periodic() {
+        // have to set these each loop in case we're setting from Panels/Dashboard
+        storeControl.setTolerance(TOLERENCE_DEG_INDEX);
+        shootControl.setTolerance(TOLERENCE_DEG_SHOOT);
         if (mode == Mode.Manual){
             spindexerPower = manualPower;
         }
@@ -423,6 +431,7 @@ if interrupt "during" spin then it gets confused about which slot is what
         telem.log("spindexer-slot-0", slots[0]);
         telem.log("spindexer-slot-1", slots[1]);
         telem.log("spindexer-slot-2", slots[2]);
+        telem.log("spindexer-spin", spin);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }
 
