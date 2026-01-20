@@ -195,7 +195,7 @@ public abstract class TeleOp extends OpMode {
                 // - and have April lock
                 // - and Turret is at its angle
                 if ((shooter.readyToShoot() &&
-                   // turret.haveAprilLock &&
+                    turret.isLocked(time) &&
                     turret.atTargetAngle()) || operator.wasJustPressed(GamepadKeys.Button.A)) {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
@@ -326,9 +326,9 @@ public abstract class TeleOp extends OpMode {
         double distanceB = targetY - robotY;
         double distance = Math.sqrt((distanceA * distanceA) + (distanceB * distanceB));
         //distance = DistanceUnit.INCH.fromMeters(distance);
-        turret.apriltag_heading = drive.apriltag_heading;
+       // turret.apriltag_heading = drive.apriltag_heading;
         turret.robot_heading = drive.getPosition().getHeading(AngleUnit.DEGREES);
-        if (false && turret.haveAprilLock){
+        if (turret.haveAprilLock){
             shooter.aprilDistance = turret.april_distance;
         }
         else{
@@ -349,6 +349,7 @@ public abstract class TeleOp extends OpMode {
         drive.addTelemetry(telem);
         shooter.addTelemetry(telem);
         turret.addTelemetry(telem);
+        intake.addTelemetry(telem);
         intake.addTelemetry(telem);
         spindexer.addTelemetry(telem);
 

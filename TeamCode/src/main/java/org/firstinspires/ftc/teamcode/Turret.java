@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -25,6 +26,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Configurable
 public class Turret extends SubsystemBase {
@@ -34,6 +36,7 @@ public class Turret extends SubsystemBase {
 
     double voltage0;
     double voltage1;
+    double time;
 
     public PIDController turretHeadingControl;
     public double servoPower, currentTurretAngle;
@@ -46,6 +49,7 @@ public class Turret extends SubsystemBase {
     double operatorOffset = 0;
 
     public boolean haveAprilLock;
+    public double lastAprilLock;
     public double april_bearing;
     public double april_distance;
 
@@ -96,7 +100,7 @@ public class Turret extends SubsystemBase {
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class,"elp"))
                 .addProcessor(april_tags)
-                .setCameraResolution(new Size(800, 600))
+                .setCameraResolution(new Size(1024, 768))
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setAutoStopLiveView(true)
                 .build();
@@ -148,7 +152,7 @@ public class Turret extends SubsystemBase {
 
     public void autoLock() {
         mode = HeadingLockMode.Both;
-        //mode = HeadingLockMode.Camera;
+        mode = HeadingLockMode.Camera;
     }
 
     public void noLock() {
@@ -165,6 +169,7 @@ public class Turret extends SubsystemBase {
     }
 
     public void read_sensors(double time) {
+        this.time = time;
         voltage1 = encoder0.getVoltage();
         voltage0 = encoder1.getVoltage();
     }
@@ -209,6 +214,13 @@ public class Turret extends SubsystemBase {
 //        try { writer.write(servoAngle+"\t"+currentTurretAngle+"\t"+delta+"\n"); } catch (IOException e) { e.printStackTrace(); }
     }
 
+    public boolean isLocked(double time){
+        if (haveAprilLock && (lastAprilLock < 300)){
+            return true;
+        }
+        return false;
+    }
+
     private static double wrapAngle(double angle) {
         angle %= 360; // normalize angle between -360 and +360
         if (angle > 180)
@@ -247,6 +259,8 @@ public class Turret extends SubsystemBase {
         telem.log("turret-april-lock", haveAprilLock);
         telem.log("turret-april-mode", mode);
         telem.log("turret-april-fps", portal.getFps());
+        ExposureControl ec = portal.getCameraControl(ExposureControl.class);
+        telem.log("camera-exposure",ec.getExposure(TimeUnit.MILLISECONDS));
 
         telem.logDrivers("Heading Lock Mode", mode);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
@@ -322,6 +336,7 @@ public class Turret extends SubsystemBase {
                 faceRobotAngle(tag.ftcPose.bearing + currentTurretAngle);
                 april_bearing = tag.ftcPose.bearing;
                 april_distance = tag.ftcPose.range;
+                lastAprilLock = time;
                 //telem.log("bearing", tag.ftcPose.bearing);
                 //range(distance)is in inches, maybe convert to centi
                 //telem.log("distance to april tag, inches", tag.ftcPose.range);
