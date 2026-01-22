@@ -163,7 +163,7 @@ public class Shooter extends SubsystemBase {
             }*/
             targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
         }
-        if (MANUAL_RPM > 1.0){
+        if (MANUAL_RPM > 1.0 && targetRpm > 0.0) {
             targetRpm = MANUAL_RPM;
         }
 
