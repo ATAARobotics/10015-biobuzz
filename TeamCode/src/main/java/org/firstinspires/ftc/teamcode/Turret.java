@@ -105,7 +105,6 @@ public class Turret extends SubsystemBase {
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setAutoStopLiveView(true)
                 .build();
-
     }
 
     public void faceFieldAngle(double fieldAngleDeg) {

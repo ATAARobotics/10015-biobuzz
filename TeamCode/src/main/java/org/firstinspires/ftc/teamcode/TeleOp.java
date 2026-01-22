@@ -194,6 +194,8 @@ public abstract class TeleOp extends OpMode {
                 // - we're "at" our RPM
                 // - and have April lock
                 // - and Turret is at its angle
+                // OR:
+                // - the operator pressed A
                 if ((shooter.readyToShoot() &&
                    // turret.isLocked(time) &&
                     turret.atTargetAngle()) || operator.wasJustPressed(GamepadKeys.Button.A)) {
