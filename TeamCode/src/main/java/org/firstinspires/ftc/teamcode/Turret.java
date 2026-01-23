@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Size;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;

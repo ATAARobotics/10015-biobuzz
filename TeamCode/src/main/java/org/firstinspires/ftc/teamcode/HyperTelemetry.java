@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -15,12 +14,10 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class HyperTelemetry {
 
     JoinedTelemetry telemetry;
-    TelemetryPacket pack;
 
-    public HyperTelemetry(Telemetry driver_station) {//, TelemetryPacket dashboard) {
+    public HyperTelemetry(Telemetry driver_station) {
         PanelsTelemetry pt = PanelsTelemetry.INSTANCE;
         this.telemetry = new JoinedTelemetry(pt.getFtcTelemetry(), driver_station);
-//        this.pack = dashboard;
     }
 
     // log to the driver's station (only)
@@ -31,7 +28,6 @@ public class HyperTelemetry {
 
     public void log(String key, Object value) {
         PanelsTelemetry.INSTANCE.getTelemetry().addData(key, value);
-        //pack.put(key, value);
         //RobotLog.ii("HyperDroid", "\"%s\", \"%s\"", key, value);
     }
 

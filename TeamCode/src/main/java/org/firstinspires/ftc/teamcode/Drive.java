@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-//import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
