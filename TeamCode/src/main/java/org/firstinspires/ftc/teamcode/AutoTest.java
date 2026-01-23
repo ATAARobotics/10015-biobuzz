@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
@@ -13,20 +15,46 @@ import java.util.LinkedList;
 
 
 @Autonomous(name="AutoTest", group="Opmode")
-public class AutoTest extends OpMode {
-   /* public Alliance getAlliance(){
+public class AutoTest extends RobotBaseOp {
+
+    // TODO: declare this class abstract, make AutoBlueFar / etc
+    public Alliance getAlliance() {
         return Alliance.BLUE;
-    }*/
+    }
 
     public Follower follower;
     private final Pose blueFar = new Pose(47.5 + 8.124, 8.0984, Math.toRadians(90));
 
-    // we are "currently" following the first path
-    LinkedList<Path> paths;
+    LinkedList<Operation> operations;
+    Path currentPath = null;
+    Command lastCommand = null;
+
+    protected void bindDriverControls() {}
+    protected void bindOperatorControls() {}
+
+    class Operation {
+    }
+
+    class PathOperation extends Operation {
+        public Path path;
+
+        public PathOperation(Path p) {
+            path = p;
+        }
+    }
+
+    class CommandOperation extends Operation {
+        public Command command;
+
+        public CommandOperation(Command c) {
+            command = c;
+        }
+    }
 
     public void init(){
+        super.init();
         follower = Constants.createFollower(hardwareMap);
-        paths = new LinkedList<Path>();
+        operations = new LinkedList<Operation>();
     }
 
     private void farBluePathing() {
@@ -40,19 +68,34 @@ public class AutoTest extends OpMode {
         Path pathTwo = new Path(new BezierLine(one, two));
         pathTwo.setLinearHeadingInterpolation(one.getHeading(), two.getHeading());
 
-        paths.addLast(pathOne);
-        paths.addLast(pathTwo);
+        operations.addLast(new PathOperation(pathOne));
+        operations.addLast(new CommandOperation(new AutoIntake()));
+        operations.addLast(new PathOperation(pathTwo));
+        // "cancel autointake" command?
+        // TODO: go to shoot position
+        // TODO: run AutoOuttake() ... until done? until 3 shots?
     }
-    public void start(){
+
+    public void start() {
         farBluePathing();
-        follower.followPath(paths.getFirst());
+        ///follower.followPath(paths.getFirst());
     }
+
     public void loop(){
         follower.update();
         if (!follower.isBusy()) {
-            paths.removeFirst();
-            if (paths.size() > 0) {
-                follower.followPath(paths.getFirst());
+            if (operations.size() > 0) {
+                Operation oper = operations.removeFirst();
+                if (oper.getClass() == PathOperation.class) {
+                    currentPath = ((PathOperation)oper).path;
+                    follower.followPath(currentPath);
+                } else if (oper.getClass() == CommandOperation.class) {
+                    lastCommand = ((CommandOperation)oper).command;
+                    CommandScheduler.getInstance().schedule(lastCommand);
+                }
+                // TODO: probably want a like "wait for last command
+                // to complete" sort of thing? (e.g. to wait for all
+                // the shots to fire)
             }
         }
     }

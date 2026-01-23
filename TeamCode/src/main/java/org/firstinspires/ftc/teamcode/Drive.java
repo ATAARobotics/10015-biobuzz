@@ -470,8 +470,8 @@ public class Drive extends SubsystemBase {
     public void addTelemetry(HyperTelemetry telem) {
         telem.log("position-x", current_position.getX(DISTANCE_UNIT));
         telem.log("position-y", current_position.getY(DISTANCE_UNIT));
-        //telem.log("position-x-cm", current_position.getX(DistanceUnit.CM));
-      //  telem.log("position-y-cm", current_position.getY(DistanceUnit.CM));
+        telem.log("position-heading", current_position.getHeading(AngleUnit.DEGREES));
+
         double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
         double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
         telem.log("target-x", targetX);
@@ -484,11 +484,5 @@ public class Drive extends SubsystemBase {
        // telem.log("strafe_ff", ff_strafe);
        // telem.log("forward_ff", ff_forward);
         //telem.log("turn", turn);
-        /*
-        telem.log("dist_left_current", current_left_distance);
-        telem.log("dist_left_avg", dist_left_avg.current_value());
-        telem.log("dist_right_current", current_right_distance);
-        telem.log("dist_right_avg", dist_right_avg.current_value());
-        */
     }
 }
