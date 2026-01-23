@@ -208,7 +208,10 @@ public abstract class TeleOp extends OpMode {
                     spindexer.spinShoot();
                 }
             } else if (state == OutState.SHOOT) {
-                if (shooter.getCurrentShots() > lastShots) {
+                // try just not caring about "did a shot really go up"
+                // for this -- so we're just trusting the spindexer's
+                // notion of how many balls
+                if (true) { //shooter.getCurrentShots() > lastShots) {
                     if (spindexer.isEmpty()) {
                         state = OutState.DONE;
                     } else {
