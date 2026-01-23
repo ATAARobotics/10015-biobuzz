@@ -60,7 +60,7 @@ public class Shooter extends SubsystemBase {
 
     double BAND = 10;
     double BANG_POWER = 1.0;
-    public static double RPM_TOLERANCE = 250;
+    public static double RPM_TOLERANCE = 200;  // jan22 changed from 250
     boolean powerOn = false;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
     VoltageSensor battery;
