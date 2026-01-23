@@ -38,8 +38,11 @@ public abstract class TeleOp extends OpMode {
     Intake intake;
     Turret turret;
     Spindexer spindexer;
+
     ElapsedTime  runtime = new ElapsedTime();
+
     int loops;
+    boolean shotJustFired = false;
 
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
@@ -205,12 +208,6 @@ public abstract class TeleOp extends OpMode {
                     spindexer.spinShoot();
                 }
             } else if (state == OutState.SHOOT) {
-                // todo: the spindexer can actually get stuck trying
-                // to "go back" to its target (e.g. we overshot) but
-                // .. maybe we don't care here, we should just keep
-                // shooting essentially?
-                // (what we actually want to do here is ask "did the shooter shoot recently")
-                //if (spindexer.atTarget() && spindexer.currentSlot() != shotSlot) {
                 if (shooter.getCurrentShots() > lastShots) {
                     if (spindexer.isEmpty()) {
                         state = OutState.DONE;
@@ -221,6 +218,8 @@ public abstract class TeleOp extends OpMode {
             }
             if (driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
                 state = OutState.DONE;
+                turret.noLock();
+                shooter.manualShootRpm();
             }
         }
         public boolean isFinished() {
@@ -233,6 +232,21 @@ public abstract class TeleOp extends OpMode {
             }
         }
     }
+
+
+    public class OuttakeOff extends CommandBase {
+        public OuttakeOff() {
+            addRequirements(shooter);
+            addRequirements(turret);
+        }
+
+        public void initialize() {
+            turret.noLock();
+            shooter.manualShootRpm();
+        }
+    }
+
+
     public class ToggleShoot extends CommandBase{
         public ToggleShoot() {
             addRequirements(shooter);
@@ -259,6 +273,7 @@ public abstract class TeleOp extends OpMode {
         driverRight.whileActiveOnce(new AutoIntake(), true);
         // auto outtake mode
         driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new AutoOuttake(), true);
+        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new    OuttakeOff(), true);
     }
 
     private void bindOperatorControls() {
@@ -316,7 +331,7 @@ public abstract class TeleOp extends OpMode {
         shooter.read_sensors(time);
         spindexer.read_sensors(time);
         turret.read_sensors(time);
-        //intake.read_sensors(time);
+        intake.read_sensors(time);
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
         double robotY = drive.getPosition().getY(DistanceUnit.INCH);
         //double targetX = turret.target.fieldPosition.get(1);

@@ -47,9 +47,7 @@ public class Spindexer extends SubsystemBase {
     double manualPower;
     Timing.Timer stuckTime;
 
-    // different PID tunings for "shoot" versus normal spin
-    public PIDController storeControl;
-    public PIDController shootControl;
+    public PIDController control;
     public boolean boostF = false;
     public static double boostAmount = 0.5;//0.85;
 
@@ -68,24 +66,21 @@ public class Spindexer extends SubsystemBase {
     LinkedList<Boolean> recentColors;
     LinkedList<Double> recentDist;
 
-    public static double TOLERENCE_DEG_SHOOT = 2.0;
-    public static double TOLERENCE_DEG_INDEX = 10.0;
+    // if we want this lower, have to re-tune the PIDs (jan 22)
+    public static double TOLERENCE_DEG = 10.0;
     public static double MANUAL_DIVISOR = 10;
     public static double STEP_DEG = 120;
     public static double DISTANCE_THRESHOLD = 20.0;
     public static int DISTANCE_WINDOW = 3;
     // tuned December 10 with latest hardware rev (target collar, ramps, etc)
-    public static PIDCoefficients shootPid = new PIDCoefficients(0.006, 0.02, 0.0003);
-    public static PIDCoefficients storePid = new PIDCoefficients(0.005, 0.00, 0.0003);
+    public static PIDCoefficients pid = new PIDCoefficients(0.006, 0.02, 0.0003);
 
     public Spindexer (HardwareMap hardwareMap) {
         spindexerMotor = new MotorEx(hardwareMap, "spindexer", Motor.GoBILDA.RPM_312);
         indicatorLight = hardwareMap.get(Servo.class, "indicator");
 
-        storeControl = new PIDController(storePid.p, storePid.i, storePid.d);
-        shootControl = new PIDController(shootPid.p, storePid.i, storePid.d);
-        storeControl.setTolerance(TOLERENCE_DEG_INDEX);
-        shootControl.setTolerance(TOLERENCE_DEG_SHOOT);
+        control = new PIDController(pid.p, pid.i, pid.d);
+        control.setTolerance(TOLERENCE_DEG);
 
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         stuckTime = new Timing.Timer(600, TimeUnit.MILLISECONDS);
@@ -185,7 +180,7 @@ public class Spindexer extends SubsystemBase {
         }
 
         spin = SpinDirection.Shoot;
-        shootControl.reset();
+        control.reset();
         targetAngle += STEP_DEG;
         boostF = true;
         stuckTime.start();
@@ -193,14 +188,14 @@ public class Spindexer extends SubsystemBase {
 
     public void spinIndex(){
         spin = SpinDirection.Index;
-        storeControl.reset();
+        control.reset();
         targetAngle -= STEP_DEG;
         recentDist.clear();
     }
 
     public void spinModeIndex() {
         spin = SpinDirection.Index;
-        storeControl.reset();
+        control.reset();
     }
 
     // returns the index of the slot that's at the front of the robot;
@@ -269,11 +264,7 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean atTarget(){
-        if (spin == SpinDirection.Index) {
-            return storeControl.atSetPoint();
-        } else {
-            return shootControl.atSetPoint();
-        }
+        return control.atSetPoint();
     }
 
     public void read_sensors(double time) {
@@ -299,15 +290,13 @@ if interrupt "during" spin then it gets confused about which slot is what
     @Override
     public void periodic() {
         // have to set these each loop in case we're setting from Panels/Dashboard
-        storeControl.setTolerance(TOLERENCE_DEG_INDEX);
-        shootControl.setTolerance(TOLERENCE_DEG_SHOOT);
+        control.setTolerance(TOLERENCE_DEG);
         if (mode == Mode.Manual){
             spindexerPower = manualPower;
         }
         else{
             // for CCW ("shoot") direction, we use a separate PID .. so we
             // ned to know "which direction" we're spinning.
-            PIDController control = (spin == SpinDirection.Index ? storeControl : shootControl);
             spindexerPower = control.calculate(currentAngle - targetAngle);
 
             // note: it's important to call .calculate() on our controller
@@ -347,9 +336,7 @@ if interrupt "during" spin then it gets confused about which slot is what
                     break;
             }
 
-
-            storeControl.setPID(storePid.p, storePid.i, storePid.d);
-            shootControl.setPID(shootPid.p, shootPid.i, shootPid.d);
+            control.setPID(pid.p, pid.i, pid.d);
 
             //if (spindexerPower > 0.5) spindexerPower = 0.5;
             //if (spindexerPower < -0.5) spindexerPower = -0.5;
@@ -476,7 +463,7 @@ if interrupt "during" spin then it gets confused about which slot is what
 kind of for high-speed shoot debugging
             if (operator.wasJustPressed(GamepadKeys.Button.X)) {
                 spin = SpinDirection.Shoot;
-                shootControl.reset();
+                control.reset();
                 targetAngle += (3 * STEP_DEG);
                 stuckTime.start();
             }

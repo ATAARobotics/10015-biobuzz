@@ -30,6 +30,9 @@ public class Intake extends SubsystemBase {
         mode = IntakeMode.Out;
     }
 
+    public void read_sensors(double time) {
+    }
+
     @Override
     public void periodic() {
         if (mode == IntakeMode.In) {

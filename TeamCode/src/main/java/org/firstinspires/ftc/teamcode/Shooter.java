@@ -28,6 +28,7 @@ public class Shooter extends SubsystemBase {
 
     // shot-counter
     int shotsFired = 0;
+
     class RpmData {
         public double time;
         public double rpm;
@@ -37,6 +38,7 @@ public class Shooter extends SubsystemBase {
         }
     }
     LinkedList<RpmData> recentRpms;
+    public static double RPM_WINDOW_LENGTH = 0.150;  // seconds
     // the algorithm we use is:
     // - a bucket of recent samples, at most 200ms in length
     // - if the oldest rpm minus the newest rpm shows a >400 rpm drop, that's a shot
@@ -54,10 +56,7 @@ public class Shooter extends SubsystemBase {
     static double HOOD_COEF = 0.0732;
     static double HOOD_EXP = 0.4768;
 
-    // until we re-tune with the 4x flywheel weights, change the
-    // percentage of auto-rpm
-    public static double AUTO_RPM_PERCENT = 1.0;
-    public static int RPM_DROP_FOR_SHOT = 150;  // how many RPMs must drop for "a shot" to be counted
+    public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
 
     double BAND = 10;
     double BANG_POWER = 1.0;
@@ -116,7 +115,7 @@ public class Shooter extends SubsystemBase {
         // recent RPM data for shot-counter.
         recentRpms.addLast(new RpmData(time, currentRpm));
         // ensure we only have 200ms or less worth of data
-        while (time - recentRpms.getFirst().time > 0.200) {
+        while (time - recentRpms.getFirst().time > RPM_WINDOW_LENGTH) {
             recentRpms.removeFirst();
         }
     }
@@ -152,15 +151,6 @@ public class Shooter extends SubsystemBase {
         // auto-computed RPM, optional
         if (autoRpm /*&& aprilDistance > 0.5*/) {
             targetRpm = RPM_VS_DIST_SLOPE * aprilDistance + RPM_VS_DIST_INTERCEPT;
-
-            targetRpm *= AUTO_RPM_PERCENT;
-            // targetRpm = MANUAL_RPM;
-
-          /*  if (aprilDistance < 100) {
-                targetHood = HOOD_MIN;
-            } else {
-                targetHood = HOOD_MAX;
-            }*/
             targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
         }
         if (MANUAL_RPM > 1.0 && targetRpm > 0.0) {
@@ -196,6 +186,13 @@ public class Shooter extends SubsystemBase {
 
         // count shots
         if (recentRpms.size() > 2) {
+            double minRpm = 10000.0; // we can't spin this fast
+            double maxRpm = 0.0;
+            for (RpmData r : recentRpms) {
+                if (r.rpm < minRpm) { minRpm = r.rpm; }
+                if (r.rpm > maxRpm) { maxRpm = r.rpm; }
+            }
+            //double rpmDrop = maxRpm - minRpm;// recentRpms.getFirst().rpm - recentRpms.getLast().rpm;
             double rpmDrop = recentRpms.getFirst().rpm - recentRpms.getLast().rpm;
             if (rpmDrop > RPM_DROP_FOR_SHOT) {
                 shotsFired += 1;
