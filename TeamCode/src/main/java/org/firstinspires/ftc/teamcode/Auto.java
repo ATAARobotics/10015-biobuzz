@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-@Autonomous(name="AutoTest", group="Opmode")
+@Autonomous(name="Auto", group="Opmode")
 public class Auto extends RobotBaseOp {
 
     // TODO: declare this class abstract, make AutoBlueFar / etc
