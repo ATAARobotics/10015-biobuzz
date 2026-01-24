@@ -6,5 +6,5 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class AutoRedFar extends Auto
 {
     public Alliance getAlliance() { return Alliance.RED; }
-    public AutoStartPos getStartPos() {return AutoStartPos.FAR;}
+    //public AutoStartPos getStartPos() {return AutoStartPos.FAR;}
 }

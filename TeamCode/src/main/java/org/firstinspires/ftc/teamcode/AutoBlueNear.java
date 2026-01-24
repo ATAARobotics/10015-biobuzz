@@ -6,5 +6,5 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class AutoBlueNear extends Auto
 {
     public Alliance getAlliance() { return Alliance.BLUE; }
-    public AutoStartPos getStartPos() {return AutoStartPos.NEAR;}
+    //public AutoStartPos getStartPos() {return AutoStartPos.NEAR;}
 }
