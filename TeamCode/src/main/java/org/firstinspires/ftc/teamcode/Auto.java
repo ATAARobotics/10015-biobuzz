@@ -14,6 +14,9 @@ import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 
 @Autonomous(name="AutoTest", group="Opmode")
 public class Auto extends RobotBaseOp {
@@ -63,6 +66,8 @@ public class Auto extends RobotBaseOp {
     protected void bindDriverControls() {}
     protected void bindOperatorControls() {}
     public boolean isAuto() { return true; }
+
+    private Command _lastCommandRun = null;
 
     public void init(){
         super.init();
@@ -184,6 +189,9 @@ public class Auto extends RobotBaseOp {
     @Override
     public void start() {
         super.start();
+
+        CommandScheduler.getInstance().onCommandExecute(this::commandRunning);
+
        // Command cmds = farBluePathing();
         Command cmds = nearBluePathing();
 
@@ -193,6 +201,19 @@ public class Auto extends RobotBaseOp {
         spindexer.slots[0] = Spindexer.SlotContent.Green;
         spindexer.slots[1] = Spindexer.SlotContent.Purple;
         spindexer.slots[2] = Spindexer.SlotContent.Purple;
+    }
+
+    public void commandRunning(Command c) {
+        _lastCommandRun = c;
+    }
+
+    @Override
+    protected void addTelemetry(HyperTelemetry telem) {
+        super.addTelemetry(telem);
+        if (_lastCommandRun != null) {
+            telem.log("auto-command-run", _lastCommandRun);
+            _lastCommandRun = null;
+        }
     }
 
     @Override

@@ -293,6 +293,9 @@ public abstract class RobotBaseOp extends OpMode {
         loops++;
     }
 
+    protected void addTelemetry(HyperTelemetry telem) {
+    }
+
     protected void logTelemetry() {
         //TelemetryPacket pack = new TelemetryPacket();
         HyperTelemetry telem = new HyperTelemetry(telemetry); //, pack);
@@ -309,6 +312,7 @@ public abstract class RobotBaseOp extends OpMode {
         intake.addTelemetry(telem);
         intake.addTelemetry(telem);
         spindexer.addTelemetry(telem);
+        addTelemetry(telem);
 
         telem.update();
     }
