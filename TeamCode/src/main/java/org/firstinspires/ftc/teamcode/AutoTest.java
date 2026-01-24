@@ -1,7 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.ScheduleCommand;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.pedropathing.paths.PathBuilder;
+import com.pedropathing.paths.PathChain;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.pedropathing.follower.Follower;
@@ -24,156 +29,127 @@ public class AutoTest extends RobotBaseOp {
     }
 
     public Follower follower;
-    private final Pose blueFar = new Pose(47.5 + 8.124, 8.0984, Math.toRadians(90));
 
-    LinkedList<Operation> operations;
-    Path currentPath = null;
-    Command lastCommand = null;
-    boolean waiting = false;
-
-    protected void bindDriverControls() {}
-    protected void bindOperatorControls() {}
-
-    public boolean isAuto(){
-        return true;
-    }
-
-    class Operation {
-    }
-
-    class PathOperation extends Operation {
-        public Path path;
-        public double maxSpeed;
-
-        public PathOperation(Path p, double m) {
-            path = p;
-            maxSpeed = m;  // 0.0 to 1.0
-        }
-    }
-
-    class CommandOperation extends Operation {
-        public Command command;
-
-        public CommandOperation(Command c) {
-            command = c;
-        }
-    }
-
-    class WaitLastCommand extends Operation {
-    }
-
-    public void init(){
-        super.init();
-        follower = Constants.createFollower(hardwareMap);
-        operations = new LinkedList<Operation>();
-    }
-
-    private void farBluePathing() {
-        Pose startPose = blueFar;
-        follower.setStartingPose(startPose);
-
-        Pose blueFarShoot = new Pose(
+    private final Pose blueFarStart = new Pose(47.5 + 8.124, 8.0984, Math.toRadians(90));
+    private final Pose blueFarShoot = new Pose(
             47.5 + 8.124 + 2.0, // 2 inches further towards Red from start
             8.0984 + 10.0,// 10 inches in front of start position
             Math.toRadians(110)
         );
-        Pose blueFarPark = new Pose(
+    private final Pose blueFarPark = new Pose(
             47.5 + 8.124, // same as start offset
             8.0984 + 25.0,// 25 inches in front of start position
             Math.toRadians(90)
         );
-        Pose blueCloseShoot = new Pose(
+    private final Pose blueCloseShoot = new Pose(
             72.0 - 11, // stay inside our side of the field
             72.0, // right at top of the cone
             Math.toRadians(180)
         );
 
-        Pose spikeStart1 = new Pose (50, 35.0, Math.toRadians(180));
-        Pose spikeEnd1 = new Pose (10.4, 35.0, Math.toRadians(180));
+    private final Pose spikeStart1 = new Pose (50, 35.0, Math.toRadians(180));
+    private final Pose spikeEnd1 = new Pose (10.4, 35.0, Math.toRadians(180));
 
-        // next set of spikes is one tile away
-        Pose spikeStart2 = new Pose (50, 35.0 + 23.5, Math.toRadians(180));
-        Pose spikeEnd2 = new Pose (10.4, 35.0 + 23.5, Math.toRadians(180));
+    // next set of spikes is one tile away
+    private final Pose spikeStart2 = new Pose (50, 35.0 + 23.5, Math.toRadians(180));
+    private final Pose spikeEnd2 = new Pose (10.4, 35.0 + 23.5, Math.toRadians(180));
 
-        // closest set of spikes has the ramp in the way so we can't drive as far forward
-        Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23.5), Math.toRadians(180));
-        Pose spikeEnd3 = new Pose (10.4 + 7.0, 35.0 + (2 * 23.5), Math.toRadians(180));
+    // closest set of spikes has the ramp in the way so we can't drive as far forward
+    private final Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23.5), Math.toRadians(180));
+    private final Pose spikeEnd3 = new Pose (10.4 + 7.0, 35.0 + (2 * 23.5), Math.toRadians(180));
 
-        Path pathZero = new Path(new BezierLine(startPose, blueFarShoot));
-        pathZero.setConstantHeadingInterpolation(blueFarShoot.getHeading());
+    // human-player preloads
+    private final Pose wallFar = new Pose(8.124 + 3, 23.6 + 8.098, Math.toRadians(250));
+    private final Pose wallClose = new Pose(8.124 + 3, 8.098, Math.toRadians(250));
 
-        Path pathOne = new Path(new BezierLine(blueFarShoot, spikeStart1));
-        pathOne.setConstantHeadingInterpolation(spikeStart1.getHeading());
-        Path pathTwo = new Path(new BezierLine(spikeStart1, spikeEnd1));
-        pathTwo.setConstantHeadingInterpolation(spikeEnd1.getHeading());
-        Path pathThree = new Path(new BezierLine(spikeEnd1, blueFarShoot));
-        //Path pathThree = new Path(new BezierLine(spikeEnd1, blueCloseShoot));
-        pathThree.setConstantHeadingInterpolation(blueFarShoot.getHeading());
+    protected void bindDriverControls() {}
+    protected void bindOperatorControls() {}
+    public boolean isAuto() { return true; }
 
-        Path pathFour = new Path(new BezierLine(blueFarShoot, spikeStart2));
-        pathFour.setConstantHeadingInterpolation(spikeStart2.getHeading());
-        Path pathFive = new Path(new BezierLine(spikeStart2, spikeEnd2));
-        pathFive.setConstantHeadingInterpolation(spikeEnd2.getHeading());
-        Path pathSix = new Path(new BezierLine(spikeEnd2, blueFarShoot));
-        pathSix.setConstantHeadingInterpolation(blueFarShoot.getHeading());
+    public void init(){
+        super.init();
+        follower = Constants.createFollower(hardwareMap);
+    }
 
-        Path pathSeven = new Path(new BezierLine(blueFarShoot, blueFarPark));
-        pathSeven.setConstantHeadingInterpolation(blueFarPark.getHeading());
+    public Command pathBetween(Pose begin, Pose end, double speed) {
+        PathChain p = new PathBuilder(follower)
+            .addPath(new BezierLine(begin, end))
+            .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
+            .build();
+
+        return new FollowPathCommand(p, speed);
+    }
+
+    class FollowPathCommand extends CommandBase {
+        PathChain path;
+        double speed;
+
+        public FollowPathCommand(PathChain p, double s) {
+            path = p;
+            speed = s;
+        }
+        public void initialize() {
+            follower.followPath(path);
+            follower.setMaxPower(speed);
+        }
+        public boolean isFinished() {
+            return !follower.isBusy();
+        }
+    }
+
+    private Command farBluePathing() {
+        follower.setStartingPose(blueFarStart);
+
+        SequentialCommandGroup auto = new SequentialCommandGroup();
+
+        // shoot preloads
+        auto.addCommands(
+            pathBetween(blueFarStart, blueFarShoot, 1.0),
+            new AutoOuttake()
+        );
+
+        // collect and shoot audience spike mark
+        auto.addCommands(
+            pathBetween(blueFarShoot, spikeStart1, 1.0),
+            new ScheduleCommand(new AutoIntake()),
+            pathBetween(spikeStart1, spikeEnd1, 0.45),
+            pathBetween(spikeEnd1, blueFarShoot, 1.0),
+            new AutoOuttake()
+        );
+
+        // collect and shoot human-player preloads
+        auto.addCommands(
+            pathBetween(blueFarShoot, wallFar, 1.0),
+            new ScheduleCommand(new AutoIntake()),
+            pathBetween(wallFar, wallClose, 0.45),
+            pathBetween(wallClose, blueFarShoot, 1.0),
+            new AutoOuttake()
+        );
 
 /*
-        // shoot preloads
-        operations.addLast(new PathOperation(pathZero, 1.0));
-        operations.addLast(new CommandOperation(new AutoOuttake()));
-        operations.addLast(new WaitLastCommand());
+        // collect and shoot middle spike mark
+        auto.addCommands(
+            pathBetween(blueFarShoot, spikeStart2, 1.0),
+            new ScheduleCommand(new AutoIntake()),
+            pathBetween(spikeStart2, spikeEnd2, 0.45),
+            pathBetween(spikeEnd2, blueFarShoot, 1.0),
+            new AutoOuttake()
+        );
+*/
 
-        // furthest spike mark
-        operations.addLast(new PathOperation(pathOne, 1.0));
-        operations.addLast(new CommandOperation(new AutoIntake()));
-        operations.addLast(new PathOperation(pathTwo, 0.45));
-        operations.addLast(new PathOperation(pathThree, 1.0));
-        operations.addLast(new CommandOperation(new AutoOuttake()));
-        operations.addLast(new WaitLastCommand());
+        // park off the start lines
+        auto.addCommands(
+            pathBetween(blueFarShoot, blueFarPark, 1.0)
+        );
 
-
- */
-        //human player preloads
-        Pose wallFar = new Pose(8.124 + 3, 23.6 + 8.098, Math.toRadians(250));
-        Pose wallClose = new Pose(8.124 + 3, 8.098, Math.toRadians(250));
-        //Path human0 = new Path(new BezierLine(blueFarShoot, wallFar));
-        Path human0 = new Path(new BezierLine(startPose, wallFar));
-        human0.setConstantHeadingInterpolation(wallFar.getHeading());
-
-        Path human1 = new Path(new BezierLine(wallFar, wallClose));
-        human1.setConstantHeadingInterpolation(wallClose.getHeading());
-
-        Path human2 = new Path(new BezierLine(wallClose, blueFarShoot));
-        human2.setConstantHeadingInterpolation(blueFarShoot.getHeading());
-        operations.addLast(new PathOperation(human0, 1.0));
-        operations.addLast(new CommandOperation(new AutoIntake()));
-        operations.addLast(new PathOperation(human1, 0.45));
-        operations.addLast(new PathOperation(human2, 1.0));
-        operations.addLast(new CommandOperation(new AutoOuttake()));
-        operations.addLast(new WaitLastCommand());
-
-
-        // middle spike mark
-        /*
-        operations.addLast(new PathOperation(pathFour, 1.0));
-        operations.addLast(new CommandOperation(new AutoIntake()));
-        operations.addLast(new PathOperation(pathFive, 0.45));
-        operations.addLast(new PathOperation(pathSix, 1.0));
-        operations.addLast(new CommandOperation(new AutoOuttake()));
-        operations.addLast(new WaitLastCommand());
-        */
-
-        // park away from start lines
-        operations.addLast(new PathOperation(pathSeven, 1.0));
+        return auto;
     }
 
     @Override
     public void start() {
         super.start();
-        farBluePathing();
+        Command cmds = farBluePathing();
+        CommandScheduler.getInstance().schedule(cmds);
 
         // tell the Spindexer about its preloads
         spindexer.slots[0] = Spindexer.SlotContent.Green;
@@ -184,34 +160,7 @@ public class AutoTest extends RobotBaseOp {
     @Override
     public void loop(){
         follower.update();
-        if (waiting) {
-            if (lastCommand == null) {
-                waiting = false;
-            } else {
-                if (lastCommand.isFinished()) {
-                    waiting = false;
-                    lastCommand = null;
-                }
-            }
-        } else if (!follower.isBusy()) {
-            if (operations.size() > 0) {
-                Operation oper = operations.removeFirst();
-                if (oper.getClass() == PathOperation.class) {
-                    PathOperation po = (PathOperation)oper;
-                    currentPath = po.path;
-                    follower.followPath(currentPath);
-                    follower.setMaxPower(po.maxSpeed);
-                } else if (oper.getClass() == CommandOperation.class) {
-                    lastCommand = ((CommandOperation)oper).command;
-                    CommandScheduler.getInstance().schedule(lastCommand);
-                } else if (oper.getClass() == WaitLastCommand.class) {
-                    waiting = true;
-                }
-                // TODO: probably want a like "wait for last command
-                // to complete" sort of thing? (e.g. to wait for all
-                // the shots to fire when we get there?)
-            }
-        }
+        // the command-scheduler is run in our super-class
         super.loop();
     }
 }
