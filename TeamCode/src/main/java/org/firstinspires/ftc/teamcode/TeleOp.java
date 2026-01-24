@@ -25,6 +25,10 @@ import java.util.List;
 @Configurable
 public abstract class TeleOp extends RobotBaseOp {
 
+    public boolean isAuto(){
+        return false;
+    }
+
     protected void bindDriverControls() {
         // auto intake mode
         TriggerHeld driverRight = new TriggerHeld(driver, GamepadKeys.Trigger.LEFT_TRIGGER);

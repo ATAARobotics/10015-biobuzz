@@ -45,6 +45,8 @@ public abstract class RobotBaseOp extends OpMode {
     public abstract Alliance getAlliance();
     boolean isRedAlliance;
 
+    public abstract boolean isAuto();
+
     protected abstract void bindOperatorControls();
     protected abstract void bindDriverControls();
 
@@ -55,7 +57,7 @@ public abstract class RobotBaseOp extends OpMode {
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
-        drive = new Drive(hardwareMap, isRedAlliance);
+        drive = new Drive(hardwareMap, isRedAlliance, isAuto());
         turret = new Turret(hardwareMap, isRedAlliance);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);

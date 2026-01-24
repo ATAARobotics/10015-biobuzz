@@ -80,7 +80,7 @@ public abstract class Auto extends OpMode {
                 .build();
 */
         // todo: a lot of this repeats in Auto and TeleOp -- can we combine?
-        drive = new Drive(hardwareMap, isRedAlliance);
+        drive = new Drive(hardwareMap, isRedAlliance, true);
         turret = new Turret(hardwareMap, isRedAlliance);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);

@@ -93,9 +93,11 @@ public class Drive extends SubsystemBase {
     //double y_velocity;
 
     boolean isRedAlliance;
+    boolean isAuto;
     AprilTagMetadata target;
-    public Drive(HardwareMap hardwareMap, boolean isRedAlliance) {
+    public Drive(HardwareMap hardwareMap, boolean isRedAlliance, boolean isAuto) {
         this.isRedAlliance = isRedAlliance;
+        this.isAuto = isAuto;
         target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
         // BIG NOTE: since we still have the "broken" goBilda
         // floodgate switch, we NEED to wrap our motors so that they
@@ -464,7 +466,9 @@ public class Drive extends SubsystemBase {
         //heading_control.setPID(hPID.p,hPID.i,hPID.d);
         turn = heading_control.calculate(wrapAngle(desired_heading - current_position.getHeading(ANGLE_UNIT)));
         // tell ftclib its inputs
-        drivebase.driveFieldCentric(strafe, forward, turn, current_position.getHeading(ANGLE_UNIT), false);
+        if (!isAuto) {
+            drivebase.driveFieldCentric(strafe, forward, turn, current_position.getHeading(ANGLE_UNIT), false);
+        }
     }
 
     public void addTelemetry(HyperTelemetry telem) {
