@@ -163,7 +163,9 @@ public abstract class RobotBaseOp extends OpMode {
             return state == InState.DONE;
         }
         public void end(boolean interrupted){
-            driver.gamepad.rumble(150);
+            if (spindexer.isFull()) {
+                driver.gamepad.rumble(250);
+            }
         }
     }
 

@@ -50,10 +50,10 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MAX = 0.75;
     public static double HOOD_MIN = 0.35;
     public static double MANUAL_RPM = 0;
-    static double RPM_VS_DIST_SLOPE = 15.45; // Old is 18.941
-    static double RPM_VS_DIST_INTERCEPT = 2606; //Old is 2327.9
-    static double HOOD_COEF = 0.0944; //Old is 0.0732
-    static double HOOD_EXP = 0.4111; //Old is 0.4768
+    static double RPM_VS_DIST_SLOPE = 18.941;
+    static double RPM_VS_DIST_INTERCEPT = 2327.9;
+    static double HOOD_COEF = 0.0732;
+    static double HOOD_EXP = 0.4768;
 
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
 

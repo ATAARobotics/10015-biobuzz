@@ -27,7 +27,7 @@ public class Drive extends SubsystemBase {
     public static double DISTANCE_TOLERANCE_LOW = 0.035; // 25mm in DISTANCE_UNITs to target
     public static double DISTANCE_TOLERANCE = 0.010; // 10mm // in DISTANCE_UNITs to target
     public static double ANGLE_TOLERANCE = 1; // in ANGLE_UNITs to target
-    public static double TURN_SPEED = 10;
+    public static double TURN_SPEED = 8;
     public static double POWER_INPUT = 2;
     public static double DEAD_ZONE = 0.1;
     public static final double ANGLE_TWEAK = 0;
