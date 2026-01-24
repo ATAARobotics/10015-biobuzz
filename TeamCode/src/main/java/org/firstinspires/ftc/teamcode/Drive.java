@@ -308,13 +308,13 @@ public class Drive extends SubsystemBase {
             if (Math.abs(leftX) > DEAD_ZONE)
                 desired_heading = wrapAngle(desired_heading - TURN_SPEED * leftX);
             if (driver.wasJustPressed(GamepadKeys.Button.DPAD_UP))
-                desired_heading = isRedAlliance ? -90 : 90;
-            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_DOWN))
-                desired_heading = isRedAlliance ? 90 : -90;
-            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_LEFT))
                 desired_heading = isRedAlliance ? 0 : 180;
-            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT))
+            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_DOWN))
                 desired_heading = isRedAlliance ? 180 : 0;
+            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_LEFT))
+                desired_heading = isRedAlliance ? 90 : 270;
+            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT))
+                desired_heading = isRedAlliance ? 270 : 90;
             if (driver.wasJustPressed(GamepadKeys.Button.DPAD_UP) || driver.wasJustPressed(GamepadKeys.Button.DPAD_DOWN) || driver.wasJustPressed(GamepadKeys.Button.DPAD_LEFT) || driver.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
                 desired_heading += ANGLE_TWEAK;
             }
