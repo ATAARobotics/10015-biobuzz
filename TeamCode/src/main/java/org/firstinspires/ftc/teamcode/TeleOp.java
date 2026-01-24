@@ -36,6 +36,13 @@ public abstract class TeleOp extends RobotBaseOp {
         // auto outtake mode
         driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new AutoOuttake(), true);
         driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new OuttakeOff(), true);
+
+        // "mostly" we want to run the HumanInputs commands during teleop
+        CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
+        CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
+        CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
+        CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
+        CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
     }
 
     protected void bindOperatorControls() {

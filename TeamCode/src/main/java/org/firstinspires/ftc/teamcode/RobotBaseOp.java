@@ -84,13 +84,6 @@ public abstract class RobotBaseOp extends OpMode {
         bindOperatorControls();
         bindDriverControls();
 
-        // "mostly" we want to run the HumanInputs commands during teleop
-        CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
-        CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
-        CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
-        CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
-        CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
-
         // set up for bulk-reads of encoders etc (in MANUAL we *must*
         // remember to clear the cache once per cycle or we'll always
         // have stale values)
