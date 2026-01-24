@@ -34,6 +34,10 @@ public class AutoTest extends RobotBaseOp {
     protected void bindDriverControls() {}
     protected void bindOperatorControls() {}
 
+    public boolean isAuto(){
+        return true;
+    }
+
     class Operation {
     }
 
@@ -92,8 +96,8 @@ public class AutoTest extends RobotBaseOp {
         Pose spikeEnd2 = new Pose (10.4, 35.0 + 23.5, Math.toRadians(180));
 
         // closest set of spikes has the ramp in the way so we can't drive as far forward
-        Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23), Math.toRadians(180));
-        Pose spikeEnd3 = new Pose (10.4 + 7.0, 35.0 + (2 * 23), Math.toRadians(180));
+        Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23.5), Math.toRadians(180));
+        Pose spikeEnd3 = new Pose (10.4 + 7.0, 35.0 + (2 * 23.5), Math.toRadians(180));
 
         Path pathZero = new Path(new BezierLine(startPose, blueFarShoot));
         pathZero.setConstantHeadingInterpolation(blueFarShoot.getHeading());
@@ -116,7 +120,7 @@ public class AutoTest extends RobotBaseOp {
         Path pathSeven = new Path(new BezierLine(blueFarShoot, blueFarPark));
         pathSeven.setConstantHeadingInterpolation(blueFarPark.getHeading());
 
-
+/*
         // shoot preloads
         operations.addLast(new PathOperation(pathZero, 1.0));
         operations.addLast(new CommandOperation(new AutoOuttake()));
@@ -125,18 +129,42 @@ public class AutoTest extends RobotBaseOp {
         // furthest spike mark
         operations.addLast(new PathOperation(pathOne, 1.0));
         operations.addLast(new CommandOperation(new AutoIntake()));
-        operations.addLast(new PathOperation(pathTwo, 0.5));
+        operations.addLast(new PathOperation(pathTwo, 0.45));
         operations.addLast(new PathOperation(pathThree, 1.0));
         operations.addLast(new CommandOperation(new AutoOuttake()));
         operations.addLast(new WaitLastCommand());
 
+
+ */
+        //human player preloads
+        Pose wallFar = new Pose(8.124 + 3, 23.6 + 8.098, Math.toRadians(250));
+        Pose wallClose = new Pose(8.124 + 3, 8.098, Math.toRadians(250));
+        //Path human0 = new Path(new BezierLine(blueFarShoot, wallFar));
+        Path human0 = new Path(new BezierLine(startPose, wallFar));
+        human0.setConstantHeadingInterpolation(wallFar.getHeading());
+
+        Path human1 = new Path(new BezierLine(wallFar, wallClose));
+        human1.setConstantHeadingInterpolation(wallClose.getHeading());
+
+        Path human2 = new Path(new BezierLine(wallClose, blueFarShoot));
+        human2.setConstantHeadingInterpolation(blueFarShoot.getHeading());
+        operations.addLast(new PathOperation(human0, 1.0));
+        operations.addLast(new CommandOperation(new AutoIntake()));
+        operations.addLast(new PathOperation(human1, 0.45));
+        operations.addLast(new PathOperation(human2, 1.0));
+        operations.addLast(new CommandOperation(new AutoOuttake()));
+        operations.addLast(new WaitLastCommand());
+
+
         // middle spike mark
+        /*
         operations.addLast(new PathOperation(pathFour, 1.0));
         operations.addLast(new CommandOperation(new AutoIntake()));
-        operations.addLast(new PathOperation(pathFive, 0.5));
+        operations.addLast(new PathOperation(pathFive, 0.45));
         operations.addLast(new PathOperation(pathSix, 1.0));
         operations.addLast(new CommandOperation(new AutoOuttake()));
         operations.addLast(new WaitLastCommand());
+        */
 
         // park away from start lines
         operations.addLast(new PathOperation(pathSeven, 1.0));
@@ -162,6 +190,7 @@ public class AutoTest extends RobotBaseOp {
             } else {
                 if (lastCommand.isFinished()) {
                     waiting = false;
+                    lastCommand = null;
                 }
             }
         } else if (!follower.isBusy()) {
