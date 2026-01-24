@@ -346,6 +346,12 @@ if interrupt "during" spin then it gets confused about which slot is what
             // yet passed our goal" AND boostF is still true, we add extra
             // power (because the launched needs to have more power right
             // when it's super close to its goal).
+
+            if (slots[currentShootSlot()] == SlotContent.Nothing) {
+                // if we have an empty slot coming up to shoot, we
+                // _don't_ want to apply the boost
+                boostF = false;
+            }
             if (boostF && spin == SpinDirection.Shoot) {
                 if (currentAngle < targetAngle) {//(spindexerPower > 0.0) {
                     spindexerPower += boostAmount;

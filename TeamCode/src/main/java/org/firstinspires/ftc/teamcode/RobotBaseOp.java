@@ -137,7 +137,7 @@ public abstract class RobotBaseOp extends OpMode {
                         state = InState.SORT;
                     } else {
                         state = InState.SPIN;
-                        intake.stop();
+//                        intake.stop();
                         spindexer.spinIndex();
                     }
                 }
@@ -211,7 +211,7 @@ public abstract class RobotBaseOp extends OpMode {
                 // try just not caring about "did a shot really go up"
                 // for this -- so we're just trusting the spindexer's
                 // notion of how many balls
-                if (true) { //shooter.getCurrentShots() > lastShots) {
+                if (spindexer.atTarget()) { //shooter.getCurrentShots() > lastShots) {
                     if (spindexer.isEmpty()) {
                         state = OutState.DONE;
                     } else {
