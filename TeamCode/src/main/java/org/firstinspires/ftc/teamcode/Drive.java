@@ -192,17 +192,8 @@ public class Drive extends SubsystemBase {
         return current_position;
     }
 
-    public Command moveCarefully(double x, double y, double heading) {
-        return new CarefulMoveTo(x, y, heading);
-    }
 
-    public Command moveQuickly(double x, double y, double heading) {
-        return new QuickMoveTo(x, y, heading, DISTANCE_TOLERANCE);
-    }
-    public Command moveLowThreshold(double x, double y, double heading) {
-        return new QuickMoveTo(x, y, heading, DISTANCE_TOLERANCE_LOW);
-    }
-
+    // TODO: if we want to keep "auto-park" command use PedroPathing to do it
     public class QuickMoveTo extends CommandBase {
         Pose2D target;
         private final PIDController quick_strafe;
@@ -290,67 +281,6 @@ public class Drive extends SubsystemBase {
     public Command parkAt (GamepadEx driver, double x, double y, double heading){
         return new Park(driver, x, y, heading, DISTANCE_TOLERANCE);
 
-    }
-
-    public class CarefulMoveTo extends CommandBase {
-        Pose2D target;
-        private PIDController careful_strafe;
-        private PIDController careful_forward;
-
-        public CarefulMoveTo(double x, double y, double h) {
-            //System.out.println("x="+(x-current_position.x)+" y="+(y-current_position.y)+" h="+(h-current_position.h));
-            target = new Pose2D(DISTANCE_UNIT, x, y, ANGLE_UNIT, h);
-            careful_strafe = new PIDController(strafe_pid_careful.p, strafe_pid_careful.i, strafe_pid_careful.d);
-            careful_forward = new PIDController(forward_pid_careful.p, forward_pid_careful.i, forward_pid_careful.d);
-            careful_strafe.setTolerance(DISTANCE_TOLERANCE);
-            careful_forward.setTolerance(DISTANCE_TOLERANCE);
-            addRequirements(Drive.this);
-        }
-
-        @Override
-        public void initialize() {
-            careful_strafe.setSetPoint(target.getX(DISTANCE_UNIT));
-            careful_forward.setSetPoint(target.getY(DISTANCE_UNIT));
-            desired_heading = wrapAngle(target.getHeading(ANGLE_UNIT));
-
-            // careful, take out for production FIXME TODO
-            /*if (false) {
-                otos.setLinearScalar(LINEAR_SCALAR);
-                otos.setAngularScalar(ANGULAR_SCALAR);
-            }
-
-             */
-            drivebase.setMaxSpeed(TURBO_SLOW_SPEED);
-        }
-
-        @Override
-        public void execute() {
-            // compute the direction vector relatively to the robot coordinates
-            strafe = careful_strafe.calculate(current_position.getX(DISTANCE_UNIT));
-            forward = careful_forward.calculate(current_position.getY(DISTANCE_UNIT));
-
-            // our own "static friction" calc
-            if (strafe > STATIC_F_SENSITIVE) ff_strafe = STATIC_F_STRAFE;
-            if (strafe < -STATIC_F_SENSITIVE) ff_strafe = -STATIC_F_STRAFE;
-            if (forward > STATIC_F_SENSITIVE) ff_forward = STATIC_F_FORWARD;
-            if (forward < -STATIC_F_SENSITIVE) ff_forward = -STATIC_F_FORWARD;
-
-            strafe += ff_strafe;
-            forward += ff_forward;
-        }
-
-        @Override
-        public boolean isFinished() {
-            // check if the target is reached
-            return careful_strafe.atSetPoint() && careful_forward.atSetPoint() && heading_control.atSetPoint();
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            strafe = 0;
-            forward = 0;
-            stop();
-        }
     }
 
     // all interaction with gamepads should go through this inner class
