@@ -21,6 +21,7 @@ public class Shooter extends SubsystemBase {
     MotorEx motor1;
     MotorGroup shooterMotor;
     Servo hood;
+    double ticks;
     double ticksPerSecond;
     double power;
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
@@ -50,6 +51,7 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MAX = 0.80;
     public static double HOOD_MIN = 0.05;
     public static double MANUAL_RPM = 0;
+    public static double MANUAL_HOOD = 0.00;
     static double RPM_VS_DIST_SLOPE = 18.941;
     static double RPM_VS_DIST_INTERCEPT = 2327.9;
     static double HOOD_COEF = 0.0732;
@@ -57,9 +59,10 @@ public class Shooter extends SubsystemBase {
 
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
 
-    double BAND = 10;
-    double BANG_POWER = 1.0;
+    public static double BAND = 10;
+    public static double BANG_POWER = 1.0;
     public static double RPM_TOLERANCE = 200;  // jan22 changed from 250
+    public static double POWER_OVERRIDE = 0.0;
     boolean powerOn = false;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
     VoltageSensor battery;
@@ -107,6 +110,7 @@ public class Shooter extends SubsystemBase {
     }
     public void read_sensors(double time) {
         // get any inputs from our encoders or other sensors
+        ticks = motor1.getCurrentPosition();
         ticksPerSecond = motor1.getVelocity();
         currentRpm = (ticksPerSecond * 60) / TICKS_PER_REV;
         voltage = battery.getVoltage();
@@ -152,8 +156,11 @@ public class Shooter extends SubsystemBase {
             targetRpm = RPM_VS_DIST_SLOPE * aprilDistance + RPM_VS_DIST_INTERCEPT;
             targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
         }
-        if (MANUAL_RPM > 1.0 && targetRpm > 0.0) {
+        if (MANUAL_RPM > 1.0 ){//&& targetRpm > 0.0) {
             targetRpm = MANUAL_RPM;
+        }
+        if (MANUAL_HOOD > HOOD_MIN) {
+            targetHood = MANUAL_HOOD;
         }
 
         appliedVoltage = (kv * targetRpm) + ks;
@@ -171,6 +178,13 @@ public class Shooter extends SubsystemBase {
         }
         if (powerOn) power = BANG_POWER;
         if (targetRpm == 0) power = 0;
+
+
+        if (POWER_OVERRIDE > 0.0) {
+            power = POWER_OVERRIDE;
+        }
+
+
         if (power < 0) power = 0;
 
         if (targetHood < HOOD_MIN){
@@ -179,8 +193,8 @@ public class Shooter extends SubsystemBase {
         if (targetHood > HOOD_MAX){
             targetHood = HOOD_MAX;
         }
-        hood.setPosition(targetHood);
 
+        hood.setPosition(targetHood);
         shooterMotor.set(power);
 
         // count shots
@@ -213,6 +227,8 @@ public class Shooter extends SubsystemBase {
         telem.log("shooter-hood-angle", targetHood);
         telem.log("shooter-auto-rpm", autoRpm);
         telem.log("shooter-distance", aprilDistance);
+        telem.log("shooter-voltage", voltage);
+        telem.log("shooter-ticks", ticks);
     }
 
     public class HumanInputs extends CommandBase {
