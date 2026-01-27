@@ -256,6 +256,7 @@ public class Turret extends SubsystemBase {
         telem.log("turret-april-bearing", april_bearing);
         telem.log("turret-april-distance", april_distance);
         telem.log("turret-april-lock", haveAprilLock);
+        telem.log("turret-last-april", lastAprilLock);
         telem.log("turret-april-mode", mode);
         telem.log("turret-april-fps", portal.getFps());
         ExposureControl ec = portal.getCameraControl(ExposureControl.class);

@@ -7,6 +7,7 @@ import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.command.ScheduleCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -31,6 +32,8 @@ public class Auto extends RobotBaseOp {
     public Follower follower;
     double xOffset = 8.124;
     double yOffset = 8.0984;
+    private boolean usePreloads = true;
+    private int whenOpenGate = 0;
 
     private final Pose blueFarStart = new Pose(47.5 + xOffset, yOffset, Math.toRadians(90));
     private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(90));
@@ -73,11 +76,6 @@ public class Auto extends RobotBaseOp {
     public boolean isAuto() { return true; }
 
     private Command _lastCommandRun = null;
-
-    public void init(){
-        super.init();
-        follower = Constants.createFollower(hardwareMap);
-    }
 
     public Command pathBetween(Pose begin, Pose end, double speed) {
         PathChain p = new PathBuilder(follower)
@@ -159,26 +157,36 @@ public class Auto extends RobotBaseOp {
         SequentialCommandGroup auto = new SequentialCommandGroup();
 
         // shoot preloads
-        auto.addCommands(
+        Pose spikeStart = blueNearShoot;
+        if (usePreloads) {
+            auto.addCommands(
                 pathBetween(blueNearStart, blueNearShoot, 1.0),
                 new AutoOuttake()
-        );
+                );
+        } else {
+            spikeStart = blueNearStart;
+        }
 
-        // pick up and shoot far spike mark
+        // pick up and shoot far spike mark (note our start position
+        // depends on whether usePreloads was active or not)
         auto.addCommands(
-                pathBetween(blueNearShoot, spikeStart3, 1.0),
+                pathBetween(spikeStart, spikeStart3, 1.0),
                 new ParallelRaceGroup(
                         new AutoIntake(),
                         pathBetween(spikeStart3, spikeEnd3, 0.45)
                 )
         );
-       /* // open the gate after picking up spike 3
-        auto.addCommands(
-                pathBetween(spikeEnd3, openGate, 1.0)
-        ); */
+       Pose lastSpike = spikeEnd3;
+        if (whenOpenGate == 1) {
+            // open the gate after picking up spike 3
+            auto.addCommands(
+                    pathBetween(spikeEnd3, openGate, 1.0)
+            );
+            lastSpike = openGate;
+        }
         // shooting spike three after opening gate
         auto.addCommands(
-                pathBetween(spikeEnd3, blueNearShoot, 1.0),
+                pathBetween(lastSpike, blueNearShoot, 1.0),
                 new AutoOuttake()
         );
         // pick up and shoot middle spike mark
@@ -196,20 +204,52 @@ public class Auto extends RobotBaseOp {
     }
 
     @Override
+    public void init(){
+        super.init();
+        follower = Constants.createFollower(hardwareMap);
+    }
+
+    @Override
+    public void init_loop() {
+        clearCache();
+        readControls();
+
+        if (operator.wasJustPressed(GamepadKeys.Button.A)) {
+            usePreloads = !usePreloads;
+        }
+        if (operator.wasJustPressed(GamepadKeys.Button.B)) {
+            whenOpenGate += 1;
+            if (whenOpenGate > 1) {
+                whenOpenGate = 0;
+            }
+        }
+
+        String openDescription = "unknown";
+        if (whenOpenGate == 0) openDescription = "Never";
+        if (whenOpenGate == 1) openDescription = "After Spike3 pickup";
+
+        telemetry.addData("Preloads (A to toggle)", usePreloads);
+        telemetry.addData("Open Gate (B to toggle)", openDescription);
+        telemetry.update();
+    }
+
+    @Override
     public void start() {
         super.start();
 
         CommandScheduler.getInstance().onCommandExecute(this::commandRunning);
 
-       // Command cmds = farBluePathing();
-        Command cmds = nearBluePathing();
+        Command cmds = farBluePathing();
+        //Command cmds = nearBluePathing();
 
         CommandScheduler.getInstance().schedule(cmds);
 
         // tell the Spindexer about its preloads
-        spindexer.slots[0] = Spindexer.SlotContent.Green;
-        spindexer.slots[1] = Spindexer.SlotContent.Purple;
-        spindexer.slots[2] = Spindexer.SlotContent.Purple;
+        if (usePreloads) {
+            spindexer.slots[0] = Spindexer.SlotContent.Green;
+            spindexer.slots[1] = Spindexer.SlotContent.Purple;
+            spindexer.slots[2] = Spindexer.SlotContent.Purple;
+        }
     }
 
     public void commandRunning(Command c) {

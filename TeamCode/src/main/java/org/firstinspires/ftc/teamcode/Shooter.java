@@ -47,8 +47,8 @@ public class Shooter extends SubsystemBase {
     //Tuned on November 27:
     public static double FAR_RPM = 4950;
     public static double NEAR_RPM = 4000;
-    public static double HOOD_MAX = 0.75;
-    public static double HOOD_MIN = 0.35;
+    public static double HOOD_MAX = 0.80;
+    public static double HOOD_MIN = 0.05;
     public static double MANUAL_RPM = 0;
     static double RPM_VS_DIST_SLOPE = 18.941;
     static double RPM_VS_DIST_INTERCEPT = 2327.9;

@@ -402,9 +402,9 @@ public class Drive extends SubsystemBase {
     }
 
     public void addTelemetry(HyperTelemetry telem) {
-        telem.log("position-x", current_position.getX(DISTANCE_UNIT));
-        telem.log("position-y", current_position.getY(DISTANCE_UNIT));
-        telem.log("position-heading", current_position.getHeading(AngleUnit.DEGREES));
+        telem.logBoth("position-x", current_position.getX(DISTANCE_UNIT));
+        telem.logBoth("position-y", current_position.getY(DISTANCE_UNIT));
+        telem.logBoth("position-heading", current_position.getHeading(AngleUnit.DEGREES));
 
         double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
         double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
