@@ -52,11 +52,10 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MIN = 0.05;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
-    static double RPM_VS_DIST_SLOPE = 18.941;
-    static double RPM_VS_DIST_INTERCEPT = 2327.9;
+    static double RPM_VS_DIST_SLOPE = 20.086; // old is 18.941
+    static double RPM_VS_DIST_INTERCEPT = 2411.7 ; //Old is 2327.9
     static double HOOD_COEF = 0.0732;
     static double HOOD_EXP = 0.4768;
-
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
 
     public static double BAND = 10;
@@ -159,7 +158,8 @@ public class Shooter extends SubsystemBase {
         // auto-computed RPM, optional
         if (autoRpm /*&& aprilDistance > 0.5*/) {
             targetRpm = RPM_VS_DIST_SLOPE * aprilDistance + RPM_VS_DIST_INTERCEPT;
-            targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
+         //   targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
+            targetHood = -0.00006 * aprilDistance * aprilDistance + 0.0167 * aprilDistance - 0.4328;
         }
         if (MANUAL_RPM > 1.0 ){//&& targetRpm > 0.0) {
             targetRpm = MANUAL_RPM;
