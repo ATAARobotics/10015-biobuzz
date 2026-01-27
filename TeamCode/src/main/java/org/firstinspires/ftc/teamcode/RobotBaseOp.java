@@ -352,14 +352,14 @@ public abstract class RobotBaseOp extends OpMode {
         double distanceA = targetX - robotX;
         double distanceB = targetY - robotY;
         double distance = Math.sqrt((distanceA * distanceA) + (distanceB * distanceB));
-        //distance = DistanceUnit.INCH.fromMeters(distance);
-        turret.apriltag_heading = drive.apriltag_heading;
+
         turret.robot_heading = drive.getPosition().getHeading(AngleUnit.DEGREES);
-        if (turret.haveAprilLock){
+        if (turret.isLocked(time)) {
             shooter.aprilDistance = turret.april_distance;
         }
         else{
             shooter.aprilDistance = distance;
+            turret.apriltag_heading = drive.geometricTargetHeading;
         }
 
         // Run the CommandScheduler instance (note: this will call

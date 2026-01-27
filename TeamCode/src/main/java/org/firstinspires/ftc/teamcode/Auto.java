@@ -5,15 +5,18 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
-import com.arcrobotics.ftclib.command.ScheduleCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -32,7 +35,7 @@ public class Auto extends RobotBaseOp {
     public Follower follower;
     double xOffset = 8.124;
     double yOffset = 8.0984;
-    private boolean usePreloads = true;
+    private boolean usePreloads = false;
     private int whenOpenGate = 0;
 
     private final Pose blueFarStart = new Pose(47.5 + xOffset, yOffset, Math.toRadians(90));
@@ -67,7 +70,11 @@ public class Auto extends RobotBaseOp {
 
     // human-player preloads
     private final Pose wallFar = new Pose(xOffset + 3, 23.6 + yOffset, Math.toRadians(250));
-    private final Pose wallClose = new Pose(xOffset + 3, yOffset, Math.toRadians(250));
+    private final Pose wallClose = new Pose(xOffset + 3, yOffset + 3, Math.toRadians(250));
+
+    // trying a different human-player routing
+    private final Pose wallDirectStart = new Pose(xOffset + 1, yOffset + 15, Math.toRadians(240));
+    private final Pose wallDirectEnd = new Pose(xOffset + 1, yOffset, Math.toRadians(240));
 
     private final Pose openGate = new Pose(10.4 + 7.0, 70, Math.toRadians(90));
 
@@ -105,21 +112,50 @@ public class Auto extends RobotBaseOp {
     }
 
     private Command farBluePathing() {
+        drive.setPosition(
+            new Pose2D(
+                DistanceUnit.INCH,
+                blueFarStart.getX(),
+                blueFarStart.getY(),
+                AngleUnit.RADIANS,
+                blueFarStart.getHeading()
+            )
+        );
         follower.setStartingPose(blueFarStart);
 
         SequentialCommandGroup auto = new SequentialCommandGroup();
 
-        // shoot preloads
         auto.addCommands(
-            pathBetween(blueFarStart, blueFarShoot, 1.0),
+            pathBetween(blueFarStart, blueFarShoot, 1.0)
+        );
+        if (usePreloads) {
+            auto.addCommands(new AutoOuttake());
+        }
+
+/*
+        PathChain wallpickup = new PathBuilder(follower)
+            .addPath(new BezierLine(blueFarShoot, wallDirectStart))
+            .addPath(new BezierLine(wallDirectStart, wallDirectEnd))
+            .setConstantHeadingInterpolation(wallDirectStart.getHeading())
+            .build();
+
+        auto.addCommands(
+            new ParallelRaceGroup(
+                new AutoIntake(),
+                new FollowPathCommand(wallpickup, 0.9)
+            ),
+            pathBetween(wallDirectEnd, blueFarShoot, 1.0),
             new AutoOuttake()
         );
+*/
 
         // collect and shoot audience spike mark
         auto.addCommands(
             pathBetween(blueFarShoot, spikeStart1, 1.0),
-            new ScheduleCommand(new AutoIntake()),
-            pathBetween(spikeStart1, spikeEnd1, 0.45),
+            new ParallelRaceGroup(
+                new AutoIntake(),
+                pathBetween(spikeStart1, spikeEnd1, 0.45)
+            ),
             pathBetween(spikeEnd1, blueFarShoot, 1.0),
             new AutoOuttake()
         );
@@ -127,8 +163,10 @@ public class Auto extends RobotBaseOp {
         // collect and shoot human-player preloads
         auto.addCommands(
             pathBetween(blueFarShoot, wallFar, 1.0),
-            new ScheduleCommand(new AutoIntake()),
-            pathBetween(wallFar, wallClose, 0.45),
+            new ParallelRaceGroup(
+                new AutoIntake(),
+                pathBetween(wallFar, wallClose, 0.55)
+            ),
             pathBetween(wallClose, blueFarShoot, 1.0),
             new AutoOuttake()
         );
@@ -137,8 +175,10 @@ public class Auto extends RobotBaseOp {
         // collect and shoot middle spike mark
         auto.addCommands(
             pathBetween(blueFarShoot, spikeStart2, 1.0),
-            new ScheduleCommand(new AutoIntake()),
-            pathBetween(spikeStart2, spikeEnd2, 0.45),
+            new ParallelRaceGroup(
+                new AutoIntake(),
+                pathBetween(spikeStart2, spikeEnd2, 0.45)
+            ),
             pathBetween(spikeEnd2, blueFarShoot, 1.0),
             new AutoOuttake()
         );
@@ -236,7 +276,6 @@ public class Auto extends RobotBaseOp {
     @Override
     public void start() {
         super.start();
-
         CommandScheduler.getInstance().onCommandExecute(this::commandRunning);
 
         Command cmds = farBluePathing();
@@ -259,10 +298,6 @@ public class Auto extends RobotBaseOp {
     @Override
     protected void addTelemetry(HyperTelemetry telem) {
         super.addTelemetry(telem);
-        if (_lastCommandRun != null) {
-            telem.log("auto-command-run", _lastCommandRun);
-            _lastCommandRun = null;
-        }
     }
 
     @Override

@@ -61,7 +61,7 @@ public class Drive extends SubsystemBase {
     double strafe; // +Right/-Left
     double turn; // +CW/-CCW
     double desired_heading;
-    public double apriltag_heading;
+    public double geometricTargetHeading;
     double ff_forward;
     double ff_strafe;
     Command parking; //Null if we're not parking
@@ -87,10 +87,10 @@ public class Drive extends SubsystemBase {
     public static Pose2D current_position;
 
     double previous_time;
-    //Pose2D previous_position;
+    Pose2D previous_position;
 
-    //double x_velocity;
-    //double y_velocity;
+    double x_velocity;
+    double y_velocity;
 
     boolean isRedAlliance;
     boolean isAuto;
@@ -182,8 +182,6 @@ public class Drive extends SubsystemBase {
     public void setPosition(Pose2D pose) {
         //otos.setPosition(pose);
         pinpoint.setPosition(pose);
-        //TODO FIXME
-//        previous_position = current_position;
         current_position = pose;
         desired_heading = pose.getHeading(ANGLE_UNIT);
     }
@@ -319,7 +317,7 @@ public class Drive extends SubsystemBase {
                 desired_heading += ANGLE_TWEAK;
             }
             //if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
-            //desired_heading = apriltag_heading;
+            //desired_heading = geometricTargetHeading;
 
              // Anjalika wants "turbo" mode ... so if we're holding
             // left trigger _currently_, we go to Turbo -- otherwise
@@ -360,20 +358,25 @@ public class Drive extends SubsystemBase {
         // Get the latest pose, which includes the x and y coordinates, plus the heading angle
         previous_time = current_time;
         current_time = time;
-        //previous_position = current_position;
-        //current_position = otos.getPosition();
+        previous_position = current_position;
+
         pinpoint.update();
         current_position = pinpoint.getPosition();
+        // We need to rotate the FTC coordinate system 90 degrees to
+        // get the pedro pathing system, and Offset by 72 inches
+
         // double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
-       // double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
+        // double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
+
+        // hard-coded blue target estimate
         double targetX = 14.7;
         double targetY = 128.7;
 
-        apriltag_heading = Math.toDegrees(Math.atan2(
-                // We need to rotate the FTC coordinate system 90 degrees to get the pedro pathing system, and Offset by 72 inches
+        geometricTargetHeading = Math.toDegrees(Math.atan2(
                 (TARGET_Y_OFFSET + targetY) - current_position.getY(DistanceUnit.INCH),
                 (TARGET_X_OFFSET + targetX) - current_position.getX(DistanceUnit.INCH)
-        ));
+        ))
+;
         /*
         current_left_distance= dist_left.getDistance(DistanceUnit.INCH);
         dist_left_avg.add_sample(current_left_distance);
@@ -381,13 +384,11 @@ public class Drive extends SubsystemBase {
         dist_right_avg.add_sample(current_right_distance);
         */
         // if we have at least two positions, we can compute our velocity
-        /*
         if (previous_position != null && (current_time - previous_time) > 0.0) {
             double interval = current_time - previous_time;
-            x_velocity = (current_position.x - previous_position.x) / interval;
-            y_velocity = (current_position.y - previous_position.y) / interval;
+            x_velocity = (current_position.getX(DistanceUnit.INCH) - previous_position.getX(DistanceUnit.INCH)) / interval;
+            y_velocity = (current_position.getY(DistanceUnit.INCH) - previous_position.getY(DistanceUnit.INCH)) / interval;
         }
-        */
     }
 
     @Override
@@ -412,6 +413,8 @@ public class Drive extends SubsystemBase {
         telem.log("target-y", targetY);
         telem.log("current-heading", current_position.getHeading(ANGLE_UNIT));
         telem.log("desired-heading", desired_heading);
+        telem.log("velocity-x", x_velocity);
+        telem.log("velocity-y", y_velocity);
 
        // telem.log("strafe", strafe);
        // telem.log("forward", forward);
