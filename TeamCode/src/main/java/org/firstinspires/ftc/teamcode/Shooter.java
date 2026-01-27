@@ -60,8 +60,9 @@ public class Shooter extends SubsystemBase {
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
 
     public static double BAND = 10;
+    public static double BAND_RAMP_UP = 200;
     public static double BANG_POWER = 1.0;
-    public static double RPM_TOLERANCE = 200;  // jan22 changed from 250
+    public static double RPM_TOLERANCE = 50;  // jan26 changed from 200 after testing
     public static double POWER_OVERRIDE = 0.0;
     boolean powerOn = false;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
@@ -75,8 +76,12 @@ public class Shooter extends SubsystemBase {
     public double aprilDistance;
     //public double geometricDistance;
 
-    public static double kv = 0.002213; //kv is Feed Forward Model slope, determined experimentally with flywheel
-    public static double ks = 0.129514; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
+    //public static double kv = 0.002213; //kv is Feed Forward Model slope, determined experimentally with flywheel
+    //public static double ks = 0.129514; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
+
+    // new model january 26
+    public static double kv = 0.0021;
+    public static double ks = 1.0892;
 
     public Shooter(HardwareMap hardwareMap) {
         // do any one-time initialization here
@@ -166,17 +171,12 @@ public class Shooter extends SubsystemBase {
         appliedVoltage = (kv * targetRpm) + ks;
         power = appliedVoltage / voltage;
 
-        // hack: trying to make this actually be "bang-F" instead of "just F"
-        power = power * 0.9;
-
-        //power += velocity.calculate(currentRpm); //Change power to += when Feed Forward is used
-        if (currentRpm < (targetRpm - BAND) && !powerOn) {
-            powerOn = true;
+        if (currentRpm < (targetRpm - BAND_RAMP_UP) && !powerOn) {
+            power = BANG_POWER;
         }
         else if (currentRpm > (targetRpm + BAND) && powerOn) {
-            powerOn = false;
+            power = 0.0;
         }
-        if (powerOn) power = BANG_POWER;
         if (targetRpm == 0) power = 0;
 
 
