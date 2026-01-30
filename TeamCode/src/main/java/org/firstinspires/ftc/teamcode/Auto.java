@@ -306,4 +306,19 @@ public class Auto extends RobotBaseOp {
         // the command-scheduler is run in our super-class
         super.loop();
     }
+
+    @Override
+    public void stop() {
+        drive.read_sensors(time);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(hardwareMap.appContext);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putFloat("heading", (float)drive.getPosition().getHeading(AngleUnit.DEGREES));
+        editor.putFloat("x", (float)drive.getPosition().getX(DistanceUnit.INCH));
+        editor.putFloat("y", (float)drive.getPosition().getY(DistanceUnit.INCH));
+        editor.putFloat("turret", (float)turret.getServoAngle());
+        editor.putFloat("spindex", (float)spindexer.targetAngle);
+        editor.apply();
+        drive.stop();
+        shooter.stop();
+    }
 }
