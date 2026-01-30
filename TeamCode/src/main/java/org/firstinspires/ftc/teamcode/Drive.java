@@ -33,8 +33,6 @@ public class Drive extends SubsystemBase {
     public static final double ANGLE_TWEAK = 0;
     public static double TURBO_FAST_SPEED = 1.0;
     public static double TURBO_SLOW_SPEED = 0.75;
-    public static double TARGET_X_OFFSET = 0;
-    public static double TARGET_Y_OFFSET = 0;
 
     public static double STATIC_F_SENSITIVE = 0.005; //0.001; //0.04;
     // jan 15, 2025: re-tuned these with the higher "careful_pid"
@@ -61,7 +59,6 @@ public class Drive extends SubsystemBase {
     double strafe; // +Right/-Left
     double turn; // +CW/-CCW
     double desired_heading;
-    public double geometricTargetHeading;
     double ff_forward;
     double ff_strafe;
     Command parking; //Null if we're not parking
@@ -316,12 +313,9 @@ public class Drive extends SubsystemBase {
             if (driver.wasJustPressed(GamepadKeys.Button.DPAD_UP) || driver.wasJustPressed(GamepadKeys.Button.DPAD_DOWN) || driver.wasJustPressed(GamepadKeys.Button.DPAD_LEFT) || driver.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
                 desired_heading += ANGLE_TWEAK;
             }
-            //if (driver.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
-            //desired_heading = geometricTargetHeading;
 
-             // Anjalika wants "turbo" mode ... so if we're holding
-            // left trigger _currently_, we go to Turbo -- otherwise
-            // to non-Turbo
+            // if we're holding left trigger _currently_, we go to
+            // Turbo -- otherwise to non-Turbo
             turbo(driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5);
             if (driver.isDown(GamepadKeys.Button.B) && isRedAlliance && parking == null){
                 parking = parkAt(driver, -0.835, -0.95, -180);
@@ -362,27 +356,7 @@ public class Drive extends SubsystemBase {
 
         pinpoint.update();
         current_position = pinpoint.getPosition();
-        // We need to rotate the FTC coordinate system 90 degrees to
-        // get the pedro pathing system, and Offset by 72 inches
 
-        // double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
-        // double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
-
-        // hard-coded blue target estimate
-        double targetX = 14.7;
-        double targetY = 128.7;
-
-        geometricTargetHeading = Math.toDegrees(Math.atan2(
-                (TARGET_Y_OFFSET + targetY) - current_position.getY(DistanceUnit.INCH),
-                (TARGET_X_OFFSET + targetX) - current_position.getX(DistanceUnit.INCH)
-        ))
-;
-        /*
-        current_left_distance= dist_left.getDistance(DistanceUnit.INCH);
-        dist_left_avg.add_sample(current_left_distance);
-        current_right_distance= dist_right.getDistance(DistanceUnit.INCH);
-        dist_right_avg.add_sample(current_right_distance);
-        */
         // if we have at least two positions, we can compute our velocity
         if (previous_position != null && (current_time - previous_time) > 0.0) {
             double interval = current_time - previous_time;

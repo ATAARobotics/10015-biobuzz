@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
@@ -24,13 +27,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-@Autonomous(name="Auto", group="Opmode")
-public class Auto extends RobotBaseOp {
+public abstract class Auto extends RobotBaseOp {
 
-    // TODO: declare this class abstract, make AutoBlueFar / etc
-    public Alliance getAlliance() {
-        return Alliance.BLUE;
-    }
+    public enum StartZone {NEAR, FAR}
+
+    public abstract Alliance getAlliance();
+    public abstract StartZone getStartZone();
 
     public Follower follower;
     double xOffset = 8.124;
@@ -278,8 +280,15 @@ public class Auto extends RobotBaseOp {
         super.start();
         CommandScheduler.getInstance().onCommandExecute(this::commandRunning);
 
-        Command cmds = farBluePathing();
-        //Command cmds = nearBluePathing();
+        Command cmds = null;
+        switch (getStartZone()) {
+            case NEAR:
+                cmds = nearBluePathing();
+                break;
+            case FAR:
+                cmds = farBluePathing();
+                break;
+        }
 
         CommandScheduler.getInstance().schedule(cmds);
 

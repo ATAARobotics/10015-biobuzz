@@ -39,7 +39,10 @@ public abstract class RobotBaseOp extends OpMode {
     ElapsedTime  runtime = new ElapsedTime();
 
     int loops;
-    boolean shotJustFired = false;
+
+    // targeting based on odometry
+    double geometricTargetHeading;
+    double geometricDistance;
 
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
@@ -164,9 +167,9 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void end(boolean interrupted){
             if (spindexer.isFull()) {
-                intake.stop();
                 driver.gamepad.rumble(250);
             }
+            intake.stop();
         }
     }
 
@@ -298,6 +301,8 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("elapsed", runtime.toString());
         telem.log("time", time);
         telem.log("battery", battery.getVoltage());
+        telem.log("geometric-target", geometricTargetHeading);
+        telem.log("geometric-distance", geometricDistance);
 
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);
@@ -320,8 +325,6 @@ public abstract class RobotBaseOp extends OpMode {
         spindexer.reset();
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
         drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance ? 77.5 + 8.124 : 47.5 + 8.124, 8.0984, AngleUnit.DEGREES, 90));
-        // this is the near-goal position inside the launch zone aligned along the outside edge of the launch line
-//        drive.setPosition(new Pose2D(DistanceUnit.METER, isRedAlliance ? 1.191 : -1.191, 1.457, AngleUnit.DEGREES, isRedAlliance ? -45 : 45));
         loops = 0;
     }
 
@@ -341,6 +344,9 @@ public abstract class RobotBaseOp extends OpMode {
         readControls();
         readSensors();
 
+        // We need to rotate the FTC coordinate system 90 degrees to
+        // get the pedro pathing system, and Offset by 72 inches
+
         // TODO: move to single place
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
         double robotY = drive.getPosition().getY(DistanceUnit.INCH);
@@ -351,15 +357,19 @@ public abstract class RobotBaseOp extends OpMode {
 
         double distanceA = targetX - robotX;
         double distanceB = targetY - robotY;
-        double distance = Math.sqrt((distanceA * distanceA) + (distanceB * distanceB));
+        geometricDistance = Math.sqrt((distanceA * distanceA) + (distanceB * distanceB));
+
+        geometricTargetHeading = Math.toDegrees(
+            Math.atan2(targetY - robotY, targetX - robotX)
+        );
 
         turret.robot_heading = drive.getPosition().getHeading(AngleUnit.DEGREES);
         if (turret.isLocked(time)) {
             shooter.aprilDistance = turret.april_distance;
         }
         else{
-            shooter.aprilDistance = distance;
-            turret.apriltag_heading = drive.geometricTargetHeading;
+            shooter.aprilDistance = geometricDistance;
+            turret.apriltag_heading = geometricTargetHeading;
         }
 
         // Run the CommandScheduler instance (note: this will call
