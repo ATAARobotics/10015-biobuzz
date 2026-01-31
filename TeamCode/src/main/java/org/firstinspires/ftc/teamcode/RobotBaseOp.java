@@ -38,6 +38,8 @@ public abstract class RobotBaseOp extends OpMode {
 
     ElapsedTime  runtime = new ElapsedTime();
 
+    boolean minuteWarning = false;
+    boolean endgameWarning = false;
     int loops;
 
     // targeting based on odometry
@@ -352,6 +354,14 @@ public abstract class RobotBaseOp extends OpMode {
         readControls();
         readSensors();
 
+        if (!minuteWarning && runtime.seconds() > 60){
+            minuteWarning = true;
+            operator.gamepad.rumble(300);
+        }
+        if (!endgameWarning && runtime.seconds() > 100){
+            endgameWarning = true;
+            operator.gamepad.rumble(600);
+        }
         // We need to rotate the FTC coordinate system 90 degrees to
         // get the pedro pathing system, and Offset by 72 inches
 
