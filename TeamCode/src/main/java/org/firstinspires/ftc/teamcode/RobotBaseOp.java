@@ -43,6 +43,8 @@ public abstract class RobotBaseOp extends OpMode {
     // targeting based on odometry
     double geometricTargetHeading;
     double geometricDistance;
+    // offset robot / turret centers is 66.70mm
+    private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
 
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
@@ -160,6 +162,11 @@ public abstract class RobotBaseOp extends OpMode {
                         spindexer.spinIndex();
                     }
                 }
+            }
+
+            // don't keep slamming balls into a stuck spindexer
+            if (!spindexer.atTarget() && spindexer.isStuck()) {
+                intake.stop();
             }
         }
         public boolean isFinished() {
@@ -334,7 +341,8 @@ public abstract class RobotBaseOp extends OpMode {
 
         // runs while the robot is "on" but we haven't pressed "play" yet
         turret.read_sensors(0.0);
-        telemetry.addData("Turret Servo Angle", turret.getServoAngle());
+        telemetry.addData("Turret Servo Right", turret.getServoAngle());
+        telemetry.addData("Turret Servo Left", turret.getOtherServoAngle());
         telemetry.update();
     }
 
@@ -347,29 +355,36 @@ public abstract class RobotBaseOp extends OpMode {
         // We need to rotate the FTC coordinate system 90 degrees to
         // get the pedro pathing system, and Offset by 72 inches
 
-        // TODO: move to single place
+        double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
         double robotY = drive.getPosition().getY(DistanceUnit.INCH);
+
+        // we need to offset the robot x and y values to be at the
+        // center of the turret.
+        double turretX = robotX - (Math.cos(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
+        double turretY = robotY - (Math.sin(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
+
         //double targetX = turret.target.fieldPosition.get(1);
         //double targetY = -turret.target.fieldPosition.get(0);
+        // TODO: red vs blue targets
         double targetX = 14.7;
         double targetY = 128.7;
 
-        double distanceA = targetX - robotX;
-        double distanceB = targetY - robotY;
+        double distanceA = targetX - turretX;
+        double distanceB = targetY - turretY;
         geometricDistance = Math.sqrt((distanceA * distanceA) + (distanceB * distanceB));
 
         geometricTargetHeading = Math.toDegrees(
-            Math.atan2(targetY - robotY, targetX - robotX)
+            Math.atan2(targetY - turretY, targetX - turretX)
         );
 
-        turret.robot_heading = drive.getPosition().getHeading(AngleUnit.DEGREES);
+        turret.robotHeading = robotHeading;
         if (turret.isLocked(time)) {
-            shooter.aprilDistance = turret.april_distance;
+            shooter.aprilDistance = turret.aprilDistance;
         }
         else{
             shooter.aprilDistance = geometricDistance;
-            turret.apriltag_heading = geometricTargetHeading;
+            turret.targetHeading = geometricTargetHeading;
         }
 
         // Run the CommandScheduler instance (note: this will call

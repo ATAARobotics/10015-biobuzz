@@ -37,20 +37,24 @@ public class Turret extends SubsystemBase {
     double voltage1;
     double time;
 
+    // 88.67mm
+    private final double CAMERA_TO_TURRET_CENTER_INCHES = 3.491;
+
     public PIDController turretHeadingControl;
     public double servoPower, currentTurretAngle;
     private double servoAngle;
     private double servoDelta = Double.NaN;
     private double lastServoAngle = Double.NaN;
     private double resetAngle;
-    private int servoTurnCount;
+    //private int servoTurnCount;
     double joystickAngle;
     double operatorOffset = 0;
 
     public boolean haveAprilLock;
     public double lastAprilLock;
-    public double april_bearing;
-    public double april_distance;
+    public double aprilBearing;
+    public double angleAdjust;
+    public double aprilDistance;
     public double aprilFloorDistance;
 
     private static final double GEAR_RATIO = 0.8; // 1 servo rotation equals 0.8 turret rotations
@@ -62,7 +66,8 @@ public class Turret extends SubsystemBase {
     public static double turretP = 0.0045, turretI = 0.00, turretD = 0.0002, turretF = 0.07;
     public static double TURRET_TOLERANCE = 2.5; // in degrees
     public static double TURRET_TWEAK = 2;
-    public double apriltag_heading, robot_heading;
+    public double targetHeading;  // from geometry via RobotBaseOp
+    public double robotHeading;
 
     public enum HeadingLockMode { Trig, Camera, Off, Both }
     private HeadingLockMode mode = HeadingLockMode.Off;
@@ -108,7 +113,7 @@ public class Turret extends SubsystemBase {
 
     public void faceFieldAngle(double fieldAngleDeg) {
         // Robot-relative angle: where turret must point relative to robot frame
-        double robotRelative = wrapAngle(fieldAngleDeg + operatorOffset - robot_heading);
+        double robotRelative = wrapAngle(fieldAngleDeg + operatorOffset - robotHeading);
 
         // Reuse existing robot-relative method
         faceRobotAngle(robotRelative);
@@ -141,7 +146,13 @@ public class Turret extends SubsystemBase {
     public void reset() {
         currentTurretAngle = 0;
         lastServoAngle = 0;
-        servoTurnCount = 0;
+
+        // jan 30: we aren't using more than +/- 90 degrees yet, and
+        // still having weird issues. team-lead call is to mount
+        // servos approximately in the middle, and never do "servo
+        // turn counting" (because it should then be physically
+        // impossible)
+        //servoTurnCount = 0;
         servo1.stop();
         servo2.stop();
         angleReset();
@@ -167,6 +178,11 @@ public class Turret extends SubsystemBase {
         return voltage0 / 3.3 * 360;
     }
 
+    public double getOtherServoAngle() {
+        // Read analog voltage, convert to degrees
+        return voltage1 / 3.3 * 360;
+    }
+
     public void read_sensors(double time) {
         this.time = time;
         voltage1 = encoder0.getVoltage();
@@ -179,29 +195,30 @@ public class Turret extends SubsystemBase {
         if (mode == HeadingLockMode.Off)
             faceRobotAngle(joystickAngle);
         if (mode == HeadingLockMode.Trig)
-            faceFieldAngle(apriltag_heading);
+            faceFieldAngle(targetHeading);
         if (mode == HeadingLockMode.Camera) {
             haveAprilLock = aprilTagLock();
         }
         if (mode == HeadingLockMode.Both){
             haveAprilLock = aprilTagLock();
             if(! haveAprilLock){
-                faceFieldAngle(apriltag_heading);
+                faceFieldAngle(targetHeading);
             }
         }
         // TEMP: always face our april-tag
-        //faceFieldAngle(apriltag_heading);
+        //faceFieldAngle(targetHeading);
 
         // compute where the servos are, and conclude where the turret is
         servoAngle = getServoAngle() - resetAngle;
         servoDelta = lastServoAngle - servoAngle;
         lastServoAngle = servoAngle;
 
-        // did we just "wrap around"?
-        if (servoDelta < -180) servoTurnCount--;
-        if (servoDelta > 180) servoTurnCount++;
+        // did we just "wrap around"? (see note at top)
+        //if (servoDelta < -180) servoTurnCount--;
+        //if (servoDelta > 180) servoTurnCount++;
+        //currentTurretAngle = (servoTurnCount * 360 + servoAngle)*GEAR_RATIO;
 
-        currentTurretAngle = (servoTurnCount * 360 + servoAngle)*GEAR_RATIO;
+        currentTurretAngle = servoAngle * GEAR_RATIO;
 
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
@@ -250,11 +267,12 @@ public class Turret extends SubsystemBase {
         telem.log("turret-joystick", joystickAngle);
         telem.log("turret-servo-angle", servoAngle);
         telem.log("turret-last-servo-angle", lastServoAngle);
-        telem.log("turret-servo-turn-count", servoTurnCount);
-        telem.log("turrent-servo-last", lastServoAngle);
+        //telem.log("turret-servo-turn-count", servoTurnCount);
+        telem.log("turret-servo-last", lastServoAngle);
         telem.log("turret-servo-delta", servoDelta);
-        telem.log("turret-april-bearing", april_bearing);
-        telem.log("turret-april-distance", april_distance);
+        telem.log("turret-april-bearing", aprilBearing);
+        telem.log("turret-angle-adjust", angleAdjust);
+        telem.log("turret-april-distance", aprilDistance);
         telem.log("turret-april-lock", haveAprilLock);
         telem.log("turret-last-april", lastAprilLock);
         telem.log("turret-april-mode", mode);
@@ -330,16 +348,21 @@ public class Turret extends SubsystemBase {
             return haveAprilLock;
         }
 
+        // we need to correct for the fact that our camera is not in
+        // the center of the turret.
+        //
+        // we know the offset / opposite length, and the distance /
+        // adjacent length (from the vision pipeline) so the angle
+        // adjustment is the inverse tangent of that
+
         for (AprilTagDetection tag : detections) {
             if (tag.id == target.id){
-                //drive.april_bearing = drive.getPosition().getHeading(AngleUnit.DEGREES) + tag.ftcPose.bearing;
-                faceRobotAngle(tag.ftcPose.bearing + currentTurretAngle);
-                april_bearing = tag.ftcPose.bearing;
-                april_distance = tag.ftcPose.range;
+                //drive.aprilBearing = drive.getPosition().getHeading(AngleUnit.DEGREES) + tag.ftcPose.bearing;
+                angleAdjust = Math.atan(tag.ftcPose.range / CAMERA_TO_TURRET_CENTER_INCHES);
+                faceRobotAngle(tag.ftcPose.bearing + currentTurretAngle + angleAdjust);
+                aprilBearing = tag.ftcPose.bearing;
+                aprilDistance = tag.ftcPose.range;
                 lastAprilLock = time;
-                //telem.log("bearing", tag.ftcPose.bearing);
-                //range(distance)is in inches, maybe convert to centi
-                //telem.log("distance to april tag, inches", tag.ftcPose.range);
                 return true;
             }
         }

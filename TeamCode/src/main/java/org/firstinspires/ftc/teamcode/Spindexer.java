@@ -83,7 +83,7 @@ public class Spindexer extends SubsystemBase {
         control.setTolerance(TOLERENCE_DEG);
 
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        stuckTime = new Timing.Timer(600, TimeUnit.MILLISECONDS);
+        stuckTime = new Timing.Timer(670, TimeUnit.MILLISECONDS);
 
         recentColors = new LinkedList<Boolean>();
         recentColors.add(false);
