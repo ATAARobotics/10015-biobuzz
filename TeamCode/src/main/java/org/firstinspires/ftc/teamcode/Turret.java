@@ -71,6 +71,7 @@ public class Turret extends SubsystemBase {
 
     public enum HeadingLockMode { Trig, Camera, Off, Both }
     private HeadingLockMode mode = HeadingLockMode.Off;
+    private HeadingLockMode modeOverride = HeadingLockMode.Both;
 
     // prototyping with some AprilTags, Sept 15
     AprilTagProcessor april_tags;
@@ -161,10 +162,18 @@ public class Turret extends SubsystemBase {
     }
 
     public void autoLock() {
-        mode = HeadingLockMode.Both;
+        mode = modeOverride;
      //   mode = HeadingLockMode.Camera;
     }
 
+    public void toggleOverride(){
+        if (modeOverride == HeadingLockMode.Both){
+            modeOverride = HeadingLockMode.Trig;
+        }
+        else if (modeOverride == HeadingLockMode.Trig){
+            modeOverride = HeadingLockMode.Both;
+        }
+    }
     public void noLock() {
         mode = HeadingLockMode.Off;
     }
@@ -194,6 +203,7 @@ public class Turret extends SubsystemBase {
         // do some math based on which "mode" we're in
         if (mode == HeadingLockMode.Off)
             faceRobotAngle(joystickAngle);
+
         if (mode == HeadingLockMode.Trig)
             faceFieldAngle(targetHeading);
         if (mode == HeadingLockMode.Camera) {
@@ -306,13 +316,8 @@ public class Turret extends SubsystemBase {
             // - "use april tag if available, else trig"
             // - "off (lock at 0)"
             if (operator.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
-                if (mode == HeadingLockMode.Off) {
-                    mode = HeadingLockMode.Both;
-                } else {
-                    mode = HeadingLockMode.Off;
-                    joystickAngle = 0;
-                    // reset operator desired angle when switching mode
-                }
+                toggleOverride();
+
             }
 
             // decide what to do based on sensors and human inputs from controller
