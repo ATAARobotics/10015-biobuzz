@@ -277,8 +277,9 @@ public abstract class Auto extends RobotBaseOp {
 
     @Override
     public void start() {
+        // we must run this _before_ the "pathing" options because
+        // those set the start-position of the robot
         super.start();
-        CommandScheduler.getInstance().onCommandExecute(this::commandRunning);
 
         Command cmds = null;
         switch (getStartZone()) {
@@ -298,10 +299,6 @@ public abstract class Auto extends RobotBaseOp {
             spindexer.slots[1] = Spindexer.SlotContent.Purple;
             spindexer.slots[2] = Spindexer.SlotContent.Purple;
         }
-    }
-
-    public void commandRunning(Command c) {
-        _lastCommandRun = c;
     }
 
     @Override
