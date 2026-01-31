@@ -364,7 +364,7 @@ public class Turret extends SubsystemBase {
             if (tag.id == target.id){
                 //drive.aprilBearing = drive.getPosition().getHeading(AngleUnit.DEGREES) + tag.ftcPose.bearing;
                 angleAdjust = Math.atan(tag.ftcPose.range / CAMERA_TO_TURRET_CENTER_INCHES);
-                faceRobotAngle(tag.ftcPose.bearing + currentTurretAngle + angleAdjust);
+                faceRobotAngle(tag.ftcPose.bearing + currentTurretAngle - angleAdjust);
                 aprilBearing = tag.ftcPose.bearing;
                 aprilDistance = tag.ftcPose.range;
                 lastAprilLock = time;
