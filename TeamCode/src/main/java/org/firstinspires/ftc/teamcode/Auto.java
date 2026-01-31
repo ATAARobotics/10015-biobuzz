@@ -26,6 +26,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import kotlinx.coroutines.Delay;
+
 
 public abstract class Auto extends RobotBaseOp {
 
@@ -113,6 +115,21 @@ public abstract class Auto extends RobotBaseOp {
         }
     }
 
+    class Delay extends CommandBase {
+        double seconds;
+        double start;
+        public Delay(double s) {
+            seconds = s;
+        }
+        public void initialize(){
+            start = time;
+        }
+        public boolean isFinished(){
+            return (time - start) > seconds;
+        }
+    }
+
+
     private Command farBluePathing() {
         drive.setPosition(
             new Pose2D(
@@ -167,7 +184,10 @@ public abstract class Auto extends RobotBaseOp {
             pathBetween(blueFarShoot, wallFar, 1.0),
             new ParallelRaceGroup(
                 new AutoIntake(),
-                pathBetween(wallFar, wallClose, 0.55)
+                new SequentialCommandGroup(
+                        pathBetween(wallFar, wallClose, 0.55),
+                        new Delay(1.0)
+                )
             ),
             pathBetween(wallClose, blueFarShoot, 1.0),
             new AutoOuttake()
@@ -253,7 +273,7 @@ public abstract class Auto extends RobotBaseOp {
 
     @Override
     public void init_loop() {
-        clearCache();
+        super.init_loop();
         readControls();
 
         if (operator.wasJustPressed(GamepadKeys.Button.A)) {

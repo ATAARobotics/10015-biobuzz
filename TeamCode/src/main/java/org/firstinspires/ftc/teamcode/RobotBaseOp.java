@@ -167,9 +167,9 @@ public abstract class RobotBaseOp extends OpMode {
             }
 
             // don't keep slamming balls into a stuck spindexer
-            if (!spindexer.atTarget() && spindexer.isStuck()) {
-                intake.stop();
-            }
+         //   if (!spindexer.atTarget() && spindexer.isStuck()) {
+          //      intake.stop();
+         //   }
         }
         public boolean isFinished() {
             return state == InState.DONE;
@@ -177,8 +177,9 @@ public abstract class RobotBaseOp extends OpMode {
         public void end(boolean interrupted){
             if (spindexer.isFull()) {
                 driver.gamepad.rumble(250);
+                intake.stop();
             }
-            intake.stop();
+
         }
     }
 
