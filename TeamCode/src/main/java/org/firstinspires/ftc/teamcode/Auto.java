@@ -235,7 +235,7 @@ public abstract class Auto extends RobotBaseOp {
                 pathBetween(spikeStart, spikeStart3, 1.0),
                 new ParallelRaceGroup(
                         new AutoIntake(),
-                        pathBetween(spikeStart3, spikeEnd3, 0.45)
+                        pathBetween(spikeStart3, spikeEnd3, 0.35)
                 )
         );
        Pose lastSpike = spikeEnd3;
@@ -256,9 +256,10 @@ public abstract class Auto extends RobotBaseOp {
                 pathBetween(blueNearShoot, spikeStart2, 1.0),
                 new ParallelRaceGroup(
                         new AutoIntake(),
-                        pathBetween(spikeStart2, spikeEnd2, 0.45)
+                        pathBetween(spikeStart2, spikeEnd2, 0.35)
                 ),
-                pathBetween(spikeEnd2, blueNearShoot, 1.0),
+                pathBetween(spikeEnd2, spikeStart2, 1.0),
+                pathBetween(spikeStart2, blueNearShoot, 1.0),
                 new AutoOuttake()
         );
 
