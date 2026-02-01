@@ -129,6 +129,14 @@ public abstract class Auto extends RobotBaseOp {
         }
     }
 
+    private Pose blueToRed(Pose blue){
+        double h = 180 - blue.getHeading();
+        if (h < 0) {
+            h = h + 360;
+        }
+        Pose red = new Pose(144 - blue.getX(), blue.getY(), h);
+        return red;
+    }
 
     private Command farBluePathing() {
         drive.setPosition(
