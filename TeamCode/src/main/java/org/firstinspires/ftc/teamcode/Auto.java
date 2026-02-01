@@ -320,8 +320,9 @@ public abstract class Auto extends RobotBaseOp {
         if (whenOpenGate == 0) openDescription = "Never";
         if (whenOpenGate == 1) openDescription = "After Spike3 pickup";
 
-        telemetry.addData("Preloads (A to toggle)", usePreloads);
-        telemetry.addData("Open Gate (B to toggle)", openDescription);
+
+        telemetry.addData("Preloads (Dpad Up to toggle)", usePreloads);
+        telemetry.addData("Open Gate (Dpad Down to toggle)", openDescription);
         telemetry.update();
     }
 
