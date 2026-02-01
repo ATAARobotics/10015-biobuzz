@@ -2,13 +2,11 @@ package org.firstinspires.ftc.teamcode;
 
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
-import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -17,8 +15,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
-import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 
 import java.util.List;
 
@@ -261,24 +257,30 @@ public abstract class RobotBaseOp extends OpMode {
     }
 
 
-    public class ToggleShoot extends CommandBase{
-        public ToggleShoot() {
+    public class PrepareToShoot extends CommandBase{
+        public PrepareToShoot() {
             addRequirements(shooter);
             addRequirements(turret);
         }
 
         public void initialize() {
-            if (shooter.autoRpm) {
-                shooter.manualShootRpm();
-                turret.noLock();
-            } else {
                 shooter.autoShootRpm();
                 turret.autoLock();
-            }
         }
         public boolean isFinished(){
             return true;
         }
+    }
+    public class UnShoot extends CommandBase{
+        public UnShoot(){
+            addRequirements(shooter);
+            addRequirements(turret);
+        }
+        public void initialize(){
+            shooter.manualShootRpm();
+            turret.noLock();
+        }
+        public boolean isFinished(){return true;}
     }
 
     protected void readSensors() {

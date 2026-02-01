@@ -315,7 +315,7 @@ public class Turret extends SubsystemBase {
             // for ease-of-use we have just two modes:
             // - "use april tag if available, else trig"
             // - "off (lock at 0)"
-            if (operator.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+            if (operator.wasJustPressed(GamepadKeys.Button.B)) {
                 toggleOverride();
 
             }
