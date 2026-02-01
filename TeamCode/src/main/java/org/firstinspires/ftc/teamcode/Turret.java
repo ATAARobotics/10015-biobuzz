@@ -160,6 +160,9 @@ public class Turret extends SubsystemBase {
         faceRobotAngle(0);
         mode = HeadingLockMode.Off;
     }
+    public void setAngle(double a){
+        resetAngle = a;
+    }
 
     public void autoLock() {
         mode = modeOverride;
