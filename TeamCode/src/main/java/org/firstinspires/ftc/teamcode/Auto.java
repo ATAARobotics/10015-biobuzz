@@ -88,7 +88,17 @@ public abstract class Auto extends RobotBaseOp {
 
     private Command _lastCommandRun = null;
 
-    public Command pathBetween(Pose begin, Pose end, double speed) {
+    private Pose convert(Pose blue){
+        if (getAlliance() == Alliance.BLUE){
+            return blue;
+        }
+        else {
+            return blueToRed(blue);
+        }
+    }
+    public Command pathBetween(Pose b, Pose e, double speed) {
+        Pose begin = convert(b);
+        Pose end = convert(e);
         PathChain p = new PathBuilder(follower)
             .addPath(new BezierLine(begin, end))
             .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
@@ -138,17 +148,18 @@ public abstract class Auto extends RobotBaseOp {
         return red;
     }
 
-    private Command farBluePathing() {
+    private Command farPathing() {
+        Pose start = convert(blueFarStart);
         drive.setPosition(
             new Pose2D(
                 DistanceUnit.INCH,
-                blueFarStart.getX(),
-                blueFarStart.getY(),
+                start.getX(),
+                start.getY(),
                 AngleUnit.RADIANS,
-                blueFarStart.getHeading()
+                start.getHeading()
             )
         );
-        follower.setStartingPose(blueFarStart);
+        follower.setStartingPose(start);
 
         SequentialCommandGroup auto = new SequentialCommandGroup();
 
@@ -221,8 +232,18 @@ public abstract class Auto extends RobotBaseOp {
 
         return auto;
     }
-    private Command nearBluePathing() {
-        follower.setStartingPose(blueNearStart);
+    private Command nearPathing() {
+        Pose start = convert(blueNearStart);
+        drive.setPosition(
+                new Pose2D(
+                        DistanceUnit.INCH,
+                        start.getX(),
+                        start.getY(),
+                        AngleUnit.RADIANS,
+                        start.getHeading()
+                )
+        );
+        follower.setStartingPose(start);
 
         SequentialCommandGroup auto = new SequentialCommandGroup();
 
@@ -313,10 +334,10 @@ public abstract class Auto extends RobotBaseOp {
         Command cmds = null;
         switch (getStartZone()) {
             case NEAR:
-                cmds = nearBluePathing();
+                cmds = nearPathing();
                 break;
             case FAR:
-                cmds = farBluePathing();
+                cmds = farPathing();
                 break;
         }
 
