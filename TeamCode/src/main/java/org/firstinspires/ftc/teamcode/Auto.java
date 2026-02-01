@@ -306,10 +306,10 @@ public abstract class Auto extends RobotBaseOp {
         super.init_loop();
         readControls();
 
-        if (operator.wasJustPressed(GamepadKeys.Button.A)) {
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
             usePreloads = !usePreloads;
         }
-        if (operator.wasJustPressed(GamepadKeys.Button.B)) {
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
             whenOpenGate += 1;
             if (whenOpenGate > 1) {
                 whenOpenGate = 0;
