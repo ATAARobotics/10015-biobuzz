@@ -140,6 +140,12 @@ public abstract class RobotBaseOp extends OpMode {
                     }
                 }
             } else if (state == InState.SPIN) {
+                if (spindexer.isStuck()){
+                    intake.lowPower();
+                }
+                else {
+                    intake.fullPower();
+                }
                 if (spindexer.atTarget()) {
                     state = InState.INTAKE;
                     intake.grab();
@@ -346,9 +352,9 @@ public abstract class RobotBaseOp extends OpMode {
 
         // runs while the robot is "on" but we haven't pressed "play" yet
         turret.read_sensors(0.0);
-        telemetry.addData("Turret Servo Right", turret.getServoAngle());
+      /*  telemetry.addData("Turret Servo Right", turret.getServoAngle());
         telemetry.addData("Turret Servo Left", turret.getOtherServoAngle());
-        telemetry.update();
+        telemetry.update(); */
     }
 
     @Override
@@ -380,8 +386,11 @@ public abstract class RobotBaseOp extends OpMode {
         //double targetX = turret.target.fieldPosition.get(1);
         //double targetY = -turret.target.fieldPosition.get(0);
         // TODO: red vs blue targets
-        double targetX = 14.7;
+        double targetX = 1;
         double targetY = 128.7;
+        if (getAlliance() == Alliance.RED){
+            targetX = 144 - targetX;
+        }
 
         double distanceA = targetX - turretX;
         double distanceB = targetY - turretY;

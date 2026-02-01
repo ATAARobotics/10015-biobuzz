@@ -12,6 +12,7 @@ public class Intake extends SubsystemBase {
     private MotorEx intake;
     public enum IntakeMode { In, Out, Idle }
     private IntakeMode mode = IntakeMode.Idle;
+    private double power = 1.0;
     public Intake (HardwareMap hardwareMap){
         intake = new MotorEx(hardwareMap, "intake");
         intake.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
@@ -20,6 +21,7 @@ public class Intake extends SubsystemBase {
         mode = IntakeMode.Idle;
     }
     public void grab(){
+        power = 1.0;
         mode = IntakeMode.In;
     }
     public void stop(){
@@ -31,6 +33,12 @@ public class Intake extends SubsystemBase {
     }
 
     public void read_sensors(double time) {
+    }
+    public void lowPower(){
+        power = 0.4;
+    }
+    public void fullPower(){
+        power = 1.0;
     }
 
     @Override

@@ -39,7 +39,7 @@ public abstract class Auto extends RobotBaseOp {
     public Follower follower;
     double xOffset = 8.124;
     double yOffset = 8.0984;
-    private boolean usePreloads = false;
+    private boolean usePreloads = true;
     private int whenOpenGate = 0;
 
     private final Pose blueFarStart = new Pose(47.5 + xOffset, yOffset, Math.toRadians(90));
@@ -140,11 +140,11 @@ public abstract class Auto extends RobotBaseOp {
     }
 
     private Pose blueToRed(Pose blue){
-        double h = 180 - blue.getHeading();
+        double h = 180 - Math.toDegrees(blue.getHeading());
         if (h < 0) {
             h = h + 360;
         }
-        Pose red = new Pose(144 - blue.getX(), blue.getY(), h);
+        Pose red = new Pose(144 - blue.getX(), blue.getY(), Math.toRadians(h));
         return red;
     }
 
