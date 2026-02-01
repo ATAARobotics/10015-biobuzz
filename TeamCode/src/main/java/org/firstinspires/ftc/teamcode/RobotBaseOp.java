@@ -135,7 +135,7 @@ public abstract class RobotBaseOp extends OpMode {
                         state = InState.SORT;
                     } else {
                         state = InState.SPIN;
-//                        intake.stop();
+                        intake.lowPower();
                         spindexer.spinIndex();
                     }
                 }

@@ -19,11 +19,13 @@ public class TeleOpNoResetRed extends TeleOp {
         float y = prefs.getFloat("y", 0.0f);
         float h = prefs.getFloat("heading", 0.0f);
         drive.setPosition(new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, h));
-        float spin = prefs.getFloat("spindex", 0.0f);
-        spindexer.targetAngle = (int)spin;
+        float spincurrent = prefs.getFloat("spindex-current", 0.0f);
+        float spintarget = prefs.getFloat("spindex-target", 0.0f);
+        spindexer.targetAngle = (int)spintarget;
+        spindexer.currentAngle = (int)spincurrent;
         float turretAngle = prefs.getFloat("turret", 0.0f);
-        turret.setAngle(turretAngle);
-        //turret.angleReset();
+        //turret.setServoAngle(turretAngle);
+        turret.angleReset();
         //spindexer.reset();
     }
 }
