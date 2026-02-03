@@ -152,13 +152,16 @@ public abstract class RobotBaseOp extends OpMode {
                     spindexer.spinModeIndex();
                 }
             } else if (state == InState.SORT) {
-                // for now we just shoot green first, always .. but
-                // we'll want it to be first, second or last depending
-                // on the Obelisk
                 if (spindexer.atTarget()) {
                     int s = spindexer.currentShootSlot();
                     // if we have no green, or we're currently going
                     // to shoot a green next, we're done.
+                    if (turret.pattern != -1){
+                        s = s - turret.pattern;
+                        if (s < 0){
+                            s = s + 3;
+                        }
+                    }
                     if (!spindexer.haveOneGreen() || spindexer.slots[s] == Spindexer.SlotContent.Green) {
                         state = InState.DONE;
                         spindexer.spinModeIndex();

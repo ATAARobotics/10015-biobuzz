@@ -61,7 +61,7 @@ public class Turret extends SubsystemBase {
     // tuned december 11, bare servos for PID, attach turret for F
     //public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
     // tuned dec 22 from first principals
-    //////public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
+    /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
     public static double turretP = 0.0045, turretI = 0.00, turretD = 0.0002, turretF = 0.07;
     public static double TURRET_TOLERANCE = 4; // in degrees
@@ -69,7 +69,8 @@ public class Turret extends SubsystemBase {
     public double targetHeading;  // from geometry via RobotBaseOp
     public double robotHeading;
 
-    public enum HeadingLockMode { Trig, Camera, Off, Both }
+    public enum HeadingLockMode {Trig, Camera, Off, Both}
+
     private HeadingLockMode mode = HeadingLockMode.Off;
     private HeadingLockMode modeOverride = HeadingLockMode.Both;
 
@@ -77,6 +78,7 @@ public class Turret extends SubsystemBase {
     AprilTagProcessor april_tags;
     VisionPortal portal;
     public AprilTagMetadata target;
+    int pattern = -1;
 
 
 //    private static FileWriter writer;
@@ -88,7 +90,7 @@ public class Turret extends SubsystemBase {
         servo2 = new CRServo(hardwareMap, "right_turret");
         encoder0 = hardwareMap.get(AnalogInput.class, "left_encoder");
         encoder1 = hardwareMap.get(AnalogInput.class, "right_encoder");
-        turretHeadingControl = new PIDController(turretP,turretI,turretD);
+        turretHeadingControl = new PIDController(turretP, turretI, turretD);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
 //        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
         reset();
@@ -104,7 +106,7 @@ public class Turret extends SubsystemBase {
                 .build();
 
         portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class,"elp"))
+                .setCamera(hardwareMap.get(WebcamName.class, "elp"))
                 .addProcessor(april_tags)
                 .setCameraResolution(new Size(1024, 768))
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
@@ -137,13 +139,13 @@ public class Turret extends SubsystemBase {
     // f = 0.07
     // i = 0.0
     // p = 0.005
+
     /// decent behavior at -90 and +90 but jiggled around a lot at about "0"
     /// looked like P oscillations, but the servo was right near it's "flip" angle
     /// (and then it did the freak-out thing and went all the way around)
     // pidf = 0.0055, 0, 0.0005, 0.07
     // f "just below moving" = 0.11
     // pidf = 0.003, 0, 0.07, 0.0   <-- seems pretty good?
-
     public void reset() {
         currentTurretAngle = 0;
         lastServoAngle = 0;
@@ -162,7 +164,7 @@ public class Turret extends SubsystemBase {
     }
 
     // this is used by "teleop no-reset" during auto -> teleop transition
-    public void setServoAngle(double a){
+    public void setServoAngle(double a) {
         servo1.stop();
         servo2.stop();
         resetAngle = a;
@@ -172,17 +174,17 @@ public class Turret extends SubsystemBase {
 
     public void autoLock() {
         mode = modeOverride;
-     //   mode = HeadingLockMode.Camera;
+        //   mode = HeadingLockMode.Camera;
     }
 
-    public void toggleOverride(){
-        if (modeOverride == HeadingLockMode.Both){
+    public void toggleOverride() {
+        if (modeOverride == HeadingLockMode.Both) {
             modeOverride = HeadingLockMode.Trig;
-        }
-        else if (modeOverride == HeadingLockMode.Trig){
+        } else if (modeOverride == HeadingLockMode.Trig) {
             modeOverride = HeadingLockMode.Both;
         }
     }
+
     public void noLock() {
         mode = HeadingLockMode.Off;
     }
@@ -209,6 +211,7 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
+        processAprilTags();
         // do some math based on which "mode" we're in
         if (mode == HeadingLockMode.Off)
             faceRobotAngle(joystickAngle);
@@ -218,9 +221,9 @@ public class Turret extends SubsystemBase {
         if (mode == HeadingLockMode.Camera) {
             haveAprilLock = aprilTagLock();
         }
-        if (mode == HeadingLockMode.Both){
+        if (mode == HeadingLockMode.Both) {
             haveAprilLock = aprilTagLock();
-            if(! haveAprilLock){
+            if (!haveAprilLock) {
                 faceFieldAngle(targetHeading);
             }
         }
@@ -241,7 +244,7 @@ public class Turret extends SubsystemBase {
 
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
-        servoPower = turretHeadingControl.calculate(currentTurretAngle) + turretF*Math.signum(turretHeadingControl.getPositionError());
+        servoPower = turretHeadingControl.calculate(currentTurretAngle) + turretF * Math.signum(turretHeadingControl.getPositionError());
         if (servoPower > 1.0) servoPower = 1.0;
         if (servoPower < -1.0) servoPower = -1.0;
         servo1.set(servoPower);
@@ -249,8 +252,8 @@ public class Turret extends SubsystemBase {
 //        try { writer.write(servoAngle+"\t"+currentTurretAngle+"\t"+delta+"\n"); } catch (IOException e) { e.printStackTrace(); }
     }
 
-    public boolean isLocked(double time){
-        if (haveAprilLock || (time - lastAprilLock) < 0.3){
+    public boolean isLocked(double time) {
+        if (haveAprilLock || (time - lastAprilLock) < 0.3) {
             return true;
         }
         return false;
@@ -264,12 +267,13 @@ public class Turret extends SubsystemBase {
             angle += 360;
         return angle;
     }
-/*
-    public boolean isFinished() {
-        // check if the target is reached
-        return turretHeadingControl.atSetPoint();
-    }
- */
+
+    /*
+        public boolean isFinished() {
+            // check if the target is reached
+            return turretHeadingControl.atSetPoint();
+        }
+     */
     public void stop() {
         servo1.stop();
         servo2.stop();
@@ -297,7 +301,8 @@ public class Turret extends SubsystemBase {
         telem.log("turret-april-mode", mode);
         telem.log("turret-april-fps", portal.getFps());
         ExposureControl ec = portal.getCameraControl(ExposureControl.class);
-        telem.log("camera-exposure",ec.getExposure(TimeUnit.MILLISECONDS));
+        telem.log("camera-exposure", ec.getExposure(TimeUnit.MILLISECONDS));
+        telem.log("turret-obelisk", pattern);
 
         telem.logDrivers("Heading Lock Mode", mode);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
@@ -340,46 +345,53 @@ public class Turret extends SubsystemBase {
             if (Math.hypot(rx, ry) > 0.8) {
                 joystickAngle = Math.toDegrees(Math.atan2(rx, ry));
             }
-            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
                 operatorOffset += TURRET_TWEAK;
                 //joystickAngle = 90;
             }
-            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
                 operatorOffset -= TURRET_TWEAK;
                 //joystickAngle = -90;
             }
-            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
+            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
                 operatorOffset = 0;
             }
         }
     }
 
     private boolean aprilTagLock() {
+        if (time - lastAprilLock > 0.3) {
+            faceRobotAngle(aprilBearing + currentTurretAngle - angleAdjust);
+            return true;
+        }
+        return false;
+    }
+
+    private void processAprilTags() {
         List<AprilTagDetection> detections = april_tags.getFreshDetections();
         if (detections == null) {
             // there are no _fresh_ detections, but we may have had a
             // recent lock
-            return haveAprilLock;
+            return;
         }
 
-        // we need to correct for the fact that our camera is not in
-        // the center of the turret.
-        //
-        // we know the offset / opposite length, and the distance /
-        // adjacent length (from the vision pipeline) so the angle
-        // adjustment is the inverse tangent of that
-
         for (AprilTagDetection tag : detections) {
-            if (tag.id == target.id){
+            if (tag.id == target.id) {
                 //drive.aprilBearing = drive.getPosition().getHeading(AngleUnit.DEGREES) + tag.ftcPose.bearing;
                 angleAdjust = Math.atan(tag.ftcPose.range / CAMERA_TO_TURRET_CENTER_INCHES);
-                faceRobotAngle(tag.ftcPose.bearing + currentTurretAngle - angleAdjust);
                 aprilBearing = tag.ftcPose.bearing;
                 aprilDistance = tag.ftcPose.range;
                 lastAprilLock = time;
-                return true;
+            }
+            else if (tag.id == 21 && pattern == -1) {
+                pattern = 0;
+            }
+            else if (tag.id == 22 && pattern == -1) {
+                pattern = 1;
+            }
+            else if (tag.id == 23 && pattern == -1) {
+                pattern = 2;
             }
         }
-        return false;
     }
 }
