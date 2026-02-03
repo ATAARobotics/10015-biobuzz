@@ -400,7 +400,7 @@ public abstract class RobotBaseOp extends OpMode {
         //double targetX = turret.target.fieldPosition.get(1);
         //double targetY = -turret.target.fieldPosition.get(0);
         // TODO: red vs blue targets
-        double targetX = 1;
+        double targetX = 10;
         double targetY = 128.7;
         if (getAlliance() == Alliance.RED){
             targetX = 144 - targetX;
