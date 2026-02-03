@@ -24,8 +24,8 @@ public class TeleOpNoResetRed extends TeleOp {
         spindexer.targetAngle = (int)spintarget;
         spindexer.currentAngle = (int)spincurrent;
         float turretAngle = prefs.getFloat("turret", 0.0f);
-        //turret.setServoAngle(turretAngle);
-        turret.angleReset();
+        turret.setServoAngle(turretAngle);
+        //turret.angleReset();
         //spindexer.reset();
     }
 }

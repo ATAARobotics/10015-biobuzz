@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.arcrobotics.ftclib.command.CommandScheduler;
-import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.bylazar.configurables.annotations.Configurable;
 
 @Configurable
