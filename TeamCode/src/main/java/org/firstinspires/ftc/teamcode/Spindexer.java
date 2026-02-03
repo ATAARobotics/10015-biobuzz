@@ -72,7 +72,9 @@ public class Spindexer extends SubsystemBase {
     public static double DISTANCE_THRESHOLD = 20.0;
     public static int DISTANCE_WINDOW = 3;
     // tuned December 10 with latest hardware rev (target collar, ramps, etc)
-    public static PIDCoefficients pid = new PIDCoefficients(0.006, 0.02, 0.0003);
+    //public static PIDCoefficients pid = new PIDCoefficients(0.006, 0.02, 0.0003);
+    // more aggressive feb 2
+    public static PIDCoefficients pid = new PIDCoefficients(0.008, 0.02, 0.0003);
     public static double pid_f = 0.026; // tuned at 0.03 but that twitched a little
 
     public Spindexer (HardwareMap hardwareMap) {
