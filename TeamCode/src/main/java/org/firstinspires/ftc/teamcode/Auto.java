@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.pedropathing.geometry.BezierCurve;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -73,8 +74,8 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose spikeEnd3 = new Pose (10.4 + 7.0, 35.0 + (2 * 23.5), Math.toRadians(180));
 
     // human-player preloads
-    private final Pose wallFar = new Pose(xOffset + 3, 23.6 + yOffset, Math.toRadians(250));
-    private final Pose wallClose = new Pose(xOffset + 3, yOffset + 3, Math.toRadians(250));
+    private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(250));
+    private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(250));
 
     // trying a different human-player routing
     private final Pose wallDirectStart = new Pose(xOffset + 1, yOffset + 15, Math.toRadians(240));
@@ -394,8 +395,7 @@ public abstract class Auto extends RobotBaseOp {
         editor.putFloat("x", (float)drive.getPosition().getX(DistanceUnit.INCH));
         editor.putFloat("y", (float)drive.getPosition().getY(DistanceUnit.INCH));
         editor.putFloat("turret", (float)turret.getServoAngle());
-        editor.putFloat("spindex-target", (float)spindexer.targetAngle);
-        editor.putFloat("spindex-current", (float)spindexer.currentAngle);
+        editor.putInt("spindex-target", spindexer.targetAngle);
         editor.apply();
         drive.stop();
         shooter.stop();
