@@ -148,6 +148,10 @@ public abstract class Auto extends RobotBaseOp {
         return red;
     }
 
+    //
+    // far-zone auto pathing
+    //
+
     private Command farPathing() {
         Pose start = convert(blueFarStart);
         drive.setPosition(
@@ -162,6 +166,10 @@ public abstract class Auto extends RobotBaseOp {
         follower.setStartingPose(start);
 
         SequentialCommandGroup auto = new SequentialCommandGroup();
+
+        if (usePreloads) {
+            auto.addCommands(new PrepareToShoot());
+        }
 
         auto.addCommands(
             pathBetween(blueFarStart, blueFarShoot, 1.0)
@@ -194,6 +202,8 @@ public abstract class Auto extends RobotBaseOp {
                 new AutoIntake(),
                 pathBetween(spikeStart1, spikeEnd1, 0.45)
             ),
+            new PrepareToShoot(),
+            new SoftIntake(),
             pathBetween(spikeEnd1, blueFarShoot, 1.0),
             new AutoOuttake()
         );
@@ -204,10 +214,12 @@ public abstract class Auto extends RobotBaseOp {
             new ParallelRaceGroup(
                 new AutoIntake(),
                 new SequentialCommandGroup(
-                        pathBetween(wallFar, wallClose, 0.55),
-                        new Delay(1.0)
+                    pathBetween(wallFar, wallClose, 0.55),
+                    new Delay(1.0)
                 )
             ),
+            new PrepareToShoot(),
+            new SoftIntake(),
             pathBetween(wallClose, blueFarShoot, 1.0),
             new AutoOuttake()
         );
@@ -232,6 +244,12 @@ public abstract class Auto extends RobotBaseOp {
 
         return auto;
     }
+
+
+    //
+    // near-zone auto pathing
+    //
+
     private Command nearPathing() {
         Pose start = convert(blueNearStart);
         drive.setPosition(
@@ -251,6 +269,7 @@ public abstract class Auto extends RobotBaseOp {
         Pose spikeStart = blueNearShoot;
         if (usePreloads) {
             auto.addCommands(
+                new PrepareToShoot(),
                 pathBetween(blueNearStart, blueNearShoot, 1.0),
                 new AutoOuttake()
                 );
@@ -277,6 +296,7 @@ public abstract class Auto extends RobotBaseOp {
         }
         // shooting spike three after opening gate
         auto.addCommands(
+                new PrepareToShoot(),
                 pathBetween(lastSpike, blueNearShoot, 1.0),
                 new AutoOuttake()
         );
@@ -288,6 +308,7 @@ public abstract class Auto extends RobotBaseOp {
                         pathBetween(spikeStart2, spikeEnd2, 0.35)
                 ),
                 pathBetween(spikeEnd2, spikeStart2, 1.0),
+                new PrepareToShoot(),
                 pathBetween(spikeStart2, blueNearShoot, 1.0),
                 new AutoOuttake()
         );

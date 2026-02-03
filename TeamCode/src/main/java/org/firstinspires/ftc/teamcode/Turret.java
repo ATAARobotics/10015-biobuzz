@@ -161,6 +161,7 @@ public class Turret extends SubsystemBase {
         mode = HeadingLockMode.Off;
     }
 
+    // this is used by "teleop no-reset" during auto -> teleop transition
     public void setServoAngle(double a){
         servo1.stop();
         servo2.stop();
