@@ -57,6 +57,7 @@ public class Shooter extends SubsystemBase {
     static double HOOD_COEF = 0.0732;
     static double HOOD_EXP = 0.4768;
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
+    public static double FAR_DISTANCE = 100.0;
 
     public static double BAND = 10;
     public static double BAND_RAMP_UP = 200;
@@ -161,6 +162,13 @@ public class Shooter extends SubsystemBase {
          //   targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
             targetHood = -0.00006 * aprilDistance * aprilDistance + 0.0167 * aprilDistance - 0.4328;
         }
+
+        // TODO we are special-casing the far-zone for now and not using the regression algorithm
+        if (aprilDistance > FAR_DISTANCE) {
+            targetHood = 0.567;
+            targetRpm = 4900;
+        }
+
         if (MANUAL_RPM > 1.0 ){//&& targetRpm > 0.0) {
             targetRpm = MANUAL_RPM;
         }

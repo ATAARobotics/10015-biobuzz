@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Size;
 
+import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
@@ -32,6 +33,9 @@ public class Turret extends SubsystemBase {
     private final CRServo servo1, servo2;
     AnalogInput encoder0;
     AnalogInput encoder1;
+    Servo motifLight;
+
+    double PINK = 0.71;
 
     double voltage0;
     double voltage1;
@@ -49,6 +53,7 @@ public class Turret extends SubsystemBase {
     //private int servoTurnCount;
     double joystickAngle;
     double operatorOffset = 0;
+    double obeliskHeading;
 
     public boolean haveAprilLock;
     public double lastAprilLock;
@@ -69,10 +74,11 @@ public class Turret extends SubsystemBase {
     public double targetHeading;  // from geometry via RobotBaseOp
     public double robotHeading;
 
-    public enum HeadingLockMode {Trig, Camera, Off, Both}
+    public enum HeadingLockMode {Trig, Camera, Off, Both, Obelisk}
 
     private HeadingLockMode mode = HeadingLockMode.Off;
-    private HeadingLockMode modeOverride = HeadingLockMode.Both;
+    private HeadingLockMode modeOverride = HeadingLockMode.Trig;
+    private boolean modeJustChanged = false;
 
     // prototyping with some AprilTags, Sept 15
     AprilTagProcessor april_tags;
@@ -90,6 +96,9 @@ public class Turret extends SubsystemBase {
         servo2 = new CRServo(hardwareMap, "right_turret");
         encoder0 = hardwareMap.get(AnalogInput.class, "left_encoder");
         encoder1 = hardwareMap.get(AnalogInput.class, "right_encoder");
+
+        motifLight = hardwareMap.get(Servo.class, "light");
+
         turretHeadingControl = new PIDController(turretP, turretI, turretD);
         turretHeadingControl.setTolerance(TURRET_TOLERANCE);
 //        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
@@ -129,7 +138,15 @@ public class Turret extends SubsystemBase {
         turretHeadingControl.setSetPoint(angle);
     }
 
+    public void faceObelisk(double angle) {
+        mode = HeadingLockMode.Obelisk;
+        obeliskHeading = angle;
+        modeJustChanged = true;
+    }
+
     public boolean atTargetAngle() {
+//        if (modeJustChanged)
+//            return false;
         return turretHeadingControl.atSetPoint();
     }
 
@@ -174,6 +191,7 @@ public class Turret extends SubsystemBase {
 
     public void autoLock() {
         mode = modeOverride;
+        modeJustChanged = true;
         //   mode = HeadingLockMode.Camera;
     }
 
@@ -212,7 +230,12 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic() {
         processAprilTags();
+        modeJustChanged = false;
         // do some math based on which "mode" we're in
+
+        if (mode == HeadingLockMode.Obelisk)
+            faceFieldAngle(obeliskHeading);
+
         if (mode == HeadingLockMode.Off)
             faceRobotAngle(joystickAngle);
 
@@ -229,6 +252,23 @@ public class Turret extends SubsystemBase {
         }
         // TEMP: always face our april-tag
         //faceFieldAngle(targetHeading);
+
+        if (haveAprilLock) {
+            motifLight.setPosition(PINK);
+        } else {
+            motifLight.setPosition(0.0);
+        }
+
+        // maybe only in auto?
+        if (false) {
+            // show the operator what motif we detected
+            if (pattern < 0) {
+                motifLight.setPosition(0.0);
+            } else {
+                // TODO: change color depending on motif pattern
+                motifLight.setPosition(PINK);
+            }
+        }
 
         // compute where the servos are, and conclude where the turret is
         servoAngle = getServoAngle() - resetAngle;
@@ -304,7 +344,16 @@ public class Turret extends SubsystemBase {
         telem.log("camera-exposure", ec.getExposure(TimeUnit.MILLISECONDS));
         telem.log("turret-obelisk", pattern);
 
+        String logPattern = "unknown";
+        if (pattern == 0) {
+            logPattern = "G P P";
+        } else if (pattern == 1) {
+            logPattern = "P G P";
+        } else if (pattern == 2) {
+            logPattern = "P P G";
+        }
         telem.logDrivers("Heading Lock Mode", mode);
+        telem.logDrivers("Obelisk", logPattern);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
         telem.logDrivers("Turret Target Angle ", turretHeadingControl.getSetPoint());
         telem.logDrivers("Turret Power", servoPower);

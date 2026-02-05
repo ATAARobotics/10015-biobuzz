@@ -46,22 +46,23 @@ public abstract class RobotBaseOp extends OpMode {
 
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
-    boolean isRedAlliance;
 
     public abstract boolean isAuto();
 
     protected abstract void bindOperatorControls();
     protected abstract void bindDriverControls();
 
+    public boolean isRedAlliance() {
+        return getAlliance() == Alliance.RED;
+    }
+
     @Override
     public void init() {
-        isRedAlliance = getAlliance() == Alliance.RED;
-
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
-        drive = new Drive(hardwareMap, isRedAlliance, isAuto());
-        turret = new Turret(hardwareMap, isRedAlliance);
+        drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
+        turret = new Turret(hardwareMap, isRedAlliance());
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);
@@ -252,6 +253,52 @@ public abstract class RobotBaseOp extends OpMode {
         }
     }
 
+
+    public enum SortState {SORT, DONE};
+    public class SortSpindex extends CommandBase {
+        private SortState state;
+
+        public SortSpindex() {
+            addRequirements(spindexer);
+            addRequirements(intake);
+        }
+        public void initialize() {
+            state = SortState.SORT;
+            spindexer.spinModeIndex();
+        }
+        public void execute() {
+            intake.lowPower();
+            intake.grab();
+            if (state == SortState.SORT) {
+                if (spindexer.atTarget()) {
+                    int s = spindexer.currentShootSlot();
+                    // if we have no green, or we're currently going
+                    // to shoot a green next, we're done.
+                    if (turret.pattern != -1){
+                        s = s - turret.pattern;
+                        if (s < 0){
+                            s = s + 3;
+                        }
+                    }
+                    if (!spindexer.haveOneGreen() || spindexer.slots[s] == Spindexer.SlotContent.Green) {
+                        state = SortState.DONE;
+                        spindexer.spinModeIndex();
+                        intake.stop();
+                    } else {
+                        spindexer.spinIndex();
+                    }
+                }
+            }
+        }
+        public void end(boolean interrupted) {
+            intake.stop();
+        }
+        public boolean isFinished() {
+            return state == SortState.DONE;
+        }
+    }
+
+
     public class SoftIntake extends CommandBase {
         public SoftIntake() {
             addRequirements(intake);
@@ -262,6 +309,33 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public boolean isFinished() {
             return true;
+        }
+    }
+
+
+    public class LookAtObelisk extends CommandBase {
+        public LookAtObelisk() {
+            addRequirements(turret);
+        }
+        public void execute() {
+            double robotX = drive.getPosition().getX(DistanceUnit.INCH);
+            double robotY = drive.getPosition().getY(DistanceUnit.INCH);
+            double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
+
+            double turretX = robotX - (Math.cos(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
+            double turretY = robotY - (Math.sin(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
+
+            double obeliskHeading = Math.toDegrees(
+                Math.atan2(144.0 - turretY, 72.0 - turretX)
+                );
+            // TODO FIXME
+            turret.faceObelisk(obeliskHeading);
+        }
+        public boolean isFinished(){
+            return (turret.pattern != -1);
+        }
+        public void end(boolean interrupted) {
+            turret.noLock();
         }
     }
 
@@ -338,6 +412,7 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("battery", battery.getVoltage());
         telem.log("geometric-target", geometricTargetHeading);
         telem.log("geometric-distance", geometricDistance);
+        telem.log("alliance", getAlliance());
 
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);
@@ -359,7 +434,7 @@ public abstract class RobotBaseOp extends OpMode {
         turret.reset();
         spindexer.reset();
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
-        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance ? 77.5 + 8.124 : 47.5 + 8.124, 8.0984, AngleUnit.DEGREES, 90));
+        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 77.5 + 8.124 : 47.5 + 8.124, 8.0984, AngleUnit.DEGREES, 90));
         loops = 0;
     }
 

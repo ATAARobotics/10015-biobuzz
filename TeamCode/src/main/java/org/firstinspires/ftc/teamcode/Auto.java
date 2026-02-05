@@ -71,7 +71,7 @@ public abstract class Auto extends RobotBaseOp {
 
     // closest set of spikes has the ramp in the way so we can't drive as far forward
     private final Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23.5), Math.toRadians(180));
-    private final Pose spikeEnd3 = new Pose (10.4 + 7.0, 35.0 + (2 * 23.5), Math.toRadians(180));
+    private final Pose spikeEnd3 = new Pose (10.4 + 6.0, 35.0 + (2 * 23.5), Math.toRadians(180));
 
     // human-player preloads
     private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(250));
@@ -173,28 +173,14 @@ public abstract class Auto extends RobotBaseOp {
         }
 
         auto.addCommands(
-            pathBetween(blueFarStart, blueFarShoot, 1.0)
+            new ParallelRaceGroup(
+                new SortSpindex(),
+                pathBetween(blueFarStart, blueFarShoot, 1.0)
+            )
         );
         if (usePreloads) {
             auto.addCommands(new AutoOuttake());
         }
-
-/*
-        PathChain wallpickup = new PathBuilder(follower)
-            .addPath(new BezierLine(blueFarShoot, wallDirectStart))
-            .addPath(new BezierLine(wallDirectStart, wallDirectEnd))
-            .setConstantHeadingInterpolation(wallDirectStart.getHeading())
-            .build();
-
-        auto.addCommands(
-            new ParallelRaceGroup(
-                new AutoIntake(),
-                new FollowPathCommand(wallpickup, 0.9)
-            ),
-            pathBetween(wallDirectEnd, blueFarShoot, 1.0),
-            new AutoOuttake()
-        );
-*/
 
         // collect and shoot audience spike mark
         auto.addCommands(
@@ -205,7 +191,10 @@ public abstract class Auto extends RobotBaseOp {
             ),
             new PrepareToShoot(),
             new SoftIntake(),
-            pathBetween(spikeEnd1, blueFarShoot, 1.0),
+            new ParallelRaceGroup(
+                new SortSpindex(),
+                pathBetween(spikeEnd1, blueFarShoot, 1.0)
+            ),
             new AutoOuttake()
         );
 
@@ -221,7 +210,10 @@ public abstract class Auto extends RobotBaseOp {
             ),
             new PrepareToShoot(),
             new SoftIntake(),
-            pathBetween(wallClose, blueFarShoot, 1.0),
+            new ParallelRaceGroup(
+                new SortSpindex(),
+                pathBetween(wallClose, blueFarShoot, 1.0)
+            ),
             new AutoOuttake()
         );
 
@@ -271,7 +263,11 @@ public abstract class Auto extends RobotBaseOp {
         if (usePreloads) {
             auto.addCommands(
                 new PrepareToShoot(),
-                pathBetween(blueNearStart, blueNearShoot, 1.0),
+                new ParallelRaceGroup(
+                    new SortSpindex(),
+                    pathBetween(blueNearStart, blueNearShoot, 1.0)
+                ),
+                new LookAtObelisk(),
                 new AutoOuttake()
                 );
         } else {
@@ -283,8 +279,8 @@ public abstract class Auto extends RobotBaseOp {
         auto.addCommands(
                 pathBetween(spikeStart, spikeStart3, 1.0),
                 new ParallelRaceGroup(
-                        new AutoIntake(),
-                        pathBetween(spikeStart3, spikeEnd3, 0.35)
+                    new AutoIntake(),
+                    pathBetween(spikeStart3, spikeEnd3, 0.35)
                 )
         );
        Pose lastSpike = spikeEnd3;
@@ -298,7 +294,10 @@ public abstract class Auto extends RobotBaseOp {
         // shooting spike three after opening gate
         auto.addCommands(
                 new PrepareToShoot(),
-                pathBetween(lastSpike, blueNearShoot, 1.0),
+                new ParallelRaceGroup(
+                    new SortSpindex(),
+                    pathBetween(lastSpike, blueNearShoot, 1.0)
+                ),
                 new AutoOuttake()
         );
         // pick up and shoot middle spike mark
@@ -310,7 +309,10 @@ public abstract class Auto extends RobotBaseOp {
                 ),
                 pathBetween(spikeEnd2, spikeStart2, 1.0),
                 new PrepareToShoot(),
-                pathBetween(spikeStart2, blueNearShoot, 1.0),
+                new ParallelRaceGroup(
+                    new SortSpindex(),
+                    pathBetween(spikeStart2, blueNearShoot, 1.0)
+                ),
                 new AutoOuttake()
         );
 
