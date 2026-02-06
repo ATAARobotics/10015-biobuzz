@@ -55,6 +55,7 @@ public class Intake extends SubsystemBase {
 
     public void addTelemetry(HyperTelemetry telem) {
         telem.log("intake-mode", mode);
+        telem.log("intake-power", power);
     }
 
     public class HumanInputs extends CommandBase {

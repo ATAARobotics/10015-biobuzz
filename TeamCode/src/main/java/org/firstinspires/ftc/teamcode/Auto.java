@@ -31,12 +31,6 @@ import kotlinx.coroutines.Delay;
 
 
 public abstract class Auto extends RobotBaseOp {
-
-    public enum StartZone {NEAR, FAR}
-
-    public abstract Alliance getAlliance();
-    public abstract StartZone getStartZone();
-
     public Follower follower;
     double xOffset = 8.124;
     double yOffset = 8.0984;
@@ -262,12 +256,12 @@ public abstract class Auto extends RobotBaseOp {
         Pose spikeStart = blueNearShoot;
         if (usePreloads) {
             auto.addCommands(
+                new LookAtObelisk(),
                 new PrepareToShoot(),
                 new ParallelRaceGroup(
                     new SortSpindex(),
                     pathBetween(blueNearStart, blueNearShoot, 1.0)
                 ),
-                new LookAtObelisk(),
                 new AutoOuttake()
                 );
         } else {
@@ -399,7 +393,7 @@ public abstract class Auto extends RobotBaseOp {
         editor.putFloat("turret", (float)turret.getServoAngle());
         editor.putInt("spindex-target", spindexer.targetAngle);
         editor.apply();
-        drive.stop();
-        shooter.stop();
+
+        super.stop();
     }
 }

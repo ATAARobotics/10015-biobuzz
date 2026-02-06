@@ -44,8 +44,15 @@ public abstract class RobotBaseOp extends OpMode {
     // offset robot / turret centers is 66.70mm
     private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
 
+    public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
+
+    // we don't actually "know" in teleop, and also shouldn't care, so
+    // we provide a default implementation
+    public StartZone getStartZone() {
+        return StartZone.FAR;
+    }
 
     public abstract boolean isAuto();
 
@@ -62,7 +69,7 @@ public abstract class RobotBaseOp extends OpMode {
         operator = new GamepadEx(gamepad2);
 
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
-        turret = new Turret(hardwareMap, isRedAlliance());
+        turret = new Turret(hardwareMap, isRedAlliance(), isAuto());
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);
@@ -127,6 +134,7 @@ public abstract class RobotBaseOp extends OpMode {
         public void initialize() {
             state = InState.INTAKE;
             intake.grab();
+            intake.fullPower();
             spindexer.spinModeIndex();
         }
         public void execute() {
@@ -314,8 +322,13 @@ public abstract class RobotBaseOp extends OpMode {
 
 
     public class LookAtObelisk extends CommandBase {
+        public double startTime;
+
         public LookAtObelisk() {
             addRequirements(turret);
+        }
+        public void initialize() {
+            startTime = time;
         }
         public void execute() {
             double robotX = drive.getPosition().getX(DistanceUnit.INCH);
@@ -328,14 +341,46 @@ public abstract class RobotBaseOp extends OpMode {
             double obeliskHeading = Math.toDegrees(
                 Math.atan2(144.0 - turretY, 72.0 - turretX)
                 );
-            // TODO FIXME
+
+            // for close-zone autos, we actually look at the _side_ of
+            // the obelisk and adjust .. for "blue-side" we move 5
+            // degrees right and then can in theory only see the side
+            // one .. for "red-size" we turn a bunch left (45?) and
+            // then see the "other" side of the obelisk
+
+            if (getStartZone() == StartZone.NEAR) {
+                if (getAlliance() == Alliance.RED) {
+                    // these are "field angles"
+                    obeliskHeading = 90 + 45;
+                } else {
+                    obeliskHeading = 90 - 5;
+                }
+            }
             turret.faceObelisk(obeliskHeading);
         }
         public boolean isFinished(){
-            return (turret.pattern != -1);
+            // we look for up to 1 second, or until we see an Obelisk pattern
+            return (time - startTime > 1.0) || (turret.pattern != -1);
         }
         public void end(boolean interrupted) {
             turret.noLock();
+            // for near-zone, we will have seen the "side" of the
+            // obelisk, so adjust
+            if (turret.pattern != -1 ) {
+                if (getStartZone() == StartZone.NEAR) {
+                    if (getAlliance() == Alliance.RED) {
+                        turret.pattern += 1;
+                        if (turret.pattern > 2) {
+                            turret.pattern = 0;
+                        }
+                    } else {
+                        turret.pattern -= 1;
+                        if (turret.pattern < 0) {
+                            turret.pattern = 2;
+                        }
+                    }
+                }
+            }
         }
     }
 

@@ -85,12 +85,14 @@ public class Turret extends SubsystemBase {
     VisionPortal portal;
     public AprilTagMetadata target;
     int pattern = -1;
+    boolean isAuto = false;
 
 
 //    private static FileWriter writer;
 
-    public Turret(HardwareMap hardwareMap, boolean isRedAlliance) {
+    public Turret(HardwareMap hardwareMap, boolean isRedAlliance, boolean isAuto) {
         target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
+        this.isAuto = isAuto;
         // both servos must always run in the same direction
         servo1 = new CRServo(hardwareMap, "left_turret");
         servo2 = new CRServo(hardwareMap, "right_turret");
@@ -141,12 +143,10 @@ public class Turret extends SubsystemBase {
     public void faceObelisk(double angle) {
         mode = HeadingLockMode.Obelisk;
         obeliskHeading = angle;
-        modeJustChanged = true;
     }
 
     public boolean atTargetAngle() {
-//        if (modeJustChanged)
-//            return false;
+        if (modeJustChanged) return false;
         return turretHeadingControl.atSetPoint();
     }
 
@@ -190,8 +190,10 @@ public class Turret extends SubsystemBase {
     }
 
     public void autoLock() {
+        if (mode != modeOverride) {
+            modeJustChanged = true;
+        }
         mode = modeOverride;
-        modeJustChanged = true;
         //   mode = HeadingLockMode.Camera;
     }
 
@@ -230,7 +232,6 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic() {
         processAprilTags();
-        modeJustChanged = false;
         // do some math based on which "mode" we're in
 
         if (mode == HeadingLockMode.Obelisk)
@@ -253,20 +254,20 @@ public class Turret extends SubsystemBase {
         // TEMP: always face our april-tag
         //faceFieldAngle(targetHeading);
 
-        if (haveAprilLock) {
-            motifLight.setPosition(PINK);
-        } else {
-            motifLight.setPosition(0.0);
-        }
-
-        // maybe only in auto?
-        if (false) {
+       // maybe only in auto?
+        if (isAuto) {
             // show the operator what motif we detected
             if (pattern < 0) {
                 motifLight.setPosition(0.0);
             } else {
                 // TODO: change color depending on motif pattern
                 motifLight.setPosition(PINK);
+            }
+        } else {
+            if (haveAprilLock) {
+                motifLight.setPosition(PINK);
+            } else {
+                motifLight.setPosition(0.0);
             }
         }
 
@@ -290,6 +291,7 @@ public class Turret extends SubsystemBase {
         servo1.set(servoPower);
         servo2.set(servoPower);
 //        try { writer.write(servoAngle+"\t"+currentTurretAngle+"\t"+delta+"\n"); } catch (IOException e) { e.printStackTrace(); }
+        modeJustChanged = false;
     }
 
     public boolean isLocked(double time) {
