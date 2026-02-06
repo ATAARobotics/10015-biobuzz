@@ -381,8 +381,8 @@ public class Drive extends SubsystemBase {
         telem.logBoth("position-y", current_position.getY(DISTANCE_UNIT));
         telem.logBoth("position-heading", current_position.getHeading(AngleUnit.DEGREES));
 
-        double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 72;
-        double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 72;
+        double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 70.5;
+        double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 70.5;
         telem.log("target-x", targetX);
         telem.log("target-y", targetY);
         telem.log("current-heading", current_position.getHeading(ANGLE_UNIT));

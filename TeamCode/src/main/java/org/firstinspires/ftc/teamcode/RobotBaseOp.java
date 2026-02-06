@@ -339,7 +339,7 @@ public abstract class RobotBaseOp extends OpMode {
             double turretY = robotY - (Math.sin(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
 
             double obeliskHeading = Math.toDegrees(
-                Math.atan2(144.0 - turretY, 72.0 - turretX)
+                Math.atan2(141.0 - turretY, 70.5 - turretX)
                 );
 
             // for close-zone autos, we actually look at the _side_ of
@@ -510,7 +510,7 @@ public abstract class RobotBaseOp extends OpMode {
             operator.gamepad.rumble(600);
         }
         // We need to rotate the FTC coordinate system 90 degrees to
-        // get the pedro pathing system, and Offset by 72 inches
+        // get the pedro pathing system, and Offset by 72 inches (70.5)
 
         double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
@@ -521,13 +521,18 @@ public abstract class RobotBaseOp extends OpMode {
         double turretX = robotX - (Math.cos(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
         double turretY = robotY - (Math.sin(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
 
+        // AAAAAAaaaaaa! okay, so FTC co-ordinate system says the
+        // field is 144x144 inches. This is not true, it is actually
+        // 141.5 inches. The field-center is (70.5, 70.5) NOT (72, 72)
+        // if we measure from tile-edges.
+
         //double targetX = turret.target.fieldPosition.get(1);
         //double targetY = -turret.target.fieldPosition.get(0);
         // TODO: red vs blue targets
         double targetX = 10;
         double targetY = 135;
         if (getAlliance() == Alliance.RED){
-            targetX = 144 - targetX;
+            targetX = 141 - targetX;
         }
 
         double distanceA = targetX - turretX;

@@ -139,7 +139,7 @@ public abstract class Auto extends RobotBaseOp {
         if (h < 0) {
             h = h + 360;
         }
-        Pose red = new Pose(144 - blue.getX(), blue.getY(), Math.toRadians(h));
+        Pose red = new Pose(141 - blue.getX(), blue.getY(), Math.toRadians(h));
         return red;
     }
 
