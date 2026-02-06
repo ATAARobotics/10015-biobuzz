@@ -167,7 +167,7 @@ public abstract class Auto extends RobotBaseOp {
         }
 
         auto.addCommands(
-            new ParallelRaceGroup(
+            new ParallelCommandGroup(
                 new SortSpindex(),
                 pathBetween(blueFarStart, blueFarShoot, 1.0)
             )
@@ -185,7 +185,7 @@ public abstract class Auto extends RobotBaseOp {
             ),
             new PrepareToShoot(),
             new SoftIntake(),
-            new ParallelRaceGroup(
+            new ParallelCommandGroup(
                 new SortSpindex(),
                 pathBetween(spikeEnd1, blueFarShoot, 1.0)
             ),
@@ -204,7 +204,7 @@ public abstract class Auto extends RobotBaseOp {
             ),
             new PrepareToShoot(),
             new SoftIntake(),
-            new ParallelRaceGroup(
+            new ParallelCommandGroup(
                 new SortSpindex(),
                 pathBetween(wallClose, blueFarShoot, 1.0)
             ),
@@ -258,7 +258,7 @@ public abstract class Auto extends RobotBaseOp {
             auto.addCommands(
                 new LookAtObelisk(),
                 new PrepareToShoot(),
-                new ParallelRaceGroup(
+                new ParallelCommandGroup(
                     new SortSpindex(),
                     pathBetween(blueNearStart, blueNearShoot, 1.0)
                 ),
@@ -288,7 +288,7 @@ public abstract class Auto extends RobotBaseOp {
         // shooting spike three after opening gate
         auto.addCommands(
                 new PrepareToShoot(),
-                new ParallelRaceGroup(
+                new ParallelCommandGroup(
                     new SortSpindex(),
                     pathBetween(lastSpike, blueNearShoot, 1.0)
                 ),
@@ -303,7 +303,7 @@ public abstract class Auto extends RobotBaseOp {
                 ),
                 pathBetween(spikeEnd2, spikeStart2, 1.0),
                 new PrepareToShoot(),
-                new ParallelRaceGroup(
+                new ParallelCommandGroup(
                     new SortSpindex(),
                     pathBetween(spikeStart2, blueNearShoot, 1.0)
                 ),

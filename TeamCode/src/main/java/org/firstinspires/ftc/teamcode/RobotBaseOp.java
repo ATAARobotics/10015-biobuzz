@@ -353,7 +353,7 @@ public abstract class RobotBaseOp extends OpMode {
                     // these are "field angles"
                     obeliskHeading = 90 + 45;
                 } else {
-                    obeliskHeading = 90 - 5;
+                    obeliskHeading = 90 - 10;
                 }
             }
             turret.faceObelisk(obeliskHeading);
