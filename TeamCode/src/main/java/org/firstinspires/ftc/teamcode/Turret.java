@@ -213,6 +213,10 @@ public class Turret extends SubsystemBase {
         resetAngle = getServoAngle();
     }
 
+    public double getOriginalResetAngle() {
+        return resetAngle;
+    }
+
     public double getServoAngle() {
         // Read analog voltage, convert to degrees
         return voltage0 / 3.3 * 360;
