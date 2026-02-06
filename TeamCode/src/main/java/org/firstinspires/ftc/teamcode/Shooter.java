@@ -182,7 +182,7 @@ public class Shooter extends SubsystemBase {
         if (currentRpm < (targetRpm - BAND_RAMP_UP) && !powerOn) {
             power = BANG_POWER;
         }
-        else if (currentRpm > (targetRpm + BAND) && powerOn) {
+        if (currentRpm > (targetRpm + BAND) && powerOn) {
             power = 0.0;
         }
         if (targetRpm == 0) power = 0;
