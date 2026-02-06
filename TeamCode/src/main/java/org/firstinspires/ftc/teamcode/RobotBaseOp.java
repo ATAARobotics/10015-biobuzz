@@ -51,7 +51,7 @@ public abstract class RobotBaseOp extends OpMode {
     // we don't actually "know" in teleop, and also shouldn't care, so
     // we provide a default implementation
     public StartZone getStartZone() {
-        return StartZone.FAR;
+        return StartZone.NEAR;
     }
 
     public abstract boolean isAuto();
@@ -458,6 +458,7 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("geometric-target", geometricTargetHeading);
         telem.log("geometric-distance", geometricDistance);
         telem.log("alliance", getAlliance());
+        telem.log("zone", getStartZone());
 
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);
