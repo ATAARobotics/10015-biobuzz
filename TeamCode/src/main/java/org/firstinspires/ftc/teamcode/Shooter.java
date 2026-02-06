@@ -64,7 +64,6 @@ public class Shooter extends SubsystemBase {
     public static double RPM_TOLERANCE = 50;
     public static double RPM_TOLERANCE_OVER = 250;
     public static double POWER_OVERRIDE = 0.0;
-    boolean powerOn = false;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
     VoltageSensor battery;
     double MAX_RPM = 5250;
@@ -193,10 +192,10 @@ public class Shooter extends SubsystemBase {
         appliedVoltage = (kv * targetRpm) + ks;
         power = appliedVoltage / voltage;
 
-        if (currentRpm < (targetRpm - RPM_TOLERANCE) && !powerOn) {
+        if (currentRpm < (targetRpm - RPM_TOLERANCE)) {
             power = BANG_POWER;
         }
-        if (currentRpm > (targetRpm + BAND) && powerOn) {
+        if (currentRpm > (targetRpm + BAND)) {
             power = 0.0;
         }
         if (targetRpm == 0) power = 0;
