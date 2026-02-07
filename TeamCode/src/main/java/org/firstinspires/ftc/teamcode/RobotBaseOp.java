@@ -409,6 +409,44 @@ public abstract class RobotBaseOp extends OpMode {
         public void initialize() {
                 shooter.autoShootRpm();
                 turret.autoLock();
+                if (spindexer.isFull() || spindexer.isEmpty()){
+                    //do nothing
+                }
+                if (spindexer.countArtifacts() == 1){
+                    if (spindexer.firstFullSlot() == spindexer.currentSlot()){
+                        spindexer.spinIndex();
+                        spindexer.spinIndex();
+                    }
+                    int previous = spindexer.currentSlot() - 1;
+                    if (previous < 0 ){
+                        previous = 2;
+                    }
+                    if (spindexer.firstFullSlot() == previous){
+                        spindexer.spinIndex();
+                    }
+                    else{
+                        //do nothing
+                    }
+                }
+                if (spindexer.countArtifacts() == 2){
+                    if (spindexer.firstEmptySlot() == spindexer.currentSlot()){
+                        spindexer.spinIndex();
+                    }
+                    int prev = spindexer.currentSlot() +1;
+                    if (prev < 0){
+                        prev = 2;
+                    }
+                    if (spindexer.firstEmptySlot() == prev){
+                        spindexer.spinIndex();
+                        spindexer.spinIndex();
+                    }
+                    else{
+                        //do nothing
+                    }
+                }
+        }
+        public void execute(){
+
         }
         public boolean isFinished(){
             return true;
