@@ -265,7 +265,10 @@ public class Spindexer extends SubsystemBase {
         return false;
     }
 
-    public boolean atTarget(){
+    public boolean atTarget() {
+        if (spin == SpinDirection.Shoot) {
+            return control.atSetPoint() || control.getPositionError() < 0.0;
+        }
         return control.atSetPoint();
     }
 
@@ -363,7 +366,10 @@ if interrupt "during" spin then it gets confused about which slot is what
                     boostF = false;
                 }
             }
+        }
 
+        if (spindexerPower < 0.0 && spin == SpinDirection.Shoot) {
+            spindexerPower = 0.0;
         }
 
         spindexerMotor.set(spindexerPower);
