@@ -55,6 +55,8 @@ public abstract class Auto extends RobotBaseOp {
             105.0, // right at top of the cone
             Math.toRadians(180)
         );
+    private final Pose secondBlueNearShoot = new Pose (50, 102, Math.toRadians(180));
+    private final Pose thirdBlueNearShoot = new Pose (60, 73, Math.toRadians(180));
 
     private final Pose spikeStart1 = new Pose (50, 35.0, Math.toRadians(180));
     private final Pose spikeEnd1 = new Pose (10.4, 35.0, Math.toRadians(180));
@@ -67,9 +69,11 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23.5), Math.toRadians(180));
     private final Pose spikeEnd3 = new Pose (10.4 + 6.0, 35.0 + (2 * 23.5), Math.toRadians(180));
 
+    private final Pose nearParkGate = new Pose (25.4, 72, Math.toRadians(180));
+
     // human-player preloads
     private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(250));
-    private final Pose wallClose = new Pose(xOffset + 4, yOffset + 1, Math.toRadians(270));
+    private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(250));
 
     // trying a different human-player routing
     private final Pose wallDirectStart = new Pose(xOffset + 1, yOffset + 15, Math.toRadians(240));
@@ -293,13 +297,13 @@ public abstract class Auto extends RobotBaseOp {
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    pathBetween(lastSpike, blueNearShoot, 1.0)
+                    pathBetween(lastSpike, secondBlueNearShoot, 1.0)
                 ),
                 new AutoOuttake()
         );
         // pick up and shoot middle spike mark
         auto.addCommands(
-                pathBetween(blueNearShoot, spikeStart2, 1.0),
+                pathBetween(secondBlueNearShoot, spikeStart2, 1.0),
                 new ParallelRaceGroup(
                         new AutoIntake(),
                         pathBetween(spikeStart2, spikeEnd2, 0.35)
@@ -308,9 +312,10 @@ public abstract class Auto extends RobotBaseOp {
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    pathBetween(spikeStart2, blueNearShoot, 1.0)
+                    pathBetween(spikeStart2, thirdBlueNearShoot, 1.0)
                 ),
-                new AutoOuttake()
+                new AutoOuttake(),
+                pathBetween(thirdBlueNearShoot, nearParkGate, 1.0)
         );
 
         return auto;
