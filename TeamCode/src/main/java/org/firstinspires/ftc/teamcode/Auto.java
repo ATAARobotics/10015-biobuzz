@@ -69,7 +69,7 @@ public abstract class Auto extends RobotBaseOp {
 
     // human-player preloads
     private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(250));
-    private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(250));
+    private final Pose wallClose = new Pose(xOffset + 4, yOffset + 1, Math.toRadians(270));
 
     // trying a different human-player routing
     private final Pose wallDirectStart = new Pose(xOffset + 1, yOffset + 15, Math.toRadians(240));
