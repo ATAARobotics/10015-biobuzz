@@ -142,6 +142,7 @@ public abstract class RobotBaseOp extends OpMode {
                 if (spindexer.artifactInSlot()) {
                     if (spindexer.isFull()) {
                         state = InState.SORT;
+                        driver.gamepad.rumble(250);
                     } else {
                         state = InState.SPIN;
                         intake.lowPower();
@@ -190,8 +191,9 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void end(boolean interrupted){
             if (spindexer.isFull()) {
-                driver.gamepad.rumble(250);
-                intake.stop();
+                if (!isAuto()) {
+                    intake.stop();
+                }
             }
 
         }
@@ -544,7 +546,7 @@ public abstract class RobotBaseOp extends OpMode {
         );
 
         turret.robotHeading = robotHeading;
-        if (turret.isLocked(time)) {
+        if (false && turret.isLocked(time)) {
             shooter.aprilDistance = turret.aprilDistance;
         }
         else{

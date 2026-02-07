@@ -37,7 +37,7 @@ public abstract class Auto extends RobotBaseOp {
     private boolean usePreloads = true;
     private int whenOpenGate = 0;
 
-    private final Pose blueFarStart = new Pose(47.5 + xOffset, yOffset, Math.toRadians(90));
+    private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
     private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(90));
     private final Pose blueFarShoot = new Pose(
             47.5 + 8.124 + 2.0, // 2 inches further towards Red from start
@@ -94,19 +94,22 @@ public abstract class Auto extends RobotBaseOp {
     public Command pathBetween(Pose b, Pose e, double speed) {
         Pose begin = convert(b);
         Pose end = convert(e);
-        PathChain p = new PathBuilder(follower)
-            .addPath(new BezierLine(begin, end))
-            .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
-            .build();
-
+//        PathChain p = new PathBuilder(follower)
+//            .addPath(new BezierLine(begin, end))
+//            .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
+//            .build();
+        Path p = new Path(new BezierLine(begin, end));
+        p.setBrakingStrength(1);
+        p.setBrakingStart(1);
+        p.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
         return new FollowPathCommand(p, speed);
     }
 
     class FollowPathCommand extends CommandBase {
-        PathChain path;
+        Path path;
         double speed;
 
-        public FollowPathCommand(PathChain p, double s) {
+        public FollowPathCommand(Path p, double s) {
             path = p;
             speed = s;
             addRequirements(drive);
@@ -349,6 +352,8 @@ public abstract class Auto extends RobotBaseOp {
         // we must run this _before_ the "pathing" options because
         // those set the start-position of the robot
         super.start();
+
+        follower.activateAllPIDFs();
 
         Command cmds = null;
         switch (getStartZone()) {
