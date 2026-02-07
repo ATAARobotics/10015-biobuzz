@@ -35,7 +35,7 @@ public class Intake extends SubsystemBase {
     public void read_sensors(double time) {
     }
     public void lowPower(){
-        power = 0.4;
+        power = 0.3;
     }
     public void fullPower(){
         power = 1.0;
@@ -55,6 +55,7 @@ public class Intake extends SubsystemBase {
 
     public void addTelemetry(HyperTelemetry telem) {
         telem.log("intake-mode", mode);
+        telem.log("intake-power", power);
     }
 
     public class HumanInputs extends CommandBase {

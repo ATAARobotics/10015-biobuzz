@@ -57,13 +57,13 @@ public class Shooter extends SubsystemBase {
     static double HOOD_COEF = 0.0732;
     static double HOOD_EXP = 0.4768;
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
+    public static double FAR_DISTANCE = 100.0;
 
     public static double BAND = 10;
-    public static double BAND_RAMP_UP = 200;
     public static double BANG_POWER = 1.0;
-    public static double RPM_TOLERANCE = 50;  // jan26 changed from 200 after testing
+    public static double RPM_TOLERANCE = 50;
+    public static double RPM_TOLERANCE_OVER = 250;
     public static double POWER_OVERRIDE = 0.0;
-    boolean powerOn = false;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
     VoltageSensor battery;
     double MAX_RPM = 5250;
@@ -137,7 +137,21 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean readyToShoot() {
-        return (targetRpm > 0 && Math.abs(currentRpm - targetRpm) < RPM_TOLERANCE);
+        // diff will be positive number if we're below target, and
+        // negative number if we're above target
+        double rpmDiff = targetRpm - currentRpm;
+        return (targetRpm > 0 && Math.abs(rpmDiff) < RPM_TOLERANCE);
+        // if the shooter is still over-shooting or getting "stuck",
+        // try a different "over" vs "under" tolerance
+        /*
+        if (rpmDiff > 0 && rpmDiff < RPM_TOLERANCE) {
+            return true;
+        }
+        if (rpmDiff < 0 && -rpmDiff < RPM_TOLERANCE_OVER) {
+            return true;
+        }
+        return false;
+        */
     }
 
     public int getCurrentShots() {
@@ -161,6 +175,13 @@ public class Shooter extends SubsystemBase {
          //   targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
             targetHood = -0.00006 * aprilDistance * aprilDistance + 0.0167 * aprilDistance - 0.4328;
         }
+
+        // TODO we are special-casing the far-zone for now and not using the regression algorithm
+        if (autoRpm && aprilDistance > FAR_DISTANCE) {
+            targetHood = 0.567;
+            targetRpm = 4900;
+        }
+
         if (MANUAL_RPM > 1.0 ){//&& targetRpm > 0.0) {
             targetRpm = MANUAL_RPM;
         }
@@ -171,10 +192,10 @@ public class Shooter extends SubsystemBase {
         appliedVoltage = (kv * targetRpm) + ks;
         power = appliedVoltage / voltage;
 
-        if (currentRpm < (targetRpm - BAND_RAMP_UP) && !powerOn) {
+        if (currentRpm < (targetRpm - RPM_TOLERANCE)) {
             power = BANG_POWER;
         }
-        else if (currentRpm > (targetRpm + BAND) && powerOn) {
+        if (currentRpm > (targetRpm + BAND)) {
             power = 0.0;
         }
         if (targetRpm == 0) power = 0;

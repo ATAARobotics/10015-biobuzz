@@ -8,3 +8,20 @@ This is a dummy change.
 /stdcard/FIRST/matchlogs/
     Match-0-AutoBlueFar.txt
 
+
+To download logs from the robot:
+  - connect adb
+  - adb logcat > logs.txt
+
+
+League Meet notes:
+
+- first shot out of turret is "too fast" -- maybe target hasn't been set yet, so it thinks it's good to go?
+- obelisk detect seems "decent" but sorting is inconsistent?
+- RPM/hood for far zone off
+  (seems like the "further away" hood angle just too aggressive?)
+- going into other zone on far-side pathing
+- several effeciencies available for auto
+
+- "-6 on red" seemed to be a good tweak, during Wed adrian practice
+

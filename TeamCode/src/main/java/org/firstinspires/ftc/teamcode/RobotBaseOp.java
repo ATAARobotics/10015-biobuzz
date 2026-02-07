@@ -44,24 +44,32 @@ public abstract class RobotBaseOp extends OpMode {
     // offset robot / turret centers is 66.70mm
     private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
 
+    public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
-    boolean isRedAlliance;
+
+    // we don't actually "know" in teleop, and also shouldn't care, so
+    // we provide a default implementation
+    public StartZone getStartZone() {
+        return StartZone.NEAR;
+    }
 
     public abstract boolean isAuto();
 
     protected abstract void bindOperatorControls();
     protected abstract void bindDriverControls();
 
+    public boolean isRedAlliance() {
+        return getAlliance() == Alliance.RED;
+    }
+
     @Override
     public void init() {
-        isRedAlliance = getAlliance() == Alliance.RED;
-
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
-        drive = new Drive(hardwareMap, isRedAlliance, isAuto());
-        turret = new Turret(hardwareMap, isRedAlliance);
+        drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
+        turret = new Turret(hardwareMap, isRedAlliance(), isAuto());
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);
@@ -126,6 +134,7 @@ public abstract class RobotBaseOp extends OpMode {
         public void initialize() {
             state = InState.INTAKE;
             intake.grab();
+            intake.fullPower();
             spindexer.spinModeIndex();
         }
         public void execute() {
@@ -133,6 +142,7 @@ public abstract class RobotBaseOp extends OpMode {
                 if (spindexer.artifactInSlot()) {
                     if (spindexer.isFull()) {
                         state = InState.SORT;
+                        driver.gamepad.rumble(250);
                     } else {
                         state = InState.SPIN;
                         intake.lowPower();
@@ -152,13 +162,16 @@ public abstract class RobotBaseOp extends OpMode {
                     spindexer.spinModeIndex();
                 }
             } else if (state == InState.SORT) {
-                // for now we just shoot green first, always .. but
-                // we'll want it to be first, second or last depending
-                // on the Obelisk
                 if (spindexer.atTarget()) {
                     int s = spindexer.currentShootSlot();
                     // if we have no green, or we're currently going
                     // to shoot a green next, we're done.
+                    if (turret.pattern != -1){
+                        s = s - turret.pattern;
+                        if (s < 0){
+                            s = s + 3;
+                        }
+                    }
                     if (!spindexer.haveOneGreen() || spindexer.slots[s] == Spindexer.SlotContent.Green) {
                         state = InState.DONE;
                         spindexer.spinModeIndex();
@@ -178,8 +191,9 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void end(boolean interrupted){
             if (spindexer.isFull()) {
-                driver.gamepad.rumble(250);
-                intake.stop();
+                if (!isAuto()) {
+                    intake.stop();
+                }
             }
 
         }
@@ -249,6 +263,52 @@ public abstract class RobotBaseOp extends OpMode {
         }
     }
 
+
+    public enum SortState {SORT, DONE};
+    public class SortSpindex extends CommandBase {
+        private SortState state;
+
+        public SortSpindex() {
+            addRequirements(spindexer);
+            addRequirements(intake);
+        }
+        public void initialize() {
+            state = SortState.SORT;
+            spindexer.spinModeIndex();
+        }
+        public void execute() {
+            intake.lowPower();
+            intake.grab();
+            if (state == SortState.SORT) {
+                if (spindexer.atTarget()) {
+                    int s = spindexer.currentShootSlot();
+                    // if we have no green, or we're currently going
+                    // to shoot a green next, we're done.
+                    if (turret.pattern != -1){
+                        s = s - turret.pattern;
+                        if (s < 0){
+                            s = s + 3;
+                        }
+                    }
+                    if (!spindexer.haveOneGreen() || spindexer.slots[s] == Spindexer.SlotContent.Green) {
+                        state = SortState.DONE;
+                        spindexer.spinModeIndex();
+                        intake.stop();
+                    } else {
+                        spindexer.spinIndex();
+                    }
+                }
+            }
+        }
+        public void end(boolean interrupted) {
+            intake.stop();
+        }
+        public boolean isFinished() {
+            return state == SortState.DONE;
+        }
+    }
+
+
     public class SoftIntake extends CommandBase {
         public SoftIntake() {
             addRequirements(intake);
@@ -259,6 +319,70 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public boolean isFinished() {
             return true;
+        }
+    }
+
+
+    public class LookAtObelisk extends CommandBase {
+        public double startTime;
+
+        public LookAtObelisk() {
+            addRequirements(turret);
+        }
+        public void initialize() {
+            startTime = time;
+        }
+        public void execute() {
+            double robotX = drive.getPosition().getX(DistanceUnit.INCH);
+            double robotY = drive.getPosition().getY(DistanceUnit.INCH);
+            double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
+
+            double turretX = robotX - (Math.cos(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
+            double turretY = robotY - (Math.sin(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
+
+            double obeliskHeading = Math.toDegrees(
+                Math.atan2(141.0 - turretY, 70.5 - turretX)
+                );
+
+            // for close-zone autos, we actually look at the _side_ of
+            // the obelisk and adjust .. for "blue-side" we move 5
+            // degrees right and then can in theory only see the side
+            // one .. for "red-size" we turn a bunch left (45?) and
+            // then see the "other" side of the obelisk
+
+            if (getStartZone() == StartZone.NEAR) {
+                if (getAlliance() == Alliance.RED) {
+                    // these are "field angles"
+                    obeliskHeading = 90 + 45;
+                } else {
+                    obeliskHeading = 90 - 10;
+                }
+            }
+            turret.faceObelisk(obeliskHeading);
+        }
+        public boolean isFinished(){
+            // we look for up to 1 second, or until we see an Obelisk pattern
+            return (time - startTime > 1.0) || (turret.pattern != -1);
+        }
+        public void end(boolean interrupted) {
+            turret.noLock();
+            // for near-zone, we will have seen the "side" of the
+            // obelisk, so adjust
+            if (turret.pattern != -1 ) {
+                if (getStartZone() == StartZone.NEAR) {
+                    if (getAlliance() == Alliance.RED) {
+                        turret.pattern += 1;
+                        if (turret.pattern > 2) {
+                            turret.pattern = 0;
+                        }
+                    } else {
+                        turret.pattern -= 1;
+                        if (turret.pattern < 0) {
+                            turret.pattern = 2;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -335,6 +459,8 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("battery", battery.getVoltage());
         telem.log("geometric-target", geometricTargetHeading);
         telem.log("geometric-distance", geometricDistance);
+        telem.log("alliance", getAlliance());
+        telem.log("zone", getStartZone());
 
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);
@@ -356,7 +482,7 @@ public abstract class RobotBaseOp extends OpMode {
         turret.reset();
         spindexer.reset();
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
-        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance ? 77.5 + 8.124 : 47.5 + 8.124, 8.0984, AngleUnit.DEGREES, 90));
+        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 77.5 + 8.124 : 47.5 + 8.124, 8.0984, AngleUnit.DEGREES, 90));
         loops = 0;
     }
 
@@ -386,7 +512,7 @@ public abstract class RobotBaseOp extends OpMode {
             operator.gamepad.rumble(600);
         }
         // We need to rotate the FTC coordinate system 90 degrees to
-        // get the pedro pathing system, and Offset by 72 inches
+        // get the pedro pathing system, and Offset by 72 inches (70.5)
 
         double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
@@ -397,13 +523,18 @@ public abstract class RobotBaseOp extends OpMode {
         double turretX = robotX - (Math.cos(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
         double turretY = robotY - (Math.sin(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
 
+        // AAAAAAaaaaaa! okay, so FTC co-ordinate system says the
+        // field is 144x144 inches. This is not true, it is actually
+        // 141.5 inches. The field-center is (70.5, 70.5) NOT (72, 72)
+        // if we measure from tile-edges.
+
         //double targetX = turret.target.fieldPosition.get(1);
         //double targetY = -turret.target.fieldPosition.get(0);
         // TODO: red vs blue targets
         double targetX = 10;
         double targetY = 135;
         if (getAlliance() == Alliance.RED){
-            targetX = 144 - targetX;
+            targetX = 141 - targetX;
         }
 
         double distanceA = targetX - turretX;
@@ -415,7 +546,7 @@ public abstract class RobotBaseOp extends OpMode {
         );
 
         turret.robotHeading = robotHeading;
-        if (turret.isLocked(time)) {
+        if (false && turret.isLocked(time)) {
             shooter.aprilDistance = turret.aprilDistance;
         }
         else{

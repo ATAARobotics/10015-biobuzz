@@ -31,19 +31,13 @@ import kotlinx.coroutines.Delay;
 
 
 public abstract class Auto extends RobotBaseOp {
-
-    public enum StartZone {NEAR, FAR}
-
-    public abstract Alliance getAlliance();
-    public abstract StartZone getStartZone();
-
     public Follower follower;
     double xOffset = 8.124;
     double yOffset = 8.0984;
     private boolean usePreloads = true;
     private int whenOpenGate = 0;
 
-    private final Pose blueFarStart = new Pose(47.5 + xOffset, yOffset, Math.toRadians(90));
+    private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
     private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(90));
     private final Pose blueFarShoot = new Pose(
             47.5 + 8.124 + 2.0, // 2 inches further towards Red from start
@@ -61,8 +55,6 @@ public abstract class Auto extends RobotBaseOp {
             105.0, // right at top of the cone
             Math.toRadians(180)
         );
-    private final Pose secondBlueNearShoot = new Pose (60, 102, Math.toRadians(180));
-    private final Pose thirdBlueNearShoot = new Pose (63, 73, Math.toRadians(180));
 
     private final Pose spikeStart1 = new Pose (50, 35.0, Math.toRadians(180));
     private final Pose spikeEnd1 = new Pose (10.4, 35.0, Math.toRadians(180));
@@ -73,12 +65,11 @@ public abstract class Auto extends RobotBaseOp {
 
     // closest set of spikes has the ramp in the way so we can't drive as far forward
     private final Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23.5), Math.toRadians(180));
-    private final Pose spikeEnd3 = new Pose (10.4 + 7.0, 35.0 + (2 * 23.5), Math.toRadians(180));
+    private final Pose spikeEnd3 = new Pose (10.4 + 6.0, 35.0 + (2 * 23.5), Math.toRadians(180));
 
-    private final Pose nearPark = new Pose (63, 102, Math.toRadians(180));
     // human-player preloads
     private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(250));
-    private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(250));
+    private final Pose wallClose = new Pose(xOffset + 4, yOffset + 1, Math.toRadians(270));
 
     // trying a different human-player routing
     private final Pose wallDirectStart = new Pose(xOffset + 1, yOffset + 15, Math.toRadians(240));
@@ -103,19 +94,22 @@ public abstract class Auto extends RobotBaseOp {
     public Command pathBetween(Pose b, Pose e, double speed) {
         Pose begin = convert(b);
         Pose end = convert(e);
-        PathChain p = new PathBuilder(follower)
-            .addPath(new BezierLine(begin, end))
-            .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
-            .build();
-
+//        PathChain p = new PathBuilder(follower)
+//            .addPath(new BezierLine(begin, end))
+//            .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
+//            .build();
+        Path p = new Path(new BezierLine(begin, end));
+        p.setBrakingStrength(1);
+        p.setBrakingStart(1);
+        p.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
         return new FollowPathCommand(p, speed);
     }
 
     class FollowPathCommand extends CommandBase {
-        PathChain path;
+        Path path;
         double speed;
 
-        public FollowPathCommand(PathChain p, double s) {
+        public FollowPathCommand(Path p, double s) {
             path = p;
             speed = s;
             addRequirements(drive);
@@ -148,7 +142,7 @@ public abstract class Auto extends RobotBaseOp {
         if (h < 0) {
             h = h + 360;
         }
-        Pose red = new Pose(144 - blue.getX(), blue.getY(), Math.toRadians(h));
+        Pose red = new Pose(141 - blue.getX(), blue.getY(), Math.toRadians(h));
         return red;
     }
 
@@ -176,28 +170,14 @@ public abstract class Auto extends RobotBaseOp {
         }
 
         auto.addCommands(
-            pathBetween(blueFarStart, blueFarShoot, 1.0)
+            new ParallelCommandGroup(
+                new SortSpindex(),
+                pathBetween(blueFarStart, blueFarShoot, 1.0)
+            )
         );
         if (usePreloads) {
             auto.addCommands(new AutoOuttake());
         }
-
-/*
-        PathChain wallpickup = new PathBuilder(follower)
-            .addPath(new BezierLine(blueFarShoot, wallDirectStart))
-            .addPath(new BezierLine(wallDirectStart, wallDirectEnd))
-            .setConstantHeadingInterpolation(wallDirectStart.getHeading())
-            .build();
-
-        auto.addCommands(
-            new ParallelRaceGroup(
-                new AutoIntake(),
-                new FollowPathCommand(wallpickup, 0.9)
-            ),
-            pathBetween(wallDirectEnd, blueFarShoot, 1.0),
-            new AutoOuttake()
-        );
-*/
 
         // collect and shoot audience spike mark
         auto.addCommands(
@@ -208,7 +188,10 @@ public abstract class Auto extends RobotBaseOp {
             ),
             new PrepareToShoot(),
             new SoftIntake(),
-            pathBetween(spikeEnd1, blueFarShoot, 1.0),
+            new ParallelCommandGroup(
+                new SortSpindex(),
+                pathBetween(spikeEnd1, blueFarShoot, 1.0)
+            ),
             new AutoOuttake()
         );
 
@@ -224,7 +207,10 @@ public abstract class Auto extends RobotBaseOp {
             ),
             new PrepareToShoot(),
             new SoftIntake(),
-            pathBetween(wallClose, blueFarShoot, 1.0),
+            new ParallelCommandGroup(
+                new SortSpindex(),
+                pathBetween(wallClose, blueFarShoot, 1.0)
+            ),
             new AutoOuttake()
         );
 
@@ -273,8 +259,12 @@ public abstract class Auto extends RobotBaseOp {
         Pose spikeStart = blueNearShoot;
         if (usePreloads) {
             auto.addCommands(
+                new LookAtObelisk(),
                 new PrepareToShoot(),
-                pathBetween(blueNearStart, blueNearShoot, 1.0),
+                new ParallelCommandGroup(
+                    new SortSpindex(),
+                    pathBetween(blueNearStart, blueNearShoot, 1.0)
+                ),
                 new AutoOuttake()
                 );
         } else {
@@ -286,8 +276,8 @@ public abstract class Auto extends RobotBaseOp {
         auto.addCommands(
                 pathBetween(spikeStart, spikeStart3, 1.0),
                 new ParallelRaceGroup(
-                        new AutoIntake(),
-                        pathBetween(spikeStart3, spikeEnd3, 0.35)
+                    new AutoIntake(),
+                    pathBetween(spikeStart3, spikeEnd3, 0.35)
                 )
         );
        Pose lastSpike = spikeEnd3;
@@ -301,21 +291,26 @@ public abstract class Auto extends RobotBaseOp {
         // shooting spike three after opening gate
         auto.addCommands(
                 new PrepareToShoot(),
-                pathBetween(lastSpike, secondBlueNearShoot, 1.0),
+                new ParallelCommandGroup(
+                    new SortSpindex(),
+                    pathBetween(lastSpike, blueNearShoot, 1.0)
+                ),
                 new AutoOuttake()
         );
         // pick up and shoot middle spike mark
         auto.addCommands(
-                pathBetween(secondBlueNearShoot, spikeStart2, 1.0),
+                pathBetween(blueNearShoot, spikeStart2, 1.0),
                 new ParallelRaceGroup(
                         new AutoIntake(),
                         pathBetween(spikeStart2, spikeEnd2, 0.35)
                 ),
                 pathBetween(spikeEnd2, spikeStart2, 1.0),
                 new PrepareToShoot(),
-                pathBetween(spikeStart2, thirdBlueNearShoot, 1.0),
-                new AutoOuttake(),
-                pathBetween(thirdBlueNearShoot, nearPark, 1.0)
+                new ParallelCommandGroup(
+                    new SortSpindex(),
+                    pathBetween(spikeStart2, blueNearShoot, 1.0)
+                ),
+                new AutoOuttake()
         );
 
         return auto;
@@ -358,6 +353,8 @@ public abstract class Auto extends RobotBaseOp {
         // those set the start-position of the robot
         super.start();
 
+        follower.activateAllPIDFs();
+
         Command cmds = null;
         switch (getStartZone()) {
             case NEAR:
@@ -398,10 +395,10 @@ public abstract class Auto extends RobotBaseOp {
         editor.putFloat("heading", (float)drive.getPosition().getHeading(AngleUnit.DEGREES));
         editor.putFloat("x", (float)drive.getPosition().getX(DistanceUnit.INCH));
         editor.putFloat("y", (float)drive.getPosition().getY(DistanceUnit.INCH));
-        editor.putFloat("turret", (float)turret.getServoAngle());
+        editor.putFloat("turret", (float)turret.getOriginalResetAngle());
         editor.putInt("spindex-target", spindexer.targetAngle);
         editor.apply();
-        drive.stop();
-        shooter.stop();
+
+        super.stop();
     }
 }
