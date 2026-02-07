@@ -61,6 +61,8 @@ public abstract class Auto extends RobotBaseOp {
             105.0, // right at top of the cone
             Math.toRadians(180)
         );
+    private final Pose secondBlueNearShoot = new Pose (60, 102, Math.toRadians(180));
+    private final Pose thirdBlueNearShoot = new Pose (63, 73, Math.toRadians(180));
 
     private final Pose spikeStart1 = new Pose (50, 35.0, Math.toRadians(180));
     private final Pose spikeEnd1 = new Pose (10.4, 35.0, Math.toRadians(180));
@@ -73,6 +75,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23.5), Math.toRadians(180));
     private final Pose spikeEnd3 = new Pose (10.4 + 7.0, 35.0 + (2 * 23.5), Math.toRadians(180));
 
+    private final Pose nearPark = new Pose (63, 102, Math.toRadians(180));
     // human-player preloads
     private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(250));
     private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(250));
@@ -298,20 +301,21 @@ public abstract class Auto extends RobotBaseOp {
         // shooting spike three after opening gate
         auto.addCommands(
                 new PrepareToShoot(),
-                pathBetween(lastSpike, blueNearShoot, 1.0),
+                pathBetween(lastSpike, secondBlueNearShoot, 1.0),
                 new AutoOuttake()
         );
         // pick up and shoot middle spike mark
         auto.addCommands(
-                pathBetween(blueNearShoot, spikeStart2, 1.0),
+                pathBetween(secondBlueNearShoot, spikeStart2, 1.0),
                 new ParallelRaceGroup(
                         new AutoIntake(),
                         pathBetween(spikeStart2, spikeEnd2, 0.35)
                 ),
                 pathBetween(spikeEnd2, spikeStart2, 1.0),
                 new PrepareToShoot(),
-                pathBetween(spikeStart2, blueNearShoot, 1.0),
-                new AutoOuttake()
+                pathBetween(spikeStart2, thirdBlueNearShoot, 1.0),
+                new AutoOuttake(),
+                pathBetween(thirdBlueNearShoot, nearPark, 1.0)
         );
 
         return auto;
