@@ -98,22 +98,19 @@ public abstract class Auto extends RobotBaseOp {
     public Command pathBetween(Pose b, Pose e, double speed) {
         Pose begin = convert(b);
         Pose end = convert(e);
-//        PathChain p = new PathBuilder(follower)
-//            .addPath(new BezierLine(begin, end))
-//            .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
-//            .build();
-        Path p = new Path(new BezierLine(begin, end));
-        p.setBrakingStrength(1);
-        p.setBrakingStart(1);
-        p.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
+        PathChain p = follower.pathBuilder()
+            .setGlobalDeceleration()
+            .addPath(new BezierLine(begin, end))
+            .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
+            .build();
         return new FollowPathCommand(p, speed);
     }
 
     class FollowPathCommand extends CommandBase {
-        Path path;
+        PathChain path;
         double speed;
 
-        public FollowPathCommand(Path p, double s) {
+        public FollowPathCommand(PathChain p, double s) {
             path = p;
             speed = s;
             addRequirements(drive);
@@ -368,6 +365,7 @@ public abstract class Auto extends RobotBaseOp {
         // those set the start-position of the robot
         super.start();
 
+        // "Tuning.Line" tuner does this .. really needed?
         follower.activateAllPIDFs();
 
         Command cmds = null;
