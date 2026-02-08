@@ -37,6 +37,7 @@ public abstract class Auto extends RobotBaseOp {
     private boolean usePreloads = true;
     private int whenOpenGate = 0;
     private boolean audienceSpike = false;
+    private boolean closeGateOpen = false;
 
     private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
     private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(90));
@@ -69,6 +70,8 @@ public abstract class Auto extends RobotBaseOp {
     // closest set of spikes has the ramp in the way so we can't drive as far forward
     private final Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23.5), Math.toRadians(180));
     private final Pose spikeEnd3 = new Pose (10.4 + 6.0, 35.0 + (2 * 23.5), Math.toRadians(180));
+    private final Pose gateOpen0= new Pose (25, 35.0 + (2 * 23.5) - 4, Math.toRadians(180));
+    private final Pose gateOpen1 = new Pose (10.4 +6 , 35.0 + (2 * 23.5) - 4, Math.toRadians(180));
 
     private final Pose nearParkGate = new Pose (36.0, 72, Math.toRadians(180));
 
@@ -296,13 +299,22 @@ public abstract class Auto extends RobotBaseOp {
                 new SoftIntake(),
                 new Delay(1)
         );
+        Pose beforeGate = spikeEnd3;
+        if (closeGateOpen) {
+            auto.addCommands(
+                    pathBetween(spikeEnd3, gateOpen0, 1.0),
+                    pathBetween(gateOpen0, gateOpen1, 0.8),
+                    new Delay(0.5)
+            );
+            beforeGate = gateOpen1;
+        }
 
         // shooting spike three after opening gate
         auto.addCommands(
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    pathBetween(spikeEnd3, secondBlueNearShoot, 1.0)
+                    pathBetween(beforeGate, secondBlueNearShoot, 1.0)
                 ),
                 new AutoOuttake(),
                 new Delay(0.5)
@@ -383,14 +395,17 @@ public abstract class Auto extends RobotBaseOp {
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
             usePreloads = !usePreloads;
         }
-        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
+      /*  if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
             whenOpenGate += 1;
             if (whenOpenGate > 1) {
                 whenOpenGate = 0;
             }
-        }
+        }*/
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
             audienceSpike = !audienceSpike;
+        }
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
+            closeGateOpen = !closeGateOpen;
         }
 
         String openDescription = "unknown";
@@ -399,8 +414,9 @@ public abstract class Auto extends RobotBaseOp {
 
 
         telemetry.addData("Preloads (Dpad Up to toggle)", usePreloads);
-        telemetry.addData("Open Gate (Dpad Down to toggle)", openDescription);
+      //  telemetry.addData("Open Gate (Dpad Down to toggle)", openDescription);
         telemetry.addData("Pick up third spike (Dpad Left to toggle", audienceSpike);
+        telemetry.addData("Near zone open gate(Dpad Right to toggle)", closeGateOpen);
         telemetry.update();
     }
 
