@@ -249,6 +249,37 @@ public class Spindexer extends SubsystemBase {
         return !hasOpenSlot();
     }
 
+    public int countArtifacts(){
+        int count = 0;
+        for (SlotContent s : slots){
+            if (s != SlotContent.Nothing){
+                count += 1;
+            }
+        }
+        return count;
+    }
+
+    public int firstFullSlot(){
+        int index = 0;
+        for (SlotContent s : slots){
+            if (s != SlotContent.Nothing){
+                return index;
+            }
+            index += 1;
+        }
+        return -1;
+    }
+    public int firstEmptySlot(){
+        int index = 0;
+        for (SlotContent s : slots){
+            if (s == SlotContent.Nothing){
+                return index;
+            }
+            index += 1;
+        }
+        return -1;
+    }
+
     public boolean isEmpty() {
         for (SlotContent s : slots) {
             if (s != SlotContent.Nothing)
