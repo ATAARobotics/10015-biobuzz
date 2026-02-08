@@ -233,6 +233,13 @@ public abstract class RobotBaseOp extends OpMode {
                     lastShots = shooter.getCurrentShots();
                     shotSlot = spindexer.currentSlot();
                     spindexer.spinShoot();
+
+                    // try to rapid-shoot if we're close enough
+                    if (geometricDistance < 65.0) {
+                        for (int x=0; x < spindexer.artifactCount() - 1; x++) {
+                            spindexer.spinShoot();
+                        }
+                    }
                 }
             } else if (state == OutState.SHOOT) {
                 // try just not caring about "did a shot really go up"
