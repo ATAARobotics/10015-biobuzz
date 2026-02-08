@@ -429,7 +429,7 @@ public abstract class RobotBaseOp extends OpMode {
         public void initialize() {
                 shooter.autoShootRpm();
                 turret.autoLock();
-                if (spindexer.isFull() || spindexer.isEmpty()){
+             /*   if (spindexer.isFull() || spindexer.isEmpty()){
                     //do nothing
                 }
                 if (spindexer.countArtifacts() == 1){
@@ -463,7 +463,7 @@ public abstract class RobotBaseOp extends OpMode {
                     else{
                         //do nothing
                     }
-                }
+                } */
         }
         public void execute(){
 
@@ -589,12 +589,13 @@ public abstract class RobotBaseOp extends OpMode {
         //double targetX = turret.target.fieldPosition.get(1);
         //double targetY = -turret.target.fieldPosition.get(0);
         // TODO: red vs blue targets
-        double targetX = 10;
+        double targetX = 9;
         double targetY = 135;
+
+
         if (getAlliance() == Alliance.RED){
-            targetX = 141 - targetX;
-            // is our field set up wrong?? we can't figure out
-            targetX = 140;
+            targetX = 141 - targetX;            // is our field set up wrong?? we can't figure out
+           // targetX = 138;
         }
 
         double distanceA = targetX - turretX;

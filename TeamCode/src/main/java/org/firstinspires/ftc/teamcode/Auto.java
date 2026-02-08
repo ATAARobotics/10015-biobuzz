@@ -36,6 +36,7 @@ public abstract class Auto extends RobotBaseOp {
     double yOffset = 8.0984;
     private boolean usePreloads = true;
     private int whenOpenGate = 0;
+    private boolean audienceSpike = false;
 
     private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
     private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(90));
@@ -74,6 +75,7 @@ public abstract class Auto extends RobotBaseOp {
     // human-player preloads
     private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(235));
     private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(255));
+    private final Pose wallClosish = new Pose(xOffset + 4, yOffset + 5, Math.toRadians(270));
 
     // trying a different human-player routing
     private final Pose wallDirectStart = new Pose(xOffset + 1, yOffset + 15, Math.toRadians(240));
@@ -177,7 +179,9 @@ public abstract class Auto extends RobotBaseOp {
             )
         );
         if (usePreloads) {
-            auto.addCommands(new AutoOuttake());
+            auto.addCommands(new AutoOuttake(),
+            new Delay(0.5));
+
         }
 
         // collect and shoot audience spike mark
@@ -187,8 +191,9 @@ public abstract class Auto extends RobotBaseOp {
                 new AutoIntake(),
                 pathBetween(spikeStart1, spikeEnd1, 0.45)
             ),
-            new PrepareToShoot(),
             new SoftIntake(),
+            new Delay(1.0),
+            new PrepareToShoot(),
             new ParallelCommandGroup(
                 new SortSpindex(),
                 pathBetween(spikeEnd1, blueFarShoot, 1.0)
@@ -203,16 +208,19 @@ public abstract class Auto extends RobotBaseOp {
                 new AutoIntake(),
                 new SequentialCommandGroup(
                     pathBetween(wallFar, wallClose, 0.55),
-                    new Delay(1.0)
+                    new Delay(1.0),
+                        pathBetween(wallClose, wallClosish, 0.55),
+                        new Delay(1.0)
                 )
             ),
-            new PrepareToShoot(),
             new SoftIntake(),
+            new PrepareToShoot(),
             new ParallelCommandGroup(
                 new SortSpindex(),
                 pathBetween(wallClose, blueFarShoot, 1.0)
             ),
-            new AutoOuttake()
+            new AutoOuttake(),
+            new Delay(0.5)
         );
 
 /*
@@ -270,7 +278,8 @@ public abstract class Auto extends RobotBaseOp {
                     new SortSpindex(),
                     pathBetween(blueNearStart, blueNearShoot, 1.0)
                 ),
-                new AutoOuttake()
+                new AutoOuttake(),
+                    new Delay(0.5)
                 );
         } else {
             spikeStart = blueNearStart;
@@ -284,24 +293,19 @@ public abstract class Auto extends RobotBaseOp {
                     new AutoIntake(),
                     pathBetween(spikeStart3, spikeEnd3, 0.35)
                 ),
-                new SoftIntake()
+                new SoftIntake(),
+                new Delay(1)
         );
-       Pose lastSpike = spikeEnd3;
-        if (whenOpenGate == 1) {
-            // open the gate after picking up spike 3
-            auto.addCommands(
-                    pathBetween(spikeEnd3, openGate, 1.0)
-            );
-            lastSpike = openGate;
-        }
+
         // shooting spike three after opening gate
         auto.addCommands(
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    pathBetween(lastSpike, secondBlueNearShoot, 1.0)
+                    pathBetween(spikeEnd3, secondBlueNearShoot, 1.0)
                 ),
-                new AutoOuttake()
+                new AutoOuttake(),
+                new Delay(0.5)
         );
         // pick up and shoot middle spike mark
         auto.addCommands(
@@ -311,15 +315,52 @@ public abstract class Auto extends RobotBaseOp {
                         pathBetween(spikeStart2, spikeEnd2, 0.35)
                 ),
                 new SoftIntake(),
-                pathBetween(spikeEnd2, spikeStart2, 1.0),
+                new Delay(1)
+                );
+
+        Pose lastSpike = spikeEnd2;
+        if (whenOpenGate == 1) {
+            // open the gate after picking up spike 3
+            auto.addCommands(
+                    pathBetween(spikeEnd2, openGate, 1.0)
+            );
+            lastSpike = openGate;
+        }
+
+        auto.addCommands(
+                pathBetween(lastSpike, spikeStart2, 1.0),
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
                     pathBetween(spikeStart2, thirdBlueNearShoot, 1.0)
                 ),
                 new AutoOuttake(),
-                pathBetween(thirdBlueNearShoot, nearParkGate, 1.0)
+                new Delay(0.5)
         );
+
+        if (audienceSpike){
+            auto.addCommands(
+                    pathBetween(thirdBlueNearShoot, spikeStart1, 1.0),
+                    new ParallelRaceGroup(
+                            new AutoIntake(),
+                            pathBetween(spikeStart1, spikeEnd1, 0.35)
+                    ),
+                    new SoftIntake(),
+                    new Delay(1),
+                    new PrepareToShoot(),
+                    new ParallelCommandGroup(
+                            new SortSpindex(),
+                            pathBetween(spikeEnd1, thirdBlueNearShoot, 1.0)
+                    ),
+                    new AutoOuttake(),
+                    new Delay(0.5),
+                    pathBetween(thirdBlueNearShoot, nearParkGate, 1.0)
+            );
+        }
+        else {
+            auto.addCommands(
+                    pathBetween(thirdBlueNearShoot, nearParkGate, 1.0));
+        }
 
         auto.addCommands(
             new SpindexMode()
@@ -348,6 +389,9 @@ public abstract class Auto extends RobotBaseOp {
                 whenOpenGate = 0;
             }
         }
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
+            audienceSpike = !audienceSpike;
+        }
 
         String openDescription = "unknown";
         if (whenOpenGate == 0) openDescription = "Never";
@@ -356,6 +400,7 @@ public abstract class Auto extends RobotBaseOp {
 
         telemetry.addData("Preloads (Dpad Up to toggle)", usePreloads);
         telemetry.addData("Open Gate (Dpad Down to toggle)", openDescription);
+        telemetry.addData("Pick up third spike (Dpad Left to toggle", audienceSpike);
         telemetry.update();
     }
 
