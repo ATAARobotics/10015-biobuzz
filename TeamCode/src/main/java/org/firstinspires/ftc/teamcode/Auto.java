@@ -72,8 +72,8 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose nearParkGate = new Pose (36.0, 72, Math.toRadians(180));
 
     // human-player preloads
-    private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(250));
-    private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(250));
+    private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(235));
+    private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(255));
 
     // trying a different human-player routing
     private final Pose wallDirectStart = new Pose(xOffset + 1, yOffset + 15, Math.toRadians(240));
@@ -236,6 +236,10 @@ public abstract class Auto extends RobotBaseOp {
             pathBetween(blueFarShoot, blueFarPark, 1.0)
         );
 
+        auto.addCommands(
+            new SpindexMode()
+        );
+
         return auto;
     }
 
@@ -282,7 +286,8 @@ public abstract class Auto extends RobotBaseOp {
                 new ParallelRaceGroup(
                     new AutoIntake(),
                     pathBetween(spikeStart3, spikeEnd3, 0.35)
-                )
+                ),
+                new SoftIntake()
         );
        Pose lastSpike = spikeEnd3;
         if (whenOpenGate == 1) {
@@ -308,6 +313,7 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
                         pathBetween(spikeStart2, spikeEnd2, 0.35)
                 ),
+                new SoftIntake(),
                 pathBetween(spikeEnd2, spikeStart2, 1.0),
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
@@ -316,6 +322,10 @@ public abstract class Auto extends RobotBaseOp {
                 ),
                 new AutoOuttake(),
                 pathBetween(thirdBlueNearShoot, nearParkGate, 1.0)
+        );
+
+        auto.addCommands(
+            new SpindexMode()
         );
 
         return auto;

@@ -323,6 +323,19 @@ public abstract class RobotBaseOp extends OpMode {
     }
 
 
+    public class SpindexMode extends CommandBase {
+        public SpindexMode() {
+            addRequirements(spindexer);
+        }
+        public void initialize() {
+            spindexer.spinModeIndex();
+        }
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+
     public class LookAtObelisk extends CommandBase {
         public double startTime;
 
@@ -535,6 +548,8 @@ public abstract class RobotBaseOp extends OpMode {
         double targetY = 135;
         if (getAlliance() == Alliance.RED){
             targetX = 141 - targetX;
+            // is our field set up wrong?? we can't figure out
+            targetX = 140;
         }
 
         double distanceA = targetX - turretX;
