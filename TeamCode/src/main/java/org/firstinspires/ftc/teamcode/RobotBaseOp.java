@@ -590,13 +590,13 @@ public abstract class RobotBaseOp extends OpMode {
         //double targetY = -turret.target.fieldPosition.get(0);
         // TODO: red vs blue targets
         double targetX = 9;
-        double targetY = 135;
+        double targetY = 132;
 
 
         if (getAlliance() == Alliance.RED){
            // targetX = 141 - targetX;            // is our field set up wrong?? we can't figure out
             targetX = 140;
-            targetY = 132;
+            targetY = 135;
         }
 
         double distanceA = targetX - turretX;

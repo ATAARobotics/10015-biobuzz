@@ -58,7 +58,7 @@ public abstract class Auto extends RobotBaseOp {
             Math.toRadians(180)
         );
     private final Pose secondBlueNearShoot = new Pose (50, 102, Math.toRadians(180));
-    private final Pose thirdBlueNearShoot = new Pose (60, 73, Math.toRadians(180));
+    private final Pose thirdBlueNearShoot = new Pose (55, 73, Math.toRadians(180));
 
     private final Pose spikeStart1 = new Pose (50, 35.0, Math.toRadians(180));
     private final Pose spikeEnd1 = new Pose (10.4, 35.0, Math.toRadians(180));
