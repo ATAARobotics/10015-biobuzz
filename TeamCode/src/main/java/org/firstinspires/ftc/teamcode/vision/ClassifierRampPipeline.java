@@ -26,6 +26,10 @@ public class ClassifierRampPipeline extends OpenCvPipeline
     private Mat grey = new Mat();
 
     Mat cameraMatrix;
+    MatOfDouble distCoeff;
+
+    // 4 corners of our ramp, FTC-coordinate system in inches
+    MatOfPoint3f ramp;
 
     Scalar blue = new Scalar(7,197,235,255);
     Scalar red = new Scalar(255,0,0,255);
@@ -43,6 +47,12 @@ public class ClassifierRampPipeline extends OpenCvPipeline
 
     public ClassifierRampPipeline()
     {
+        ramp = new MatOfPoint3f();
+        ramp.put(0, 0, new float[] { 60, 141, 12 });
+        ramp.put(1, 0, new float[] { 81, 141, 12 });
+        ramp.put(2, 0, new float[] { 81, 141, 0 });
+        ramp.put(3, 0, new float[] { 60, 141, 0 });
+
         double tagsize = 0.0508; // meters (!!)
         // Lens intrinsics
         // UNITS ARE PIXELS
@@ -92,7 +102,30 @@ public class ClassifierRampPipeline extends OpenCvPipeline
     @Override
     public Mat processFrame(Mat input)
     {
+        double x = 70.5;
+        double y = 141.0;
+        double angle = Math.toRadians(90.0);
+        Mat rvec = new MatOfDouble(
+                Math.cos(angle), Math.sin(angle), 0,
+                Math.sin(angle), Math.cos(angle), 0,
+                0, 0, 1.0
+        );
+        Mat tvec = new MatOfDouble(
+                1, 0, x,
+                0, 1, y,
+                0, 0, 1
+        );
+        MatOfPoint2f imgPoints = new MatOfPoint2f();
+        // see also https://stackoverflow.com/questions/48846453/java-implementation-of-opencvprojectpoints-seems-broken-in-this-basic-example
+        Calib3d.projectPoints(ramp, rvec, tvec, cameraMatrix, distCoeff, imgPoints);
+        Point[] imgramp = imgPoints.toArray();
+        // imgPoints should be in image-space now .. we can draw lines?
 
+        Imgproc.line(input, imgramp[0], imgramp[1], red, 2);
+        Imgproc.line(input, imgramp[1], imgramp[2], red, 2);
+        Imgproc.line(input, imgramp[2], imgramp[3], red, 2);
+        Imgproc.line(input, imgramp[3], imgramp[0], red, 2);
+        return input;
     }
 
 
@@ -120,6 +153,13 @@ public class ClassifierRampPipeline extends OpenCvPipeline
         cameraMatrix.put(2, 0, 0);
         cameraMatrix.put(2,1,0);
         cameraMatrix.put(2,2,1);
+
+        distCoeff = new MatOfDouble(5, 1);
+        distCoeff.put(0, 0, 0.112507);
+        distCoeff.put(1, 0, -0.272067);
+        distCoeff.put(2, 0, 0.);
+        distCoeff.put(3, 0, 0.);
+        distCoeff.put(4, 0, 0.15775);
     }
 
     /**
