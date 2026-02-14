@@ -103,11 +103,15 @@ public abstract class Auto extends RobotBaseOp {
     public Command pathBetween(Pose b, Pose e, double speed) {
         Pose begin = convert(b);
         Pose end = convert(e);
-        PathChain p = follower.pathBuilder()
+        PathBuilder pb = follower.pathBuilder()
             .setGlobalDeceleration()
-            .addPath(new BezierLine(begin, end))
-            .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
-            .build();
+            .addPath(new BezierLine(begin, end));
+        if (begin.getHeading() != end.getHeading()) {
+            pb = pb.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
+        } else {
+            pb = pb.setConstantHeadingInterpolation(end.getHeading());
+        }
+        PathChain p = pb.build();
         return new FollowPathCommand(p, speed);
     }
 

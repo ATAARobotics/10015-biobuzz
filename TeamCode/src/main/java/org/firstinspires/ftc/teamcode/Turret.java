@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Size;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -33,6 +34,7 @@ public class Turret extends SubsystemBase {
     private final CRServo servo1, servo2;
     AnalogInput encoder0;
     AnalogInput encoder1;
+    DcMotor revEncoder;
     Servo motifLight;
 
     double PINK = 0.71;
@@ -63,6 +65,11 @@ public class Turret extends SubsystemBase {
     public double aprilFloorDistance;
 
     private static final double GEAR_RATIO = 0.865; // changed february 13. 1 servo rotation equals 0.865 turret rotations
+
+    // the ratio for the turret shaft connected to the Rev encoder
+    private static final double ENCODER_GEAR_RATIO = 40.0 / 185.0;
+    private static final double REV_ENCODER_TICKS_PER_REV = 8192;
+
     // tuned december 11, bare servos for PID, attach turret for F
     //public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
     // tuned dec 22 from first principals
@@ -98,6 +105,8 @@ public class Turret extends SubsystemBase {
         servo2 = new CRServo(hardwareMap, "right_turret");
         encoder0 = hardwareMap.get(AnalogInput.class, "left_encoder");
         encoder1 = hardwareMap.get(AnalogInput.class, "right_encoder");
+        // the turret encoder is plugged into drivebase port 0, the front-right motor
+        revEncoder = hardwareMap.get(DcMotor.class, "fr");
 
         motifLight = hardwareMap.get(Servo.class, "light");
 
@@ -166,6 +175,8 @@ public class Turret extends SubsystemBase {
     public void reset() {
         currentTurretAngle = 0;
         lastServoAngle = 0;
+        revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // jan 30: we aren't using more than +/- 90 degrees yet, and
         // still having weird issues. team-lead call is to mount
@@ -222,6 +233,10 @@ public class Turret extends SubsystemBase {
         return voltage0 / 3.3 * 360;
     }
 
+    public double getTurretAngle() {
+        return (revEncoder.getCurrentPosition() / REV_ENCODER_TICKS_PER_REV) * ENCODER_GEAR_RATIO;
+    }
+
     public double getOtherServoAngle() {
         // Read analog voltage, convert to degrees
         return voltage1 / 3.3 * 360;
@@ -275,6 +290,7 @@ public class Turret extends SubsystemBase {
             }
         }
 
+        /*
         // compute where the servos are, and conclude where the turret is
         servoAngle = getServoAngle() - resetAngle;
         servoDelta = lastServoAngle - servoAngle;
@@ -284,8 +300,11 @@ public class Turret extends SubsystemBase {
         //if (servoDelta < -180) servoTurnCount--;
         //if (servoDelta > 180) servoTurnCount++;
         //currentTurretAngle = (servoTurnCount * 360 + servoAngle)*GEAR_RATIO;
-
         currentTurretAngle = servoAngle * GEAR_RATIO;
+        */
+
+        currentTurretAngle = getTurretAngle();
+
 
         turretHeadingControl.setPID(turretP, turretI, turretD);
 

@@ -43,6 +43,8 @@ public abstract class RobotBaseOp extends OpMode {
     double geometricDistance;
     // offset robot / turret centers is 66.70mm
     private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
+    public static double GEOM_TARGET_X = 1;
+    public static double GEOM_TARGET_Y = 140;
 
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
@@ -589,14 +591,12 @@ public abstract class RobotBaseOp extends OpMode {
         //double targetX = turret.target.fieldPosition.get(1);
         //double targetY = -turret.target.fieldPosition.get(0);
         // TODO: red vs blue targets
-        double targetX = 9;
-        double targetY = 132;
+        double targetX = GEOM_TARGET_X;
+        double targetY = GEOM_TARGET_Y;
 
 
         if (getAlliance() == Alliance.RED){
-           // targetX = 141 - targetX;            // is our field set up wrong?? we can't figure out
-            targetX = 140;
-            targetY = 135;
+            targetX = 141 - GEOM_TARGET_X;
         }
 
         double distanceA = targetX - turretX;

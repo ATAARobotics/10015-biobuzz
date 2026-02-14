@@ -25,3 +25,7 @@ League Meet notes:
 
 - "-6 on red" seemed to be a good tweak, during Wed adrian practice
 
+- in both post-auto teleop and straight "blue" teleop the coordinates are weird.
+  - we get about the right full-field distance from reset
+  - but it changes by ~12 inches when rotated ("correct" at 0 and 90, "~12 inches shorter" at 180 and 270)
+  
