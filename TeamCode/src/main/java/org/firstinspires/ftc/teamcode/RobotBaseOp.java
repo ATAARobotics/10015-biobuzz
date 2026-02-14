@@ -235,7 +235,7 @@ public abstract class RobotBaseOp extends OpMode {
                     spindexer.spinShoot();
 
                     // try to rapid-shoot if we're close enough
-                    if (geometricDistance < 65.0) {
+                    if (geometricDistance < 100) {
                         for (int x=0; x < spindexer.artifactCount() - 1; x++) {
                             spindexer.spinShoot();
                         }
