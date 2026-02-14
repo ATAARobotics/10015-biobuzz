@@ -45,17 +45,13 @@ public class Shooter extends SubsystemBase {
     // looking at telemetry data, we determined that this only happens
     // during shots (normal spin-down is slower so the 200ms window can't see it)
 
-    //Tuned on November 27:
-    public static double FAR_RPM = 4950;
-    public static double NEAR_RPM = 4000;
+    double hoodSlope;
     public static double HOOD_MAX = 0.80;
     public static double HOOD_MIN = 0.05;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
-    static double RPM_VS_DIST_SLOPE = 20.086; // old is 18.941
-    static double RPM_VS_DIST_INTERCEPT = 2411.7 ; //Old is 2327.9
-    static double HOOD_COEF = 0.0732;
-    static double HOOD_EXP = 0.4768;
+    static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
+    static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
     public static double FAR_DISTANCE = 100.0;
 
@@ -139,8 +135,10 @@ public class Shooter extends SubsystemBase {
     public boolean readyToShoot() {
         // diff will be positive number if we're below target, and
         // negative number if we're above target
-        double rpmDiff = targetRpm - currentRpm;
-        return (targetRpm > 0 && Math.abs(rpmDiff) < RPM_TOLERANCE);
+       /* double rpmDiff = targetRpm - currentRpm;
+        return (targetRpm > 0 && Math.abs(rpmDiff) < RPM_TOLERANCE);*/
+        double rpmMin = 41.9 * aprilDistance + 351; // linear equation for the minimun rpm to hit the target
+        return currentRpm > rpmMin && targetRpm > 0;
         // if the shooter is still over-shooting or getting "stuck",
         // try a different "over" vs "under" tolerance
         /*
@@ -173,8 +171,21 @@ public class Shooter extends SubsystemBase {
         if (autoRpm /*&& aprilDistance > 0.5*/) {
             targetRpm = RPM_VS_DIST_SLOPE * aprilDistance + RPM_VS_DIST_INTERCEPT;
          //   targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
-            targetHood = -0.00006 * aprilDistance * aprilDistance + 0.0167 * aprilDistance - 0.4328;
+            //targetHood = -0.00006 * aprilDistance * aprilDistance + 0.0167 * aprilDistance - 0.4328;
         }
+        if (aprilDistance < 76.7){
+            hoodSlope = 0.0004 + -0.00002 * (aprilDistance - 76.7);  //hoodSlope = hoodSlope@76.7 + hoodSlopeSlope * (aprilDistance - a distance)
+            targetHood = 0.4 + hoodSlope * (3500 - currentRpm);
+        }
+        else if (aprilDistance > 84){
+            hoodSlope = 0.00083 + 0.000022 * (aprilDistance - 84);
+            targetHood = 0.7 + hoodSlope * (4300 - currentRpm);
+        }
+        else {
+            hoodSlope = 0.0004 + 0.000059 * (aprilDistance - 76.7);
+            targetHood = 0.0004 + hoodSlope * (4100 - currentRpm);
+        }
+
 
         // TODO we are special-casing the far-zone for now and not using the regression algorithm
         if (autoRpm && aprilDistance > FAR_DISTANCE) {

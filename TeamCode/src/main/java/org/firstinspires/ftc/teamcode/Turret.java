@@ -62,13 +62,13 @@ public class Turret extends SubsystemBase {
     public double aprilDistance;
     public double aprilFloorDistance;
 
-    private static final double GEAR_RATIO = 0.8; // 1 servo rotation equals 0.8 turret rotations
+    private static final double GEAR_RATIO = 0.865; // changed february 13. 1 servo rotation equals 0.865 turret rotations
     // tuned december 11, bare servos for PID, attach turret for F
     //public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
     // tuned dec 22 from first principals
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
-    public static double turretP = 0.0045, turretI = 0.00, turretD = 0.0002, turretF = 0.07;
+    public static double turretP = 0.004, turretI = 0.001, turretD = 0.00045, turretF = 0.075;
     public static double TURRET_TOLERANCE = 4; // in degrees
     public static double TURRET_TWEAK = 3;
     public double targetHeading;  // from geometry via RobotBaseOp
@@ -415,7 +415,7 @@ public class Turret extends SubsystemBase {
     }
 
     private boolean aprilTagLock() {
-        if (time - lastAprilLock > 0.3) {
+        if (time - lastAprilLock < 0.3) {
             faceRobotAngle(aprilBearing + currentTurretAngle - angleAdjust);
             return true;
         }
