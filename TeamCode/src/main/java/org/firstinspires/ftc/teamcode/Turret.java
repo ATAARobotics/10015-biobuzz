@@ -240,12 +240,9 @@ public class Turret extends SubsystemBase {
     }
 
     public double getTurretAngle() {
-        // something is very weird here .. 383.6 is the ratio for a
-        // goBilda 435 .. which is the motor that plugged in beside
-        // this encoder, BUT that shouldn't affect the reading we get
-        // from it
         double shaftRevs = -revEncoder.getCurrentPosition() / REV_ENCODER_TICKS_PER_REV;
-        double rawAngle = shaftRevs * ENCODER_GEAR_RATIO;
+        double turretRevs = shaftRevs * ENCODER_GEAR_RATIO;
+        double rawAngle = 360.0 * turretRevs;
         // we start the turret backwards, so add 180
         return rawAngle + 180;
     }
