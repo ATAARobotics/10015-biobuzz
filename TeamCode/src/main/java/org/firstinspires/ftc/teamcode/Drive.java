@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -79,6 +80,7 @@ public class Drive extends SubsystemBase {
     public static PIDCoefficients strafe_pid_quick = new PIDCoefficients(2.0, 0.05, 0.2);
 
     public static Motor.ZeroPowerBehavior zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE;
+    public DcMotor turretEncoder;
 
     double current_time;
     public static Pose2D current_position;
@@ -103,18 +105,25 @@ public class Drive extends SubsystemBase {
         // driving backwards also in turbo .. we've done this at least
         // once Nov 28)
 
-        Motor motor_fl = new FloodMotor(hardwareMap, "fl", Motor.GoBILDA.RPM_435);
+        Motor motor_fl = new FloodMotor(hardwareMap, "fl");//, Motor.GoBILDA.RPM_435);
         motor_fl.setInverted(true);
         motor_fl.setZeroPowerBehavior(zeroPowerBehavior);
-        Motor motor_fr = new FloodMotor(hardwareMap, "fr", Motor.GoBILDA.RPM_435);
+        Motor motor_fr = new FloodMotor(hardwareMap, "fr");//, Motor.GoBILDA.RPM_435);
+        motor_fr.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        turretEncoder = motor_fr.motor;
         motor_fr.setZeroPowerBehavior(zeroPowerBehavior);
-        Motor motor_bl = new FloodMotor(hardwareMap, "bl", Motor.GoBILDA.RPM_435);
+        Motor motor_bl = new FloodMotor(hardwareMap, "bl");//, Motor.GoBILDA.RPM_435);
         motor_bl.setInverted(true);
         motor_bl.setZeroPowerBehavior(zeroPowerBehavior);
-        Motor motor_br = new FloodMotor(hardwareMap, "br", Motor.GoBILDA.RPM_435);
+        Motor motor_br = new FloodMotor(hardwareMap, "br");//, Motor.GoBILDA.RPM_435);
         motor_br.setZeroPowerBehavior(zeroPowerBehavior);
         drivebase = new MecanumDrive(false, motor_fl, motor_fr, motor_bl, motor_br);
         drivebase.setMaxSpeed(1);
+
+        motor_fl.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor_fr.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor_bl.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor_br.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         heading_control = new PIDController(hPID.p,hPID.i,hPID.d);
         heading_control.setTolerance(ANGLE_TOLERANCE, Double.POSITIVE_INFINITY);

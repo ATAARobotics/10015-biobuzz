@@ -71,7 +71,7 @@ public abstract class RobotBaseOp extends OpMode {
         operator = new GamepadEx(gamepad2);
 
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
-        turret = new Turret(hardwareMap, isRedAlliance(), isAuto());
+        turret = new Turret(hardwareMap, isRedAlliance(), isAuto(), drive.turretEncoder);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);

@@ -111,6 +111,7 @@ public class Shooter extends SubsystemBase {
     }
     public void read_sensors(double time) {
         // get any inputs from our encoders or other sensors
+        // ("shooterL" is in port 2, a hardware port, "shooterR" is in port 3)
         ticks = motor1.getCurrentPosition();
         ticksPerSecond = motor1.getVelocity();
         currentRpm = (ticksPerSecond * 60) / TICKS_PER_REV;
@@ -138,14 +139,21 @@ public class Shooter extends SubsystemBase {
     public double rpmMax(){
         return RPM_VS_DIST_SLOPE * aprilDistance + RPM_VS_DIST_INTERCEPT;
     }
+    public double hoodAngle(double rpm) {
+        // linear fit of data from feb 13
+        return 0.000304388 * rpm + -0.692439;
+    }
 
     public boolean readyToShoot() {
         // diff will be positive number if we're below target, and
         // negative number if we're above target
-       /* double rpmDiff = targetRpm - currentRpm;
-        return (targetRpm > 0 && Math.abs(rpmDiff) < RPM_TOLERANCE);*/
+        double rpmDiff = targetRpm - currentRpm;
+        return (targetRpm > 0 && Math.abs(rpmDiff) < RPM_TOLERANCE);
+
  // linear equation for the minimun rpm to hit the target
-        return currentRpm > rpmMin() && targetRpm > 0;
+//        return currentRpm > rpmMin() && targetRpm > 0;
+
+
         // if the shooter is still over-shooting or getting "stuck",
         // try a different "over" vs "under" tolerance
         /*
@@ -176,10 +184,18 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         // auto-computed RPM, optional
         if (autoRpm /*&& aprilDistance > 0.5*/) {
+
+            // we have regression lines for "max" and "min" RPMs that
+            // gets artifacts scored, and RPM_PERCENT controls where
+            // we are between them (0% means min, 100% means max).
             targetRpm = rpmMax();
             double dif = rpmMax() - rpmMin();
             targetRpm = rpmMin() + (RPM_PERCENT * dif);
-         //   targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
+
+            // "new idea" to target hood angle based of RPM, not distance
+            targetHood = hoodAngle(currentRpm);
+
+            //targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
             //targetHood = -0.00006 * aprilDistance * aprilDistance + 0.0167 * aprilDistance - 0.4328;
         }
        /* if (aprilDistance < 76.7){

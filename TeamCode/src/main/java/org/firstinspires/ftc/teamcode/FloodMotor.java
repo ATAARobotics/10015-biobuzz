@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class FloodMotor extends Motor {
     final double SLEW_RATE = 0.2;
 
-    public FloodMotor(HardwareMap hw, String name, Motor.GoBILDA kind) {
-        super(hw, name, kind);
+    public FloodMotor(HardwareMap hw, String name){//, Motor.GoBILDA kind) {
+        super(hw, name);//, kind);
     }
 
     @Override
