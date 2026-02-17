@@ -10,6 +10,8 @@ import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.motors.CRServo;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
+import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -75,7 +77,7 @@ public class Turret extends SubsystemBase {
     // tuned dec 22 from first principals
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
-    public static double turretP = 0.004, turretI = 0.001, turretD = 0.00045, turretF = 0.075;
+    public static double turretP = 0.0045, turretI = 0.002, turretD = 0.0005, turretF = 0.077;
     public static double TURRET_TOLERANCE = 4; // in degrees
     public static double TURRET_TWEAK = 3;
     public double targetHeading;  // from geometry via RobotBaseOp
@@ -97,7 +99,7 @@ public class Turret extends SubsystemBase {
 
 //    private static FileWriter writer;
 
-    public Turret(HardwareMap hardwareMap, boolean isRedAlliance, boolean isAuto) {
+    public Turret(HardwareMap hardwareMap, boolean isRedAlliance, boolean isAuto, DcMotor rev) {
         target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
         this.isAuto = isAuto;
         // both servos must always run in the same direction
@@ -106,8 +108,8 @@ public class Turret extends SubsystemBase {
         encoder0 = hardwareMap.get(AnalogInput.class, "left_encoder");
         encoder1 = hardwareMap.get(AnalogInput.class, "right_encoder");
         // the turret encoder is plugged into drivebase port 0, the front-right motor
-        revEncoder = hardwareMap.get(DcMotor.class, "fr");
-
+        //revEncoder = hardwareMap.dcMotor.get("fr");
+        revEncoder = rev;
         motifLight = hardwareMap.get(Servo.class, "light");
 
         turretHeadingControl = new PIDController(turretP, turretI, turretD);
@@ -234,7 +236,11 @@ public class Turret extends SubsystemBase {
     }
 
     public double getTurretAngle() {
-        return (revEncoder.getCurrentPosition() / REV_ENCODER_TICKS_PER_REV) * ENCODER_GEAR_RATIO;
+        // something is very weird here .. 383.6 is the ration for a
+        // goBilda 435 .. which is the motor that plugged in beside
+        // this encoder, BUT that shouldn't affect the reading we get
+        // from it
+        return (-(revEncoder.getCurrentPosition() * 383.6) / REV_ENCODER_TICKS_PER_REV) * ENCODER_GEAR_RATIO;
     }
 
     public double getOtherServoAngle() {
@@ -305,7 +311,6 @@ public class Turret extends SubsystemBase {
 
         currentTurretAngle = getTurretAngle();
 
-
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
         servoPower = turretHeadingControl.calculate(currentTurretAngle) + turretF * Math.signum(turretHeadingControl.getPositionError());
@@ -364,10 +369,15 @@ public class Turret extends SubsystemBase {
         telem.log("turret-april-lock", haveAprilLock);
         telem.log("turret-last-april", lastAprilLock);
         telem.log("turret-april-mode", mode);
+        telem.log("turret-obelisk", pattern);
+        telem.log("turret-rev-encoder", revEncoder.getCurrentPosition());
+        telem.log("turret-rev-angle", getTurretAngle());
+
+        /**
         telem.log("turret-april-fps", portal.getFps());
         ExposureControl ec = portal.getCameraControl(ExposureControl.class);
         telem.log("camera-exposure", ec.getExposure(TimeUnit.MILLISECONDS));
-        telem.log("turret-obelisk", pattern);
+        **/
 
         String logPattern = "unknown";
         if (pattern == 0) {
