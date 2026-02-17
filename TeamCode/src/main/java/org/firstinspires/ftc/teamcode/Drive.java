@@ -119,10 +119,10 @@ public class Drive extends SubsystemBase {
         drivebase = new MecanumDrive(false, motor_fl, motor_fr, motor_bl, motor_br);
         drivebase.setMaxSpeed(1);
 
-        motor_fl.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor_fr.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor_bl.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor_br.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motor_fl.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor_fr.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor_bl.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor_br.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         heading_control = new PIDController(hPID.p,hPID.i,hPID.d);
         heading_control.setTolerance(ANGLE_TOLERANCE, Double.POSITIVE_INFINITY);
