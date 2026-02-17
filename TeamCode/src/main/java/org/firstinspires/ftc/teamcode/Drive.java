@@ -109,7 +109,6 @@ public class Drive extends SubsystemBase {
         motor_fl.setInverted(true);
         motor_fl.setZeroPowerBehavior(zeroPowerBehavior);
         Motor motor_fr = new FloodMotor(hardwareMap, "fr");//, Motor.GoBILDA.RPM_435);
-        motor_fr.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         turretEncoder = motor_fr.motor;
         motor_fr.setZeroPowerBehavior(zeroPowerBehavior);
         Motor motor_bl = new FloodMotor(hardwareMap, "bl");//, Motor.GoBILDA.RPM_435);
