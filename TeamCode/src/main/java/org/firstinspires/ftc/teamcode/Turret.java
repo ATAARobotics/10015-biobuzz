@@ -138,16 +138,19 @@ public class Turret extends SubsystemBase {
 
     public void faceFieldAngle(double fieldAngleDeg) {
         // Robot-relative angle: where turret must point relative to robot frame
-        double robotRelative = wrapAngle(fieldAngleDeg + operatorOffset - robotHeading);
+        //double robotRelative = wrapAngle(fieldAngleDeg + operatorOffset - robotHeading);
+        double robotRelative = fieldAngleDeg + operatorOffset - robotHeading;
 
         // Reuse existing robot-relative method
         faceRobotAngle(robotRelative);
     }
 
     public void faceRobotAngle(double angle) {
-        // +/- 90 is easier to see obvious issues with turret angle/tracking
-        angle = Math.max(-90, Math.min(angle, 90));
-        //angle = Math.max(-135, Math.min(angle, 135));
+        // with turret starting backwards, we can move ~170 degrees on each side
+        // so angles < (180 - 170) or angles > (180 + 170) are out
+        double maxAngleMove = 170;
+        if (angle < 180 - maxAngleMove) angle = (180 - maxAngleMove);
+        if (angle > 180 + maxAngleMove) angle = (180 + maxAngleMove);
         turretHeadingControl.setSetPoint(angle);
     }
 
@@ -175,7 +178,8 @@ public class Turret extends SubsystemBase {
     // f "just below moving" = 0.11
     // pidf = 0.003, 0, 0.07, 0.0   <-- seems pretty good?
     public void reset() {
-        currentTurretAngle = 0;
+        currentTurretAngle = 180;
+        joystickAngle = 180;
         lastServoAngle = 0;
         revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -189,7 +193,7 @@ public class Turret extends SubsystemBase {
         servo1.stop();
         servo2.stop();
         angleReset();
-        faceRobotAngle(0);
+        faceRobotAngle(180);
         mode = HeadingLockMode.Off;
     }
 
@@ -236,11 +240,14 @@ public class Turret extends SubsystemBase {
     }
 
     public double getTurretAngle() {
-        // something is very weird here .. 383.6 is the ration for a
+        // something is very weird here .. 383.6 is the ratio for a
         // goBilda 435 .. which is the motor that plugged in beside
         // this encoder, BUT that shouldn't affect the reading we get
         // from it
-        return (-(revEncoder.getCurrentPosition() * 383.6) / REV_ENCODER_TICKS_PER_REV) * ENCODER_GEAR_RATIO;
+        double shaftRevs = -revEncoder.getCurrentPosition() / REV_ENCODER_TICKS_PER_REV;
+        double rawAngle = shaftRevs * ENCODER_GEAR_RATIO;
+        // we start the turret backwards, so add 180
+        return rawAngle + 180;
     }
 
     public double getOtherServoAngle() {
@@ -428,6 +435,7 @@ public class Turret extends SubsystemBase {
             // only do the joystick control if it has moved "a lot" (1.0 is slammed)
             if (Math.hypot(rx, ry) > 0.8) {
                 joystickAngle = Math.toDegrees(Math.atan2(rx, ry));
+                joystickAngle += 180.0;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
                 operatorOffset += TURRET_TWEAK;

@@ -552,6 +552,8 @@ public abstract class RobotBaseOp extends OpMode {
 
         // runs while the robot is "on" but we haven't pressed "play" yet
         turret.read_sensors(0.0);
+        telemetry.addData("turret-ticks", turret.revEncoder.getCurrentPosition());
+        telemetry.addData("turret-angle", turret.getTurretAngle());
       /*  telemetry.addData("Turret Servo Right", turret.getServoAngle());
         telemetry.addData("Turret Servo Left", turret.getOtherServoAngle());
         telemetry.update(); */
