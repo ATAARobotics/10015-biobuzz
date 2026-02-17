@@ -182,20 +182,18 @@ public class Shooter extends SubsystemBase {
          //   targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
             //targetHood = -0.00006 * aprilDistance * aprilDistance + 0.0167 * aprilDistance - 0.4328;
         }
-       /* if (aprilDistance < 76.7){
-            hoodSlope = 0.0004 + -0.0000216 * (aprilDistance - 76.7);  //hoodSlope = hoodSlope@76.7 + hoodSlopeSlope * (aprilDistance - a distance)
-            targetHood = 0.4 + hoodSlope * (currentRpm-3500);
+        if (aprilDistance < 76.7){
+            hoodSlope = 0.0004 + -0.0000205 * (aprilDistance - 76.7);  //hoodSlope = hoodSlope@76.7 + hoodSlopeSlope * (aprilDistance - a distance)
+            targetHood = 0.4 + hoodSlope * (currentRpm - 3500);
         }
         else if (aprilDistance > 84){
-            hoodSlope = 0.00083 + 0.000022 * (aprilDistance - 84);
+            hoodSlope = 0.00083 + -0.000022 * (aprilDistance - 84);
             targetHood = 0.7 + hoodSlope * (currentRpm-4300);
         }
         else {
             hoodSlope = 0.0004 + 0.000059 * (aprilDistance - 76.7); // for 76.7 < aprilDistance < 84
             targetHood = 0.45 + hoodSlope * (currentRpm-4100);
-        }*/
-
-
+        }
 
         // TODO we are special-casing the far-zone for now and not using the regression algorithm
         if (autoRpm && aprilDistance > FAR_DISTANCE) {
