@@ -54,7 +54,7 @@ public class Shooter extends SubsystemBase {
     static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
     static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
-    public static double FAR_DISTANCE = 100.0;
+    public static double FAR_DISTANCE = 140.0;
 
     public static double BAND = 10;
     public static double BANG_POWER = 1.0;
@@ -142,6 +142,8 @@ public class Shooter extends SubsystemBase {
     public double hoodAngle(double rpm) {
         // linear fit of data from feb 13
         return 0.000304388 * rpm + -0.692439;
+        //tuned feb 16
+      //  return -9e8 * (rpm * rpm) + 0.001 * rpm - 2.03;
     }
 
     public boolean readyToShoot() {
@@ -198,7 +200,7 @@ public class Shooter extends SubsystemBase {
             //targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
             //targetHood = -0.00006 * aprilDistance * aprilDistance + 0.0167 * aprilDistance - 0.4328;
         }
-        if (aprilDistance < 76.7){
+      /*  if (aprilDistance < 76.7){
             hoodSlope = 0.0004 + -0.0000205 * (aprilDistance - 76.7);  //hoodSlope = hoodSlope@76.7 + hoodSlopeSlope * (aprilDistance - a distance)
             targetHood = 0.4 + hoodSlope * (currentRpm - 3500);
         }
@@ -209,7 +211,7 @@ public class Shooter extends SubsystemBase {
         else {
             hoodSlope = 0.0004 + 0.000059 * (aprilDistance - 76.7); // for 76.7 < aprilDistance < 84
             targetHood = 0.45 + hoodSlope * (currentRpm-4100);
-        }
+        }*/
 
         // TODO we are special-casing the far-zone for now and not using the regression algorithm
         if (autoRpm && aprilDistance > FAR_DISTANCE) {

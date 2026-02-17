@@ -569,7 +569,7 @@ public abstract class RobotBaseOp extends OpMode {
             minuteWarning = true;
             operator.gamepad.rumble(300);
         }
-        if (!endgameWarning && runtime.seconds() > 100){
+        if (!endgameWarning && runtime.seconds() > 90){
             endgameWarning = true;
             operator.gamepad.rumble(600);
         }
