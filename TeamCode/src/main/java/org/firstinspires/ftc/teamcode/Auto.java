@@ -79,7 +79,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose nearParkGate = new Pose (36.0, 72, Math.toRadians(180));
 
     // human-player preloads
-    private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(235));
+    private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(210));
     private final Pose wallControl = new Pose(57.624, 23.6 + yOffset, Math.toRadians(270));
     private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(255));
     private final Pose wallClosish = new Pose(xOffset + 4, yOffset + 5, Math.toRadians(270));
@@ -107,40 +107,35 @@ public abstract class Auto extends RobotBaseOp {
     public FollowPathCommand pathBetween(Pose b, Pose e, double speed) {
         Pose begin = convert(b);
         Pose end = convert(e);
-        PathBuilder pb = follower.pathBuilder()
-            .setGlobalDeceleration(0.5)
-            .addPath(new BezierLine(begin, end));
+        Path p = new Path(new BezierLine(begin, end));
         if (begin.getHeading() != end.getHeading()) {
-            pb = pb.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
+            p.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
         } else {
-            pb = pb.setConstantHeadingInterpolation(end.getHeading());
+            p.setConstantHeadingInterpolation(end.getHeading());
         }
-        PathChain p = pb.build();
-        //p.setBrakingStrength(1.0);  // same as passing in setGlobalDeceleration()
+        p.setBrakingStrength(1.0);
         return new FollowPathCommand(p, speed);
     }
     public FollowPathCommand curveBetween(Pose b, Pose c,Pose e,  double speed) {
         Pose begin = convert(b);
         Pose end = convert(e);
         Pose control = convert(c);
-        PathBuilder pb = follower.pathBuilder()
-                .setGlobalDeceleration(0.5)
-                .addPath(new BezierCurve(begin, control, end ));
+        Path p = new Path(new BezierCurve(begin, control, end));
+
         if (begin.getHeading() != end.getHeading()) {
-            pb = pb.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
+            p.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
         } else {
-            pb = pb.setConstantHeadingInterpolation(end.getHeading());
+            p.setConstantHeadingInterpolation(end.getHeading());
         }
-        PathChain p = pb.build();
-        //p.setBrakingStrength(1.0);  // same as passing in setGlobalDeceleration()
+        p.setBrakingStrength(1.0);  // same as passing in setGlobalDeceleration()
         return new FollowPathCommand(p, speed);
     }
 
     class FollowPathCommand extends CommandBase {
-        PathChain path;
+        Path path;
         double speed;
 
-        public FollowPathCommand(PathChain p, double s) {
+        public FollowPathCommand(Path p, double s) {
             path = p;
             speed = s;
             addRequirements(drive);

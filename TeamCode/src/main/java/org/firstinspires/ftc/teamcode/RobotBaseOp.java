@@ -360,8 +360,8 @@ public abstract class RobotBaseOp extends OpMode {
             double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
             // Add this: if (robotHeading < 0) robotHeading = robotHeading + 360;
 
-            double turretX = robotX - (Math.cos(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
-            double turretY = robotY - (Math.sin(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
+            double turretX = robotX - (Math.cos(Math.toRadians(robotHeading)) * ROBOT_CENTER_TO_TURRET_INCHES);
+            double turretY = robotY - (Math.sin(Math.toRadians(robotHeading)) * ROBOT_CENTER_TO_TURRET_INCHES);
 
             double obeliskHeading = Math.toDegrees(
                 Math.atan2(141.0 - turretY, 70.5 - turretX)
@@ -585,8 +585,8 @@ public abstract class RobotBaseOp extends OpMode {
 
         // we need to offset the robot x and y values to be at the
         // center of the turret.
-        double turretX = robotX - (Math.cos(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
-        double turretY = robotY - (Math.sin(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
+        double turretX = robotX - (Math.cos(Math.toRadians(robotHeading)) * ROBOT_CENTER_TO_TURRET_INCHES);
+        double turretY = robotY - (Math.sin(Math.toRadians(robotHeading)) * ROBOT_CENTER_TO_TURRET_INCHES);
 
         // AAAAAAaaaaaa! okay, so FTC co-ordinate system says the
         // field is 144x144 inches. This is not true, it is actually

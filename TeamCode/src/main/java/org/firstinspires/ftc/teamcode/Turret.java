@@ -140,6 +140,7 @@ public class Turret extends SubsystemBase {
         // Robot-relative angle: where turret must point relative to robot frame
         //double robotRelative = wrapAngle(fieldAngleDeg + operatorOffset - robotHeading);
         double robotRelative = fieldAngleDeg + operatorOffset - robotHeading;
+        if (robotRelative < 0.0) robotRelative = 360 + robotRelative;
 
         // Reuse existing robot-relative method
         faceRobotAngle(robotRelative);
