@@ -136,39 +136,10 @@ public class Drive extends SubsystemBase {
                 GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
         pinpoint.resetPosAndIMU();
-
-        /*otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
-        otos.setLinearUnit(DISTANCE_UNIT);
-        otos.setAngularUnit(ANGLE_UNIT);
-        // 169.91mm from back of arm to "center of robot"
-        // theory: our "center of drivebase" is not actually where the
-        // robot rotates around .. and so this offset isn't actually
-        // correct, causing a bit more drive when we "turn and drive"
-        otos.setOffset(new Pose2D(0, 0.0466, 0));
-        // notes:
-        // (above offset is the offset from the exact _center_ of the robot)
-        // from CAD, December 6:
-        //   - OTOS is 130.37mm from front of robot
-        //   - OTOS is 154.35mm from side of robot (it's centered, so from either side)
-        //   - OTOS offset is 46.635mm from exact center
-
-        otos.setLinearScalar(LINEAR_SCALAR);
-        otos.setAngularScalar(ANGULAR_SCALAR);
-        otos.calibrateImu();
-*/
-        // distance sensor
-        // TODO: more efficient if plugged to control-hub (not expansion)?
-        /*
-        dist_left = hardwareMap.get(Rev2mDistanceSensor.class, "dist_left");
-        dist_left_avg = new MovingAverage(20);
-        dist_right = hardwareMap.get(Rev2mDistanceSensor.class, "dist_right");
-        dist_right_avg = new MovingAverage(20);
-         */
     }
 
     public void reset() {
         pinpoint.resetPosAndIMU();
-        //otos.resetTracking();
     }
 
     public void stop() {
@@ -185,7 +156,6 @@ public class Drive extends SubsystemBase {
     }
 
     public void setPosition(Pose2D pose) {
-        //otos.setPosition(pose);
         pinpoint.setPosition(pose);
         current_position = pose;
         desired_heading = pose.getHeading(ANGLE_UNIT);

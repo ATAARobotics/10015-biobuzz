@@ -39,13 +39,15 @@ public abstract class Auto extends RobotBaseOp {
     private boolean audienceSpike = false;
     private boolean closeGateOpen = false;
 
-    private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
+    private final Pose blueFarStart = new Pose(47.25 + yOffset, xOffset, Math.toRadians(180));
     private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(90));
     private final Pose blueFarShoot = new Pose(
             47.5 + 8.124 + 2.0, // 2 inches further towards Red from start
             yOffset + 10.0,// 10 inches in front of start position
-            Math.toRadians(110)
+            Math.toRadians(257)
         );
+    // just inside box, slightly closer to spike1
+    private final Pose blueFarShoot2 = new Pose(60, 24.36, Math.toRadians(168));
     private final Pose blueFarPark = new Pose(
             47.5 + xOffset, // same as start offset
             yOffset + 25.0,// 25 inches in front of start position
@@ -60,8 +62,9 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose secondBlueNearShoot = new Pose (50, 102, Math.toRadians(180));
     private final Pose thirdBlueNearShoot = new Pose (55, 73, Math.toRadians(180));
 
-    private final Pose spikeStart1 = new Pose (50, 35.0, Math.toRadians(180));
+    private final Pose spikeStart1 = new Pose (42, 35.0, Math.toRadians(180));
     private final Pose spikeEnd1 = new Pose (10.4, 35.0, Math.toRadians(180));
+    private final Pose spikeStart1Control = new Pose(57.4, 37.27, Math.toRadians(180));
 
     // next set of spikes is one tile away
     private final Pose spikeStart2 = new Pose (50, 35.0 + 23.5, Math.toRadians(180));
@@ -100,11 +103,11 @@ public abstract class Auto extends RobotBaseOp {
             return blueToRed(blue);
         }
     }
-    public Command pathBetween(Pose b, Pose e, double speed) {
+    public FollowPathCommand pathBetween(Pose b, Pose e, double speed) {
         Pose begin = convert(b);
         Pose end = convert(e);
         PathBuilder pb = follower.pathBuilder()
-            .setGlobalDeceleration()
+            .setGlobalDeceleration(1.0)
             .addPath(new BezierLine(begin, end));
         if (begin.getHeading() != end.getHeading()) {
             pb = pb.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
@@ -112,6 +115,7 @@ public abstract class Auto extends RobotBaseOp {
             pb = pb.setConstantHeadingInterpolation(end.getHeading());
         }
         PathChain p = pb.build();
+        //p.setBrakingStrength(1.0);  // same as passing in setGlobalDeceleration()
         return new FollowPathCommand(p, speed);
     }
 
@@ -179,10 +183,12 @@ public abstract class Auto extends RobotBaseOp {
             auto.addCommands(new PrepareToShoot());
         }
 
+        FollowPathCommand fp = pathBetween(blueFarStart, blueFarShoot, 1.0);
+        ///if (!usePreloads) fp.path.setNoDeceleration();
         auto.addCommands(
             new ParallelCommandGroup(
                 new SortSpindex(),
-                pathBetween(blueFarStart, blueFarShoot, 1.0)
+                fp
             )
         );
         if (usePreloads) {
@@ -192,6 +198,8 @@ public abstract class Auto extends RobotBaseOp {
         }
 
         // collect and shoot audience spike mark
+        fp = pathBetween(spikeEnd1, blueFarShoot2, 1.0);
+        //fp.path.
         auto.addCommands(
             pathBetween(blueFarShoot, spikeStart1, 1.0),
             new ParallelRaceGroup(
@@ -203,7 +211,7 @@ public abstract class Auto extends RobotBaseOp {
             new PrepareToShoot(),
             new ParallelCommandGroup(
                 new SortSpindex(),
-                pathBetween(spikeEnd1, blueFarShoot, 1.0)
+                fp
             ),
             new AutoOuttake()
         );
