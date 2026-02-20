@@ -49,7 +49,16 @@ public class Constants {
         .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
         ;
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(
+        0.995,  // tValue (bezier t-value greater than this to be at end?)
+        0.1,    // velocity (inches / second) default is 0.1
+        0.5,    // translational (in inches) default is 0.1
+        Math.toRadians(1),  // heading (in radians, default 0.007 is 0.4010705 degress)
+        100,    // timeout
+        1.0,    // braking strength
+        BEZIER_CURVE_SEARCH_LIMIT,
+        1.0     // braking start, "percent of predicted stopping distance"
+        );
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)

@@ -28,4 +28,12 @@ League Meet notes:
 - in both post-auto teleop and straight "blue" teleop the coordinates are weird.
   - we get about the right full-field distance from reset
   - but it changes by ~12 inches when rotated ("correct" at 0 and 90, "~12 inches shorter" at 180 and 270)
-  
+
+
+Pedro Pathing notes:
+
+- "hold end" is to allow follower.update() to "continue to correct" after the path is "done"
+- PathChain vs Path seems to be inconsistent wrt setBrakingStrength() (only had success with "Path")
+- setGlobalDeceleration(X) is same as .setBrakingStrength(X)
+- defaults for all tunable values: https://github.com/Pedro-Pathing/PedroPathing/blob/main/core/src/main/java/com/pedropathing/follower/FollowerConstants.java
+- 
