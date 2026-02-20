@@ -39,15 +39,15 @@ public abstract class Auto extends RobotBaseOp {
     private boolean audienceSpike = false;
     private boolean closeGateOpen = false;
 
-    private final Pose blueFarStart = new Pose(47.25 + yOffset, xOffset, Math.toRadians(180));
-    private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(90));
+    private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
+    private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(270));
     private final Pose blueFarShoot = new Pose(
             47.5 + 8.124 + 2.0, // 2 inches further towards Red from start
             yOffset + 10.0,// 10 inches in front of start position
-            Math.toRadians(257)
+            Math.toRadians(180)
         );
     // just inside box, slightly closer to spike1
-    private final Pose blueFarShoot2 = new Pose(60, 24.36, Math.toRadians(168));
+    private final Pose blueFarShoot2 = new Pose(60, 24.36, Math.toRadians(180));
     private final Pose blueFarPark = new Pose(
             47.5 + xOffset, // same as start offset
             yOffset + 25.0,// 25 inches in front of start position
@@ -80,6 +80,7 @@ public abstract class Auto extends RobotBaseOp {
 
     // human-player preloads
     private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(235));
+    private final Pose wallControl = new Pose(57.624, 23.6 + yOffset, Math.toRadians(270));
     private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(255));
     private final Pose wallClosish = new Pose(xOffset + 4, yOffset + 5, Math.toRadians(270));
 
@@ -107,8 +108,24 @@ public abstract class Auto extends RobotBaseOp {
         Pose begin = convert(b);
         Pose end = convert(e);
         PathBuilder pb = follower.pathBuilder()
-            .setGlobalDeceleration(1.0)
+            .setGlobalDeceleration(0.5)
             .addPath(new BezierLine(begin, end));
+        if (begin.getHeading() != end.getHeading()) {
+            pb = pb.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
+        } else {
+            pb = pb.setConstantHeadingInterpolation(end.getHeading());
+        }
+        PathChain p = pb.build();
+        //p.setBrakingStrength(1.0);  // same as passing in setGlobalDeceleration()
+        return new FollowPathCommand(p, speed);
+    }
+    public FollowPathCommand curveBetween(Pose b, Pose c,Pose e,  double speed) {
+        Pose begin = convert(b);
+        Pose end = convert(e);
+        Pose control = convert(c);
+        PathBuilder pb = follower.pathBuilder()
+                .setGlobalDeceleration(0.5)
+                .addPath(new BezierCurve(begin, control, end ));
         if (begin.getHeading() != end.getHeading()) {
             pb = pb.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
         } else {
@@ -218,7 +235,7 @@ public abstract class Auto extends RobotBaseOp {
 
         // collect and shoot human-player preloads
         auto.addCommands(
-            pathBetween(blueFarShoot, wallFar, 1.0),
+            curveBetween(blueFarShoot, wallControl, wallFar,  1.0), //To do: add in bezier curve
             new ParallelRaceGroup(
                 new AutoIntake(),
                 new SequentialCommandGroup(
@@ -463,7 +480,9 @@ public abstract class Auto extends RobotBaseOp {
 
     @Override
     protected void addTelemetry(HyperTelemetry telem) {
+
         super.addTelemetry(telem);
+        telem.logBoth("Pinpoint-status", drive.pinpoint.getDeviceStatus());
     }
 
     @Override

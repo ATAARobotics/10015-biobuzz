@@ -54,7 +54,7 @@ public class Shooter extends SubsystemBase {
     static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
     static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
-    public static double FAR_DISTANCE = 140.0;
+    public static double FAR_DISTANCE = 120.0;
 
     public static double BAND = 10;
     public static double BANG_POWER = 1.0;
@@ -216,7 +216,10 @@ public class Shooter extends SubsystemBase {
         // TODO we are special-casing the far-zone for now and not using the regression algorithm
         if (autoRpm && aprilDistance > FAR_DISTANCE) {
             targetHood = 0.567;
-            targetRpm = 4900;
+            targetRpm = 5000;
+        }
+        if (targetRpm > 5300){
+            targetRpm = 5300;
         }
 
         if (MANUAL_RPM > 1.0 ){//&& targetRpm > 0.0) {

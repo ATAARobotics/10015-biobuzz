@@ -358,6 +358,7 @@ public abstract class RobotBaseOp extends OpMode {
             double robotX = drive.getPosition().getX(DistanceUnit.INCH);
             double robotY = drive.getPosition().getY(DistanceUnit.INCH);
             double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
+            // Add this: if (robotHeading < 0) robotHeading = robotHeading + 360;
 
             double turretX = robotX - (Math.cos(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
             double turretY = robotY - (Math.sin(robotHeading) * ROBOT_CENTER_TO_TURRET_INCHES);
@@ -579,6 +580,8 @@ public abstract class RobotBaseOp extends OpMode {
         double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
         double robotY = drive.getPosition().getY(DistanceUnit.INCH);
+
+        if (robotHeading < 0) robotHeading = robotHeading + 360;
 
         // we need to offset the robot x and y values to be at the
         // center of the turret.
