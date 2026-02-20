@@ -79,7 +79,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose nearParkGate = new Pose (36.0, 72, Math.toRadians(180));
 
     // human-player preloads
-    private final Pose wallFar = new Pose(xOffset + 4, 23.6 + yOffset, Math.toRadians(210));
+    private final Pose wallFar = new Pose(xOffset + 5, 23.6 + yOffset, Math.toRadians(210));
     private final Pose wallControl = new Pose(57.624, 23.6 + yOffset, Math.toRadians(270));
     private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(255));
     private final Pose wallClosish = new Pose(xOffset + 4, yOffset + 5, Math.toRadians(270));
@@ -113,7 +113,7 @@ public abstract class Auto extends RobotBaseOp {
         } else {
             p.setConstantHeadingInterpolation(end.getHeading());
         }
-        p.setBrakingStrength(1.0);
+        p.setBrakingStrength(0.75);
         return new FollowPathCommand(p, speed);
     }
     public FollowPathCommand curveBetween(Pose b, Pose c,Pose e,  double speed) {
@@ -127,7 +127,7 @@ public abstract class Auto extends RobotBaseOp {
         } else {
             p.setConstantHeadingInterpolation(end.getHeading());
         }
-        p.setBrakingStrength(1.0);  // same as passing in setGlobalDeceleration()
+        p.setBrakingStrength(0.75);  // same as passing in setGlobalDeceleration()
         return new FollowPathCommand(p, speed);
     }
 
