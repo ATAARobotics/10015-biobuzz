@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.paths.PathConstraints;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -113,7 +114,13 @@ public abstract class Auto extends RobotBaseOp {
         } else {
             p.setConstantHeadingInterpolation(end.getHeading());
         }
-        p.setBrakingStrength(0.8);
+        // via Brogan M Pratt, default is 1.0 .. lower numbers stop SOONER.
+        // brakingStart default is 1, I think
+        p.setBrakingStrength(1.2);
+        p.setBrakingStart(1.0);
+        PathConstraints pc = p.getConstraints();
+        pc.setTranslationalConstraint(1.0); // this is in "distance units"? inches?
+        p.setConstraints(pc);
         return new FollowPathCommand(p, speed);
     }
     public FollowPathCommand curveBetween(Pose b, Pose c,Pose e,  double speed) {
@@ -127,7 +134,7 @@ public abstract class Auto extends RobotBaseOp {
         } else {
             p.setConstantHeadingInterpolation(end.getHeading());
         }
-        p.setBrakingStrength(0.8);  // same as passing in setGlobalDeceleration()
+        p.setBrakingStrength(1.2);  // same as passing in setGlobalDeceleration()
         return new FollowPathCommand(p, speed);
     }
 
