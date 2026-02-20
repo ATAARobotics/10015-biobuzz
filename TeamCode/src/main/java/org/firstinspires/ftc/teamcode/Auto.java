@@ -113,7 +113,7 @@ public abstract class Auto extends RobotBaseOp {
         } else {
             p.setConstantHeadingInterpolation(end.getHeading());
         }
-        p.setBrakingStrength(0.75);
+        p.setBrakingStrength(0.8);
         return new FollowPathCommand(p, speed);
     }
     public FollowPathCommand curveBetween(Pose b, Pose c,Pose e,  double speed) {
@@ -127,7 +127,7 @@ public abstract class Auto extends RobotBaseOp {
         } else {
             p.setConstantHeadingInterpolation(end.getHeading());
         }
-        p.setBrakingStrength(0.75);  // same as passing in setGlobalDeceleration()
+        p.setBrakingStrength(0.8);  // same as passing in setGlobalDeceleration()
         return new FollowPathCommand(p, speed);
     }
 
@@ -364,11 +364,11 @@ public abstract class Auto extends RobotBaseOp {
         }
 
         auto.addCommands(
-                pathBetween(lastSpike, spikeStart2, 1.0),
+             //   pathBetween(lastSpike, spikeStart2, 1.0),
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    pathBetween(spikeStart2, thirdBlueNearShoot, 1.0)
+                    curveBetween(lastSpike, spikeStart2, thirdBlueNearShoot, 1.0)
                 ),
                 new AutoOuttake(),
                 new Delay(0.5)
