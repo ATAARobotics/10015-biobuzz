@@ -63,6 +63,7 @@ public abstract class Auto extends RobotBaseOp {
         );
     private final Pose secondBlueNearShoot = new Pose (50, 102, Math.toRadians(180));
     private final Pose thirdBlueNearShoot = new Pose (55, 73, Math.toRadians(180));
+    private final Pose finalShootAndPark = new Pose (56, 111, Math.toRadians(180));
 
     // these are red coords
     //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
@@ -362,11 +363,13 @@ public abstract class Auto extends RobotBaseOp {
         auto.addCommands(
                 pathBetween(secondBlueNearShoot, spikeStart2, 1.0),
                 new ParallelRaceGroup(
-                        new AutoIntake(),
-                        pathBetween(spikeStart2, spikeEnd2, 0.35)
+                    new AutoIntake(),
+                    new SequentialCommandGroup(
+                        pathBetween(spikeStart2, spikeEnd2, 0.35),
+                        new Delay(1.0)
+                    )
                 ),
-                new SoftIntake(),
-                new Delay(1)
+                new SoftIntake()
                 );
 
         Pose lastSpike = spikeEnd2;
@@ -385,8 +388,9 @@ public abstract class Auto extends RobotBaseOp {
                     new SortSpindex(),
                     curveBetween(lastSpike, spikeStart2, thirdBlueNearShoot, 1.0)
                 ),
+                new Delay(0.250),
                 new AutoOuttake(),
-                new Delay(0.5)
+                new Delay(0.250)
         );
 
         // open gate plus intake stuff
@@ -400,14 +404,31 @@ public abstract class Auto extends RobotBaseOp {
                     pathBetween(gateIntake, gateIntakeBack, 0.35)
                 )
             ),
+            new NoIntake(),
             new ParallelCommandGroup(
-                new SoftIntake(),
                 new PrepareToShoot(),
                 pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
             ),
+            new Delay(0.250),
             new AutoOuttake()
         );
 
+
+        // intake spike 3
+        auto.addCommands(
+            pathBetween(thirdBlueNearShoot, spikeStart3, 1.0),
+            new ParallelRaceGroup(
+                new AutoIntake(),
+                pathBetween(spikeStart3, spikeEnd3, 0.35)
+                ),
+            new SoftIntake(),
+            new PrepareToShoot(),
+            pathBetween(spikeEnd3, finalShootAndPark, 1.0),
+            new Delay(0.250),
+            new AutoOuttake()
+        );
+
+/*
         if (audienceSpike){
             auto.addCommands(
                     pathBetween(thirdBlueNearShoot, spikeStart1, 1.0),
@@ -431,7 +452,7 @@ public abstract class Auto extends RobotBaseOp {
             auto.addCommands(
                     pathBetween(thirdBlueNearShoot, nearParkGate, 1.0));
         }
-
+*/
         auto.addCommands(
             new SpindexMode()
         );

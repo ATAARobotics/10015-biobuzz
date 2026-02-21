@@ -332,6 +332,19 @@ public abstract class RobotBaseOp extends OpMode {
     }
 
 
+    public class NoIntake extends CommandBase {
+        public NoIntake() {
+            addRequirements(intake);
+        }
+        public void initialize() {
+            intake.stop();
+        }
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+
     public class SpindexMode extends CommandBase {
         public SpindexMode() {
             addRequirements(spindexer);
