@@ -215,8 +215,8 @@ public class Shooter extends SubsystemBase {
 
         // TODO we are special-casing the far-zone for now and not using the regression algorithm
         if (autoRpm && aprilDistance > FAR_DISTANCE) {
-            targetHood = 0.567;
-            targetRpm = 4900;
+            targetHood = 0.55;
+            targetRpm = 5000;
         }
         if (targetRpm > 5300){
             targetRpm = 5300;
