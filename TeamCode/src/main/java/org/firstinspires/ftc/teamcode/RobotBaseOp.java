@@ -193,7 +193,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void end(boolean interrupted){
             if (spindexer.isFull()) {
-                if (!isAuto()) {
+                if (true){//!isAuto()) {
                     intake.stop();
                 }
             }

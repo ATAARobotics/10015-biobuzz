@@ -392,7 +392,7 @@ public abstract class Auto extends RobotBaseOp {
         // open gate plus intake stuff
         auto.addCommands(
             curveBetween(thirdBlueNearShoot, gateControl, gatePreIntake, 0.9),
-            new ParallelCommandGroup(
+            new ParallelRaceGroup(
                 new AutoIntake(),
                 new SequentialCommandGroup(
                     pathBetween(gatePreIntake, gateIntake, 0.7),
