@@ -115,12 +115,8 @@ public abstract class Auto extends RobotBaseOp {
             p.setConstantHeadingInterpolation(end.getHeading());
         }
         // via Brogan M Pratt, default is 1.0 .. lower numbers stop SOONER.
-        // brakingStart default is 1, I think
-        p.setBrakingStrength(1.2);
-        p.setBrakingStart(1.0);
-        PathConstraints pc = p.getConstraints();
-        pc.setTranslationalConstraint(1.0); // this is in "distance units"? inches?
-        p.setConstraints(pc);
+        // brakingStart default is 1
+        ///p.setBrakingStrength(1.2);
         return new FollowPathCommand(p, speed);
     }
     public FollowPathCommand curveBetween(Pose b, Pose c,Pose e,  double speed) {
@@ -134,7 +130,7 @@ public abstract class Auto extends RobotBaseOp {
         } else {
             p.setConstantHeadingInterpolation(end.getHeading());
         }
-        p.setBrakingStrength(1.2);  // same as passing in setGlobalDeceleration()
+        //p.setBrakingStrength(1.2);  // same as passing in setGlobalDeceleration()
         return new FollowPathCommand(p, speed);
     }
 
