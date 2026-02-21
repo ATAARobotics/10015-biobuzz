@@ -64,12 +64,19 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose secondBlueNearShoot = new Pose (50, 102, Math.toRadians(180));
     private final Pose thirdBlueNearShoot = new Pose (55, 73, Math.toRadians(180));
 
+    // these are red coords
+    //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
+    private final Pose gatePreIntake = new Pose(13.86, 58.7, Math.toRadians(150));
+    private final Pose gateIntake = new Pose(11.86, 58.7, Math.toRadians(150));
+    private final Pose gateIntakeBack = new Pose(11.86, 50.0, Math.toRadians(150));
+    private final Pose gateControl = new Pose(30.0, 58.7, Math.toRadians(180));
+
     private final Pose spikeStart1 = new Pose (42, 35.0, Math.toRadians(180));
     private final Pose spikeEnd1 = new Pose (10.4, 35.0, Math.toRadians(180));
     private final Pose spikeStart1Control = new Pose(57.4, 37.27, Math.toRadians(180));
 
     // next set of spikes is one tile away
-    private final Pose spikeStart2 = new Pose (50, 35.0 + 23.5, Math.toRadians(180));
+    private final Pose spikeStart2 = new Pose (42, 35.0 + 23.5, Math.toRadians(180));
     private final Pose spikeEnd2 = new Pose (10.4, 35.0 + 23.5, Math.toRadians(180));
 
     // closest set of spikes has the ramp in the way so we can't drive as far forward
@@ -316,6 +323,8 @@ public abstract class Auto extends RobotBaseOp {
             spikeStart = blueNearStart;
         }
 
+
+        /*
         // pick up and shoot far spike mark (note our start position
         // depends on whether usePreloads was active or not)
         auto.addCommands(
@@ -347,6 +356,8 @@ public abstract class Auto extends RobotBaseOp {
                 new AutoOuttake(),
                 new Delay(0.5)
         );
+        */
+
         // pick up and shoot middle spike mark
         auto.addCommands(
                 pathBetween(secondBlueNearShoot, spikeStart2, 1.0),
@@ -376,6 +387,25 @@ public abstract class Auto extends RobotBaseOp {
                 ),
                 new AutoOuttake(),
                 new Delay(0.5)
+        );
+
+        // open gate plus intake stuff
+        auto.addCommands(
+            curveBetween(thirdBlueNearShoot, gateControl, gatePreIntake, 0.9),
+            new ParallelCommandGroup(
+                new AutoIntake(),
+                new SequentialCommandGroup(
+                    pathBetween(gatePreIntake, gateIntake, 0.7),
+                    new Delay(2.5),
+                    pathBetween(gateIntake, gateIntakeBack, 0.35)
+                )
+            ),
+            new ParallelCommandGroup(
+                new SoftIntake(),
+                new PrepareToShoot(),
+                pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
+            ),
+            new AutoOuttake()
         );
 
         if (audienceSpike){
