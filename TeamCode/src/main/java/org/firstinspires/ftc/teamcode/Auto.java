@@ -41,7 +41,8 @@ public abstract class Auto extends RobotBaseOp {
     private boolean closeGateOpen = false;
 
     private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
-    private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(270));
+    //private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(270));
+    private final Pose blueNearStart = new Pose(23.25 + xOffset, 140 - yOffset, Math.toRadians(270));
     private final Pose blueFarShoot = new Pose(
             47.5 + 8.124 + 2.0, // 2 inches further towards Red from start
             yOffset + 10.0,// 10 inches in front of start position

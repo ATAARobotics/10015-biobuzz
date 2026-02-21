@@ -49,7 +49,12 @@ public class Constants {
         .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
         ;
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(
+        0.99,  // tValue
+        100,   // timeout
+        0.60, //1,     // braking strength
+        2 //1      // braking start
+        );
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
