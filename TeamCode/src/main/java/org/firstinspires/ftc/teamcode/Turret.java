@@ -69,7 +69,8 @@ public class Turret extends SubsystemBase {
     private static final double GEAR_RATIO = 0.865; // changed february 13. 1 servo rotation equals 0.865 turret rotations
 
     // the ratio for the turret shaft connected to the Rev encoder
-    private static final double ENCODER_GEAR_RATIO = 40.0 / 185.0;
+    ///private static final double ENCODER_GEAR_RATIO = 40.0 / 185.0; ///(when we tried smaller teeth)
+    private static final double ENCODER_GEAR_RATIO = 25.0 / 125.0; /// with bigger teeth
     private static final double REV_ENCODER_TICKS_PER_REV = 8192;
 
     // tuned december 11, bare servos for PID, attach turret for F
