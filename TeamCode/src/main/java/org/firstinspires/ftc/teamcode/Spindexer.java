@@ -130,14 +130,6 @@ public class Spindexer extends SubsystemBase {
         return x;
     }
 
-    /*public boolean recentPurple(){
-        int count = 0;
-        for(boolean rc : recentColors){
-            if (rc) count ++;
-        }
-        return count >= 4; // four out of five samples must be purple
-    }*/
-
     public void clearRecentDist() {
         while (recentDist.size() > DISTANCE_WINDOW) {
             recentDist.removeFirst();

@@ -193,15 +193,6 @@ public class Drive extends SubsystemBase {
             quick_strafe.setSetPoint(target.getX(DISTANCE_UNIT));
             quick_forward.setSetPoint(target.getY(DISTANCE_UNIT));
             desired_heading = wrapAngle(target.getHeading(ANGLE_UNIT));
-
-            // careful, take out for production FIXME TODO
-            /*
-            if (false) {
-                otos.setLinearScalar(LINEAR_SCALAR);
-                otos.setAngularScalar(ANGULAR_SCALAR);
-            }
-            */
-
             drivebase.setMaxSpeed(TURBO_FAST_SPEED);
         }
 

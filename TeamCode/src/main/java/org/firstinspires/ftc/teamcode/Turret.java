@@ -302,19 +302,6 @@ public class Turret extends SubsystemBase {
             }
         }
 
-        /*
-        // compute where the servos are, and conclude where the turret is
-        servoAngle = getServoAngle() - resetAngle;
-        servoDelta = lastServoAngle - servoAngle;
-        lastServoAngle = servoAngle;
-
-        // did we just "wrap around"? (see note at top)
-        //if (servoDelta < -180) servoTurnCount--;
-        //if (servoDelta > 180) servoTurnCount++;
-        //currentTurretAngle = (servoTurnCount * 360 + servoAngle)*GEAR_RATIO;
-        currentTurretAngle = servoAngle * GEAR_RATIO;
-        */
-
         currentTurretAngle = getTurretAngle();
 
         turretHeadingControl.setPID(turretP, turretI, turretD);
@@ -344,12 +331,6 @@ public class Turret extends SubsystemBase {
         return angle;
     }
 
-    /*
-        public boolean isFinished() {
-            // check if the target is reached
-            return turretHeadingControl.atSetPoint();
-        }
-     */
     public void stop() {
         servo1.stop();
         servo2.stop();
@@ -378,12 +359,6 @@ public class Turret extends SubsystemBase {
         telem.log("turret-obelisk", pattern);
         telem.log("turret-rev-encoder", revEncoder.getCurrentPosition());
         telem.log("turret-rev-angle", getTurretAngle());
-
-        /**
-        telem.log("turret-april-fps", portal.getFps());
-        ExposureControl ec = portal.getCameraControl(ExposureControl.class);
-        telem.log("camera-exposure", ec.getExposure(TimeUnit.MILLISECONDS));
-        **/
 
         String logPattern = "unknown";
         if (pattern == 0) {
