@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierPoint;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -38,6 +39,7 @@ public abstract class Auto extends RobotBaseOp {
     private int whenOpenGate = 0;
     private boolean audienceSpike = false;
     private boolean closeGateOpen = false;
+    private boolean gatePickUp = false:
 
     private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
     private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(90));
@@ -67,12 +69,16 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose spikeStart2 = new Pose (50, 35.0 + 23.5, Math.toRadians(180));
     private final Pose spikeEnd2 = new Pose (10.4, 35.0 + 23.5, Math.toRadians(180));
 
+    //curve between spikeEnd2 and thirdBlueNearShoot
+    private final Pose controlPoint1 = new Pose (56.1, 48.4);
+
     // closest set of spikes has the ramp in the way so we can't drive as far forward
     private final Pose spikeStart3 = new Pose (50, 35.0 + (2 * 23.5), Math.toRadians(180));
     private final Pose spikeEnd3 = new Pose (10.4 + 6.0, 35.0 + (2 * 23.5), Math.toRadians(180));
     private final Pose gateOpen0= new Pose (25, 35.0 + (2 * 23.5) - 4, Math.toRadians(180));
     private final Pose gateOpen1 = new Pose (10.4 +6 , 35.0 + (2 * 23.5) - 4, Math.toRadians(180));
-
+    private final Pose gatePickUpStart = new Pose(11.42, 23, Math.toRadians(130));
+    private final Pose gatePickUpEnd = new Pose(11.42, 55, Math.toRadians(130));
     private final Pose nearParkGate = new Pose (36.0, 72, Math.toRadians(180));
 
     // human-player preloads
@@ -108,6 +114,17 @@ public abstract class Auto extends RobotBaseOp {
             .addPath(new BezierLine(begin, end))
             .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
             .build();
+        return new FollowPathCommand(p, speed);
+    }
+
+    public Command curveBetween(Pose b, Pose control, Pose e, double speed) {
+        Pose begin = convert(b);
+        Pose end = convert(e);
+        PathChain p = follower.pathBuilder()
+                .setGlobalDeceleration()
+                .addPath(new BezierCurve(begin, control, end))
+                .setLinearHeadingInterpolation(begin.getHeading(), end.getHeading())
+                .build();
         return new FollowPathCommand(p, speed);
     }
 
@@ -238,10 +255,20 @@ public abstract class Auto extends RobotBaseOp {
             new AutoOuttake()
         );
 */
-
+        Pose lastGate = blueFarShoot;
+        if (gatePickUp) {
+            auto.addCommands(
+                    pathBetween(blueFarStart, gatePickUpStart, 1.0),
+                    new ParallelRaceGroup(
+                            new AutoIntake(),
+                            pathBetween(gatePickUpStart, gatePickUpEnd, 0.4)
+                    )
+            );
+            lastGate = gatePickUpEnd;
+        }
         // park off the start lines
         auto.addCommands(
-            pathBetween(blueFarShoot, blueFarPark, 1.0)
+            pathBetween(lastGate, blueFarPark, 1.0)
         );
 
         auto.addCommands(
@@ -340,11 +367,10 @@ public abstract class Auto extends RobotBaseOp {
         }
 
         auto.addCommands(
-                pathBetween(lastSpike, spikeStart2, 1.0),
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    pathBetween(spikeStart2, thirdBlueNearShoot, 1.0)
+                    curveBetween(lastSpike, controlPoint1, thirdBlueNearShoot, 1.0)
                 ),
                 new AutoOuttake(),
                 new Delay(0.5)
@@ -415,8 +441,9 @@ public abstract class Auto extends RobotBaseOp {
 
         telemetry.addData("Preloads (Dpad Up to toggle)", usePreloads);
       //  telemetry.addData("Open Gate (Dpad Down to toggle)", openDescription);
-        telemetry.addData("Pick up third spike (Dpad Left to toggle", audienceSpike);
-        telemetry.addData("Near zone open gate(Dpad Right to toggle)", closeGateOpen);
+        // telemetry.addData("Pick up third spike (Dpad Left to toggle", audienceSpike);
+        telemetry.addData("Intake from gate far zone (Dpad Left to toggle)", gatePickUp);
+        telemetry.addData("Near zone open gate (Dpad Right to toggle)", closeGateOpen);
         telemetry.update();
     }
 
