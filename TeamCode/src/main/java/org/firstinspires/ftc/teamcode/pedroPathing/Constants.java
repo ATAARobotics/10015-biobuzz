@@ -52,7 +52,7 @@ public class Constants {
     public static PathConstraints pathConstraints = new PathConstraints(
         0.99,  // tValue
         100,   // timeout
-        0.60, //1,     // braking strength
+        0.50, //1,     // braking strength
         2 //1      // braking start
         );
 

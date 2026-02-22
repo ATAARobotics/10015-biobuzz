@@ -68,7 +68,7 @@ public abstract class Auto extends RobotBaseOp {
     // these are red coords
     //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
     private final Pose gatePreIntake = new Pose(13.0, 58.7, Math.toRadians(150));
-    private final Pose gateIntake = new Pose(12.0, 58.7, Math.toRadians(150));
+    private final Pose gateIntake = new Pose(11.5, 58.7, Math.toRadians(150));
     private final Pose gateIntakeBack = new Pose(11.86, 50.0, Math.toRadians(150));
     private final Pose gateControl = new Pose(30.0, 58.7, Math.toRadians(180));
 
@@ -77,7 +77,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose spikeStart1Control = new Pose(57.4, 37.27, Math.toRadians(180));
 
     // next set of spikes is one tile away
-    private final Pose spikeStart2 = new Pose (42, 35.0 + 23.5, Math.toRadians(180));
+    private final Pose spikeStart2 = new Pose (43, 35.0 + 23.5, Math.toRadians(180));
     private final Pose spikeEnd2 = new Pose (10.4, 35.0 + 23.5, Math.toRadians(180));
 
     // closest set of spikes has the ramp in the way so we can't drive as far forward
@@ -343,7 +343,7 @@ public abstract class Auto extends RobotBaseOp {
                 new SortSpindex(),
                 curveBetween(spikeEnd2, spikeStart2, thirdBlueNearShoot, 1.0)
             ),
-            new Delay(0.250),
+            new Delay(0.500),
             new AutoOuttake(),
             new Delay(0.250)
         );
