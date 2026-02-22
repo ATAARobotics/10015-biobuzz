@@ -51,6 +51,8 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MIN = 0.05;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
+    public static double FAR_RPM = 5000;
+    public static double FAR_HOOD = 0.55;
     static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
     static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
@@ -150,7 +152,9 @@ public class Shooter extends SubsystemBase {
         // diff will be positive number if we're below target, and
         // negative number if we're above target
         double rpmDiff = targetRpm - currentRpm;
-        return (targetRpm > 0 && Math.abs(rpmDiff) < RPM_TOLERANCE);
+        if (rpmDiff > 0) return targetRpm < RPM_TOLERANCE;
+        return -rpmDiff < RPM_TOLERANCE_OVER;
+     ///   return (targetRpm > 0 && Math.abs(rpmDiff) < RPM_TOLERANCE);
 
  // linear equation for the minimun rpm to hit the target
 //        return currentRpm > rpmMin() && targetRpm > 0;
@@ -215,8 +219,8 @@ public class Shooter extends SubsystemBase {
 
         // TODO we are special-casing the far-zone for now and not using the regression algorithm
         if (autoRpm && aprilDistance > FAR_DISTANCE) {
-            targetHood = 0.55;
-            targetRpm = 5000;
+            targetHood = FAR_HOOD;
+            targetRpm = FAR_RPM;
         }
         if (targetRpm > 5300){
             targetRpm = 5300;

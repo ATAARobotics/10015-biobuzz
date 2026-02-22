@@ -20,6 +20,8 @@ public abstract class TeleOpNoReset extends TeleOp {
         int spinTarget = prefs.getInt("spindex-target", 0);
         float turretAngle = prefs.getFloat("turret", 0.0f);
         turret.setServoAngle(turretAngle);
+        int pattern = prefs.getInt("oblelisk", -1);
+        turret.pattern = pattern;
 
         // TODO: this isn't working, it seems like the encoder isn't
         // being reset to 0 but is changing somehow when we start

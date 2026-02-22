@@ -359,6 +359,7 @@ public class Turret extends SubsystemBase {
         telem.log("turret-obelisk", pattern);
         telem.log("turret-rev-encoder", revEncoder.getCurrentPosition());
         telem.log("turret-rev-angle", getTurretAngle());
+        telem.log("turret-operator-offset", operatorOffset);
 
         String logPattern = "unknown";
         if (pattern == 0) {
