@@ -46,6 +46,9 @@ public abstract class RobotBaseOp extends OpMode {
     public static double GEOM_TARGET_X = 1;
     public static double GEOM_TARGET_Y = 140;
 
+    public static double FAR_TARGET_X_BLUE = 8;
+
+
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
@@ -608,6 +611,14 @@ public abstract class RobotBaseOp extends OpMode {
         double distanceB = targetY - turretY;
         geometricDistance = Math.sqrt((distanceA * distanceA) + (distanceB * distanceB));
 
+        if (shooter.autoRpm && geometricDistance > shooter.FAR_DISTANCE){
+            if (getAlliance() == Alliance.BLUE) {
+                targetX = FAR_TARGET_X_BLUE;
+            }
+            else {
+                targetX = 141 - FAR_TARGET_X_BLUE;
+            }
+        }
         geometricTargetHeading = Math.toDegrees(
             Math.atan2(targetY - turretY, targetX - turretX)
         );
