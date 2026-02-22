@@ -44,6 +44,7 @@ public class Turret extends SubsystemBase {
     double voltage0;
     double voltage1;
     double time;
+    public double ticks;
 
     // 88.67mm
     private final double CAMERA_TO_TURRET_CENTER_INCHES = 3.491;
@@ -53,7 +54,7 @@ public class Turret extends SubsystemBase {
     private double servoAngle;
     private double servoDelta = Double.NaN;
     private double lastServoAngle = Double.NaN;
-    private double resetAngle;
+    public double lastEncoder = 0.0;
     //private int servoTurnCount;
     double joystickAngle;
     double operatorOffset = 0;
@@ -182,7 +183,7 @@ public class Turret extends SubsystemBase {
     public void reset() {
         currentTurretAngle = 180;
         joystickAngle = 180;
-        lastServoAngle = 0;
+        lastEncoder = 0.0;
         revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -194,16 +195,6 @@ public class Turret extends SubsystemBase {
         //servoTurnCount = 0;
         servo1.stop();
         servo2.stop();
-        angleReset();
-        faceRobotAngle(180);
-        mode = HeadingLockMode.Off;
-    }
-
-    // this is used by "teleop no-reset" during auto -> teleop transition
-    public void setServoAngle(double a) {
-        servo1.stop();
-        servo2.stop();
-        resetAngle = a;
         faceRobotAngle(180);
         mode = HeadingLockMode.Off;
     }
@@ -228,21 +219,13 @@ public class Turret extends SubsystemBase {
         mode = HeadingLockMode.Off;
     }
 
-    public void angleReset() {
-        resetAngle = getServoAngle();
-    }
-
-    public double getOriginalResetAngle() {
-        return resetAngle;
-    }
-
     public double getServoAngle() {
         // Read analog voltage, convert to degrees
         return voltage0 / 3.3 * 360;
     }
 
     public double getTurretAngle() {
-        double shaftRevs = -revEncoder.getCurrentPosition() / REV_ENCODER_TICKS_PER_REV;
+        double shaftRevs = -(ticks + lastEncoder) / REV_ENCODER_TICKS_PER_REV;
         double turretRevs = shaftRevs * ENCODER_GEAR_RATIO;
         double rawAngle = 360.0 * turretRevs;
         // we start the turret backwards, so add 180
@@ -256,6 +239,7 @@ public class Turret extends SubsystemBase {
 
     public void read_sensors(double time) {
         this.time = time;
+        this.ticks = revEncoder.getCurrentPosition();
         voltage1 = encoder0.getVoltage();
         voltage0 = encoder1.getVoltage();
     }

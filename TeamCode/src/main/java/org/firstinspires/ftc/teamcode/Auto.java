@@ -480,7 +480,7 @@ public abstract class Auto extends RobotBaseOp {
         editor.putFloat("heading", (float)drive.getPosition().getHeading(AngleUnit.DEGREES));
         editor.putFloat("x", (float)drive.getPosition().getX(DistanceUnit.INCH));
         editor.putFloat("y", (float)drive.getPosition().getY(DistanceUnit.INCH));
-        editor.putFloat("turret", (float)turret.getOriginalResetAngle());
+        editor.putFloat("turret", (float)turret.ticks);
         editor.putInt("spindex-target", spindexer.targetAngle);
         editor.putInt("obelisk", turret.pattern);
         editor.apply();
