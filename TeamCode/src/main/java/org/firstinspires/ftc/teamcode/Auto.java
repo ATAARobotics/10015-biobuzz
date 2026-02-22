@@ -364,9 +364,28 @@ public abstract class Auto extends RobotBaseOp {
                 new PrepareToShoot(),
                 pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
             ),
-            new Delay(0.250),
+            new Delay(0.500),
             new AutoOuttake()
         );
+      /*  //gate intake 2
+        auto.addCommands(
+                curveBetween(thirdBlueNearShoot, gateControl, gatePreIntake, 0.9),
+                new ParallelRaceGroup(
+                        new AutoIntake(),
+                        new SequentialCommandGroup(
+                                pathBetween(gatePreIntake, gateIntake, 0.7),
+                                new Delay(2.5),
+                                pathBetween(gateIntake, gateIntakeBack, 0.35)
+                        )
+                ),
+                new NoIntake(),
+                new ParallelCommandGroup(
+                        new PrepareToShoot(),
+                        pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
+                ),
+                new Delay(0.250),
+                new AutoOuttake()
+        ); */
 
         // intake spike 3 (further from audience)
         auto.addCommands(
