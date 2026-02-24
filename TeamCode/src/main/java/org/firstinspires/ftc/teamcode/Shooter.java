@@ -53,10 +53,12 @@ public class Shooter extends SubsystemBase {
     public static double MANUAL_HOOD = 0.00;
     public static double FAR_RPM = 5000;
     public static double FAR_HOOD = 0.55;
-    public static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
-    public static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
+    //public static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
+    //public static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
+    public static double RPM_VS_DIST_SLOPE = 37.8; // down 10%
+    public static double RPM_VS_DIST_INTERCEPT = 1124; //up 10%
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
-    public static double FAR_DISTANCE = 120.0;
+    public static double FAR_DISTANCE = 130.0;
 
     public static double BAND = 10;
     public static double BANG_POWER = 1.0;

@@ -323,8 +323,6 @@ if interrupt "during" spin then it gets confused about which slot is what
             spindexerPower = manualPower;
         }
         else{
-            // for CCW ("shoot") direction, we use a separate PID .. so we
-            // ned to know "which direction" we're spinning.
             spindexerPower = control.calculate(currentAngle - targetAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
@@ -335,7 +333,7 @@ if interrupt "during" spin then it gets confused about which slot is what
             // let spindexer decide if there's something at the current
             // slot (but only if we also believe we are actually AT the
             // current slot)
-            if (atTarget()) {
+            if (spin == SpinDirection.Index && atTarget()) {
                 if (haveArtifact()) {
                     if (slots[currentSlot()] == SlotContent.Nothing) {
                         slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;

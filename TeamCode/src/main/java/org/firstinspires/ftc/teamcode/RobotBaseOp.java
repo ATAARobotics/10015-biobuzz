@@ -16,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @Configurable
@@ -33,6 +34,7 @@ public abstract class RobotBaseOp extends OpMode {
     Spindexer spindexer;
 
     ElapsedTime  runtime = new ElapsedTime();
+    LinkedList<Pose2D> recentPositions;
 
     boolean minuteWarning = false;
     boolean endgameWarning = false;
@@ -43,12 +45,10 @@ public abstract class RobotBaseOp extends OpMode {
     double geometricDistance;
     // offset robot / turret centers is 66.70mm
     private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
-    public static double GEOM_TARGET_X = 1;
-    public static double GEOM_TARGET_Y = 140;
+    public static double GEOM_TARGET_X = 5;
+    public static double GEOM_TARGET_Y = 138;
 
     public static double FAR_TARGET_X_BLUE = 5;
-
-
 
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
@@ -81,6 +81,8 @@ public abstract class RobotBaseOp extends OpMode {
         spindexer = new Spindexer(hardwareMap);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
+
+        recentPositions = new LinkedList<Pose2D>();
 
         // (Do not remove this, we absolutely have problems without cancelling this)
         // Cancel all previous commands
@@ -512,6 +514,17 @@ public abstract class RobotBaseOp extends OpMode {
         spindexer.read_sensors(time);
         turret.read_sensors(time);
         intake.read_sensors(time);
+
+        recentPositions.addLast(drive.getPosition());
+        while (recentPositions.size() > 5) {
+            recentPositions.removeFirst();
+        }
+    }
+
+    // based on recentPositions, predict our Post2D in "t" seconds
+    // from now (just x, y works velocity)
+    protected Pose2D predictPose(double t) {
+        return drive.getPosition();
     }
 
     protected void readControls() {

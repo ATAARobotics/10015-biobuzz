@@ -64,7 +64,7 @@ public abstract class Auto extends RobotBaseOp {
             Math.toRadians(180)
         );
     private final Pose secondBlueNearShoot = new Pose (50, 102, Math.toRadians(180));
-    private final Pose thirdBlueNearShoot = new Pose (55, 73, Math.toRadians(180));
+    private final Pose thirdBlueNearShoot = new Pose (55, 83, Math.toRadians(180));
     private final Pose finalShootAndPark = new Pose (56, 111, Math.toRadians(180));
 
     // these are red coords
@@ -354,14 +354,14 @@ public abstract class Auto extends RobotBaseOp {
         SequentialCommandGroup auto = new SequentialCommandGroup();
 
         // shoot preloads
-        Pose spikeStart = blueNearShoot;
+        Pose spikeStart = secondBlueNearShoot;
         if (usePreloads) {
             auto.addCommands(
              //   new LookAtObelisk(),
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    pathBetween(blueNearStart, blueNearShoot, 1.0)
+                    pathBetween(blueNearStart, secondBlueNearShoot, 1.0)
                 ),
                 new AutoOuttake(),
                 new Delay(0.100)
@@ -405,13 +405,13 @@ public abstract class Auto extends RobotBaseOp {
                     pathBetween(gateIntake, gateIntakeBack, 0.35)
                 )
             ),
-            new NoIntake(),
+            new SoftIntake(),
             new ParallelCommandGroup(
                 new PrepareToShoot(),
-                    new ParallelCommandGroup(
-                            new SortSpindex(),
-                pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
-                    )
+                new ParallelCommandGroup(
+                    new SortSpindex(),
+                    pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
+                )
             ),
             new Delay(0.100),
             new AutoOuttake()
@@ -419,25 +419,25 @@ public abstract class Auto extends RobotBaseOp {
         //gate intake 2
         if (gateIntake2) {
             auto.addCommands(
-                    curveBetween(thirdBlueNearShoot, gateControl, gatePreIntake, 0.9),
-                    new ParallelRaceGroup(
-                            new AutoIntake(),
-                            new SequentialCommandGroup(
-                                    pathBetween(gatePreIntake, gateIntake, 0.7),
-                                    new Delay(0.25),
-                                    pathBetween(gateIntake, gateIntakeBack, 0.35)
-                            )
-                    ),
-                    new NoIntake(),
+                curveBetween(thirdBlueNearShoot, gateControl, gatePreIntake, 0.9),
+                new ParallelRaceGroup(
+                    new AutoIntake(),
+                    new SequentialCommandGroup(
+                        pathBetween(gatePreIntake, gateIntake, 0.7),
+                        new Delay(0.25),
+                        pathBetween(gateIntake, gateIntakeBack, 0.35)
+                    )
+                ),
+                new SoftIntake(),
+                new ParallelCommandGroup(
+                    new PrepareToShoot(),
                     new ParallelCommandGroup(
-                            new PrepareToShoot(),
-                            new ParallelCommandGroup(
-                                    new SortSpindex(),
-                                    pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
-                            )
-                    ),
-                    new Delay(0.1),
-                    new AutoOuttake()
+                        new SortSpindex(),
+                        pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
+                    )
+                ),
+                new Delay(0.1),
+                new AutoOuttake()
             );
         }
 
@@ -450,10 +450,10 @@ public abstract class Auto extends RobotBaseOp {
                 ),
             new SoftIntake(),
             new PrepareToShoot(),
-                new ParallelCommandGroup(
-                        new SortSpindex(),
-            pathBetween(spikeEnd3, finalShootAndPark, 1.0)
-                        ),
+            new ParallelCommandGroup(
+                new SortSpindex(),
+                pathBetween(spikeEnd3, finalShootAndPark, 1.0)
+            ),
             new Delay(0.100),
             new AutoOuttake()
         );
