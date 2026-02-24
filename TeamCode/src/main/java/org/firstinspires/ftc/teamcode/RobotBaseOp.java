@@ -393,14 +393,7 @@ public abstract class RobotBaseOp extends OpMode {
             // one .. for "red-size" we turn a bunch left (45?) and
             // then see the "other" side of the obelisk
 
-            if (getStartZone() == StartZone.NEAR) {
-                if (getAlliance() == Alliance.RED) {
-                    // these are "field angles"
-                    obeliskHeading = 90 + 45;
-                } else {
-                    obeliskHeading = 90 - 10;
-                }
-            }
+
             turret.faceObelisk(obeliskHeading);
         }
         public boolean isFinished(){
@@ -409,23 +402,6 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void end(boolean interrupted) {
             turret.noLock();
-            // for near-zone, we will have seen the "side" of the
-            // obelisk, so adjust
-            if (turret.pattern != -1 ) {
-                if (getStartZone() == StartZone.NEAR) {
-                    if (getAlliance() == Alliance.RED) {
-                        turret.pattern += 1;
-                        if (turret.pattern > 2) {
-                            turret.pattern = 0;
-                        }
-                    } else {
-                        turret.pattern -= 1;
-                        if (turret.pattern < 0) {
-                            turret.pattern = 2;
-                        }
-                    }
-                }
-            }
         }
     }
 

@@ -102,7 +102,8 @@ public abstract class Auto extends RobotBaseOp {
 
     private final Pose humanPlayerIntake = new Pose(9.8, 8.6,Math.toRadians(180));
     private final Pose humanPlayerIntakeTwo = new Pose(11.42,23,Math.toRadians(180));
-    private final Pose secretTunnelIntake = new Pose(11.42,50,130);
+    private final Pose secretTunnelIntake = new Pose(11.42,43,130);
+    private final Pose theCorner = new Pose(yOffset, xOffset, Math.toRadians(180));
     // trying a different human-player routing
     private final Pose wallDirectStart = new Pose(xOffset + 1, yOffset + 15, Math.toRadians(240));
     private final Pose wallDirectEnd = new Pose(xOffset + 1, yOffset, Math.toRadians(240));
@@ -302,19 +303,24 @@ public abstract class Auto extends RobotBaseOp {
                     new AutoOuttake(),
                     new Delay(0.1),
                     new ParallelCommandGroup(
+                            pathBetween(blueFarShoot, theCorner, 0.4),
+                            new AutoIntake()
+                    ),
+                   new Delay(0.5),
+                   /* new ParallelCommandGroup(
                          pathBetween(blueFarShoot, humanPlayerIntake, 0.8),
                          new AutoIntake()
                     ),
                     new ParallelCommandGroup(
-                            pathBetween(humanPlayerIntake, humanPlayerIntakeTwo, 0.4),
+                            pathBetween(humanPlayerIntake, humanPlayerIntakeTwo, 0.6),
                             new AutoIntake()
                     ),
                     new ParallelCommandGroup(
-                            pathBetween(humanPlayerIntakeTwo, secretTunnelIntake, 0.4),
+                            pathBetween(humanPlayerIntakeTwo, secretTunnelIntake, 0.9),
                             new AutoIntake()
-                    ),
+                    ), */
                     new ParallelCommandGroup(
-                            pathBetween(secretTunnelIntake, blueFarShoot, 1.0),
+                            pathBetween(theCorner, blueFarShoot, 1.0),
                             new SortSpindex()
                     ),
                     new AutoOuttake(),
@@ -372,7 +378,10 @@ public abstract class Auto extends RobotBaseOp {
             new ParallelRaceGroup(
                 new AutoIntake(),
                 new SequentialCommandGroup(
-                    pathBetween(spikeStart2, spikeEnd2, 0.35),
+                        new ParallelCommandGroup(
+                                pathBetween(spikeStart2, spikeEnd2, 0.35),
+                                new LookAtObelisk()
+                                ),
                     new Delay(0.2)
                 )
             ),
