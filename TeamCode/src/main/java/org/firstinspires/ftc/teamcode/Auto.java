@@ -70,8 +70,8 @@ public abstract class Auto extends RobotBaseOp {
     // these are red coords
     //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
     private final Pose gatePreIntake = new Pose(13.0, 58.7, Math.toRadians(150));
-    private final Pose gateIntake = new Pose(11.5, 58.7, Math.toRadians(150));
-    private final Pose gateIntakeBack = new Pose(11.86, 50.0, Math.toRadians(150));
+    private final Pose gateIntake = new Pose(11.75, 58.7, Math.toRadians(150));
+    private final Pose gateIntakeBack = new Pose(11.75, 53.0, Math.toRadians(150));
     private final Pose gateControl = new Pose(30.0, 58.7, Math.toRadians(180));
 
     private final Pose spikeStart1 = new Pose (42, 35.0, Math.toRadians(180));
@@ -90,8 +90,8 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose spikeEnd3 = new Pose (10.4 + 6.0, 35.0 + (2 * 23.5), Math.toRadians(180));
     private final Pose gateOpen0= new Pose (25, 35.0 + (2 * 23.5) - 4, Math.toRadians(180));
     private final Pose gateOpen1 = new Pose (10.4 +6 , 35.0 + (2 * 23.5) - 4, Math.toRadians(180));
-    private final Pose gatePickUpStart = new Pose(11.42, 23, Math.toRadians(130));
-    private final Pose gatePickUpEnd = new Pose(11.42, 50, Math.toRadians(130));
+    private final Pose gatePickUpStart = new Pose(11.42, 23, Math.toRadians(125));
+    private final Pose gatePickUpEnd = new Pose(11.42, 50, Math.toRadians(125));
     private final Pose nearParkGate = new Pose (36.0, 72, Math.toRadians(180));
 
     // human-player preloads
@@ -357,12 +357,8 @@ public abstract class Auto extends RobotBaseOp {
         Pose spikeStart = secondBlueNearShoot;
         if (usePreloads) {
             auto.addCommands(
-             //   new LookAtObelisk(),
                 new PrepareToShoot(),
-                new ParallelCommandGroup(
-                    new SortSpindex(),
-                    pathBetween(blueNearStart, secondBlueNearShoot, 1.0)
-                ),
+                pathBetween(blueNearStart, secondBlueNearShoot, 1.0),
                 new AutoOuttake(),
                 new Delay(0.100)
            );
@@ -401,7 +397,7 @@ public abstract class Auto extends RobotBaseOp {
                 new AutoIntake(),
                 new SequentialCommandGroup(
                     pathBetween(gatePreIntake, gateIntake, 0.7),
-                    new Delay(0.25),
+                    new Delay(0.650),
                     pathBetween(gateIntake, gateIntakeBack, 0.35)
                 )
             ),
@@ -424,7 +420,7 @@ public abstract class Auto extends RobotBaseOp {
                     new AutoIntake(),
                     new SequentialCommandGroup(
                         pathBetween(gatePreIntake, gateIntake, 0.7),
-                        new Delay(0.25),
+                        new Delay(0.650),
                         pathBetween(gateIntake, gateIntakeBack, 0.35)
                     )
                 ),
