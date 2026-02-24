@@ -46,7 +46,7 @@ public abstract class Auto extends RobotBaseOp {
     //private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(270));
     private final Pose blueNearStart = new Pose(23.25 + xOffset, 140 - yOffset, Math.toRadians(270));
     private final Pose blueFarShoot = new Pose(
-            47.5 + 8.124 + 2.0, // 2 inches further towards Red from start
+            47.5 + 8.124, 
             yOffset + 10.0,// 10 inches in front of start position
             Math.toRadians(180)
         );
@@ -228,7 +228,7 @@ public abstract class Auto extends RobotBaseOp {
         );
         if (usePreloads) {
             auto.addCommands(new AutoOuttake(),
-            new Delay(0.5));
+            new Delay(0.250));
 
         }
 
@@ -246,9 +246,11 @@ public abstract class Auto extends RobotBaseOp {
             new PrepareToShoot(),
             new ParallelCommandGroup(
                 new SortSpindex(),
+                new PrepareToShoot(),
                 fp
             ),
-            new AutoOuttake()
+            new AutoOuttake(),
+            new Delay(0.250)
         );
 
         // collect and shoot human-player preloads
@@ -266,11 +268,12 @@ public abstract class Auto extends RobotBaseOp {
             new SoftIntake(),
             new PrepareToShoot(),
             new ParallelCommandGroup(
+                new PrepareToShoot(),
                 new SortSpindex(),
                 pathBetween(wallClose, blueFarShoot, 1.0)
             ),
             new AutoOuttake(),
-            new Delay(0.5)
+            new Delay(0.250)
         );
 
 /*
@@ -285,48 +288,26 @@ public abstract class Auto extends RobotBaseOp {
             new AutoOuttake()
         );
 */
+
         if (gatePickUp) {
             auto.addCommands(
-                    new ParallelRaceGroup(
-                            new AutoIntake(),
-                            new SequentialCommandGroup(
-                                    pathBetween(blueFarShoot, gatePickUpStart, 1.0),
-                                    pathBetween(gatePickUpStart, gatePickUpEnd, 0.4)
-                            )
-                    )
-            );
-            auto.addCommands(
+                new ParallelRaceGroup(
                     new ParallelCommandGroup(
-                            pathBetween(gatePickUpEnd, blueFarShoot, 1.0),
-                            new SortSpindex()
+                        pathBetween(blueFarShoot, theCorner, 0.55),
+                        new Delay(0.500)
                     ),
-                    new AutoOuttake(),
-                    new Delay(0.1),
-                    new ParallelCommandGroup(
-                            pathBetween(blueFarShoot, theCorner, 0.4),
-                            new AutoIntake()
-                    ),
-                   new Delay(0.5),
-                   /* new ParallelCommandGroup(
-                         pathBetween(blueFarShoot, humanPlayerIntake, 0.8),
-                         new AutoIntake()
-                    ),
-                    new ParallelCommandGroup(
-                            pathBetween(humanPlayerIntake, humanPlayerIntakeTwo, 0.6),
-                            new AutoIntake()
-                    ),
-                    new ParallelCommandGroup(
-                            pathBetween(humanPlayerIntakeTwo, secretTunnelIntake, 0.9),
-                            new AutoIntake()
-                    ), */
-                    new ParallelCommandGroup(
-                            pathBetween(theCorner, blueFarShoot, 1.0),
-                            new SortSpindex()
-                    ),
-                    new AutoOuttake(),
-                    new Delay(0.1)
+                    new AutoIntake()
+                ),
+                new ParallelCommandGroup(
+                    new PrepareToShoot(),
+                    new SortSpindex(),
+                    pathBetween(theCorner, blueFarShoot, 1.0)
+                ),
+                new AutoOuttake(),
+                new Delay(0.1)
             );
         }
+
         // park off the start lines
         auto.addCommands(
             pathBetween(blueFarShoot, blueFarPark, 1.0)
