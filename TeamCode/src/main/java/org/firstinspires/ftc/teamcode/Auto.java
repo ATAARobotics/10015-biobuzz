@@ -359,10 +359,10 @@ public abstract class Auto extends RobotBaseOp {
             new ParallelRaceGroup(
                 new AutoIntake(),
                 new SequentialCommandGroup(
-                        new ParallelCommandGroup(
-                                pathBetween(spikeStart2, spikeEnd2, 0.35),
-                                new LookAtObelisk()
-                                ),
+                    new ParallelCommandGroup(
+                        pathBetween(spikeStart2, spikeEnd2, 0.35),
+                        new LookAtObelisk()
+                    ),
                     new Delay(0.2)
                 )
             ),
