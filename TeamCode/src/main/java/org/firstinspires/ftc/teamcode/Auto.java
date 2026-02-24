@@ -39,14 +39,14 @@ public abstract class Auto extends RobotBaseOp {
     private int whenOpenGate = 0;
     private boolean audienceSpike = false;
     private boolean closeGateOpen = false;
-    private boolean gatePickUp = false;
-    private boolean gateIntake2 = false;
+    private boolean gatePickUp = true;
+    private boolean gateIntake2 = true;
 
     private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
     //private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(270));
     private final Pose blueNearStart = new Pose(23.25 + xOffset, 140 - yOffset, Math.toRadians(270));
     private final Pose blueFarShoot = new Pose(
-            47.5 + 8.124, 
+            47.5 + 8.124,
             yOffset + 10.0,// 10 inches in front of start position
             Math.toRadians(180)
         );
