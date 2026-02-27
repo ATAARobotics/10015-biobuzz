@@ -66,14 +66,14 @@ public abstract class Auto extends RobotBaseOp {
             Math.toRadians(180)
         );
     private final Pose secondBlueNearShoot = new Pose (50, 102, Math.toRadians(180));
-    private final Pose thirdBlueNearShoot = new Pose (55, 83, Math.toRadians(180));
+    private final Pose thirdBlueNearShoot = new Pose (50, 93, Math.toRadians(180));
     private final Pose finalShootAndPark = new Pose (56, 111, Math.toRadians(180));
 
     // these are red coords
     //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
     private final Pose gatePreIntake = new Pose(13.0, 58.7, Math.toRadians(150));
-    private final Pose gateIntake = new Pose(11.75, 58.7, Math.toRadians(150));
-    private final Pose gateIntakeBack = new Pose(11.75, 53.0, Math.toRadians(150));
+    private final Pose gateIntake = new Pose(11.5, 58.7, Math.toRadians(150));
+    private final Pose gateIntakeBack = new Pose(11.25, 53.0, Math.toRadians(150));
     private final Pose gateControl = new Pose(30.0, 58.7, Math.toRadians(180));
 
     private final Pose spikeStart1 = new Pose (42, 35.0, Math.toRadians(180));
@@ -96,11 +96,19 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose gatePickUpEnd = new Pose(11.42, 50, Math.toRadians(125));
     private final Pose nearParkGate = new Pose (36.0, 72, Math.toRadians(180));
 
-    // human-player preloads
+    // human-player preloads (old way)
+    /*
     private final Pose wallFar = new Pose(xOffset + 5, 23.6 + yOffset, Math.toRadians(210));
     private final Pose wallControl = new Pose(57.624, 23.6 + yOffset, Math.toRadians(270));
     private final Pose wallClose = new Pose(xOffset + 4, yOffset + 3, Math.toRadians(255));
     private final Pose wallClosish = new Pose(xOffset + 4, yOffset + 5, Math.toRadians(270));
+    */
+
+    // human-player preloads (try straight 90-degree routing)
+    private final Pose wallFar = new Pose(xOffset, 23.6 + yOffset, Math.toRadians(270));
+    //private final Pose wallControl = new Pose(57.624, 23.6 + yOffset, Math.toRadians(270));
+    private final Pose wallClose = new Pose(xOffset, yOffset + 3, Math.toRadians(270));
+    private final Pose wallClosish = new Pose(xOffset + 4, yOffset + 5, Math.toRadians(300));
 
     private final Pose humanPlayerIntake = new Pose(9.8, 8.6,Math.toRadians(180));
     private final Pose humanPlayerIntakeTwo = new Pose(11.42,23,Math.toRadians(180));
@@ -254,10 +262,11 @@ public abstract class Auto extends RobotBaseOp {
 
         // collect and shoot human-player preloads
         auto.addCommands(
-            curveBetween(blueFarShoot, wallControl, wallFar,  1.0), //To do: add in bezier curve
+            //curveBetween(blueFarShoot, wallControl, wallFar,  1.0),
+            pathBetween(blueFarShoot, wallFar,  1.0),
+            new PrepareToShoot(),
             new ParallelRaceGroup(
                 new AutoIntake(),
-                new PrepareToShoot(),
                 new SequentialCommandGroup(
                     pathBetween(wallFar, wallClose, 0.55),
                     new Delay(1.0),
@@ -392,7 +401,8 @@ public abstract class Auto extends RobotBaseOp {
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
+                    curveBetween(gateIntakeBack, gateControl, thirdBlueNearShoot, 1.0)
+                    //pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
                 )
             ),
             new Delay(0.100),

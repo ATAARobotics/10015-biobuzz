@@ -248,6 +248,7 @@ public abstract class RobotBaseOp extends OpMode {
                             spindexer.spinShoot();
                         }
                         if (isAuto()) spindexer.spinShoot();
+                        if (isAuto()) spindexer.spinShoot();
                     }
                 }
             } else if (state == OutState.SHOOT) {
