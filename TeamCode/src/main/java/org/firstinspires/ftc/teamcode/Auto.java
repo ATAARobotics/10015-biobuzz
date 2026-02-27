@@ -42,7 +42,9 @@ public abstract class Auto extends RobotBaseOp {
     private boolean gatePickUp = true;
     private boolean gateIntake2 = true;
 
-    private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
+    // feb 27 changed start to be 180 degrees and sideways so new
+    private final Pose blueFarStart = new Pose(70 - yOffset, xOffset, Math.toRadians(180));
+    //private final Pose blueFarStart = new Pose(47.25 + xOffset, yOffset, Math.toRadians(90));
     //private final Pose blueNearStart = new Pose(19.5 + xOffset,120.5 + yOffset, Math.toRadians(270));
     private final Pose blueNearStart = new Pose(23.25 + xOffset, 140 - yOffset, Math.toRadians(270));
     private final Pose blueFarShoot = new Pose(
