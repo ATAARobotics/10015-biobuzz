@@ -229,9 +229,7 @@ public abstract class Auto extends RobotBaseOp {
             )
         );
         if (usePreloads) {
-            auto.addCommands(new AutoOuttake(),
-            new Delay(0.250));
-
+            auto.addCommands(new AutoOuttake());
         }
 
         // collect and shoot audience spike mark
@@ -241,18 +239,17 @@ public abstract class Auto extends RobotBaseOp {
             pathBetween(blueFarShoot, spikeStart1, 1.0),
             new ParallelRaceGroup(
                 new AutoIntake(),
-                pathBetween(spikeStart1, spikeEnd1, 0.45)
+                pathBetween(spikeStart1, spikeEnd1, 0.55)
             ),
-            new SoftIntake(),
-            new Delay(1.0),
             new PrepareToShoot(),
+            new SoftIntake(),
+            //new Delay(1.0),
             new ParallelCommandGroup(
                 new SortSpindex(),
                 new PrepareToShoot(),
                 fp
             ),
-            new AutoOuttake(),
-            new Delay(0.250)
+            new AutoOuttake()
         );
 
         // collect and shoot human-player preloads
@@ -260,22 +257,20 @@ public abstract class Auto extends RobotBaseOp {
             curveBetween(blueFarShoot, wallControl, wallFar,  1.0), //To do: add in bezier curve
             new ParallelRaceGroup(
                 new AutoIntake(),
+                new PrepareToShoot(),
                 new SequentialCommandGroup(
                     pathBetween(wallFar, wallClose, 0.55),
                     new Delay(1.0),
-                        pathBetween(wallClose, wallClosish, 0.55),
-                        new Delay(1.0)
+                    pathBetween(wallClose, wallClosish, 0.55),
+                    new Delay(1.0)
                 )
-            ),
+             ),
             new SoftIntake(),
-            new PrepareToShoot(),
             new ParallelCommandGroup(
-                new PrepareToShoot(),
                 new SortSpindex(),
                 pathBetween(wallClose, blueFarShoot, 1.0)
             ),
-            new AutoOuttake(),
-            new Delay(0.250)
+            new AutoOuttake()
         );
 
 /*
@@ -293,6 +288,7 @@ public abstract class Auto extends RobotBaseOp {
 
         if (gatePickUp) {
             auto.addCommands(
+                new PrepareToShoot(),
                 new ParallelRaceGroup(
                     new ParallelCommandGroup(
                         pathBetween(blueFarShoot, theCorner, 0.55),
@@ -301,12 +297,10 @@ public abstract class Auto extends RobotBaseOp {
                     new AutoIntake()
                 ),
                 new ParallelCommandGroup(
-                    new PrepareToShoot(),
                     new SortSpindex(),
                     pathBetween(theCorner, blueFarShoot, 1.0)
                 ),
-                new AutoOuttake(),
-                new Delay(0.1)
+                new AutoOuttake()
             );
         }
 
