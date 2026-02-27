@@ -247,8 +247,10 @@ public abstract class RobotBaseOp extends OpMode {
                         for (int x=0; x < spindexer.artifactCount() - 1; x++) {
                             spindexer.spinShoot();
                         }
-                        if (isAuto()) spindexer.spinShoot();
-                        if (isAuto()) spindexer.spinShoot();
+                        if (true){//isAuto()) {
+                            spindexer.spinShoot();
+                            spindexer.spinShoot();
+                        }
                     }
                 }
             } else if (state == OutState.SHOOT) {
@@ -276,6 +278,7 @@ public abstract class RobotBaseOp extends OpMode {
             if (!interrupted) {
                 turret.noLock();
                 shooter.manualShootRpm();
+                spindexer.spinModeIndex();
             }
         }
     }
