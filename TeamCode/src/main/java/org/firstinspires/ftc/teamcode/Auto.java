@@ -95,6 +95,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose gatePickUpStart = new Pose(11.42, 23, Math.toRadians(125));
     private final Pose gatePickUpEnd = new Pose(11.42, 50, Math.toRadians(125));
     private final Pose nearParkGate = new Pose (36.0, 72, Math.toRadians(180));
+    private final Pose endParkFar = new Pose (33,yOffset + 3 , Math.toRadians(180));
 
     // human-player preloads (old way)
     /*
@@ -310,13 +311,14 @@ public abstract class Auto extends RobotBaseOp {
                     new SortSpindex(),
                     pathBetween(theCorner, blueFarShoot, 1.0)
                 ),
+                    new SoftIntake(),
                 new AutoOuttake()
             );
         }
 
         // park off the start lines
         auto.addCommands(
-            pathBetween(blueFarShoot, blueFarPark, 1.0)
+            pathBetween(blueFarShoot, endParkFar, 1.0)
         );
 
         auto.addCommands(
