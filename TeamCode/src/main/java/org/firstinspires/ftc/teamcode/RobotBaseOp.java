@@ -48,7 +48,7 @@ public abstract class RobotBaseOp extends OpMode {
     public static double GEOM_TARGET_X = 5;
     public static double GEOM_TARGET_Y = 138;
 
-    public static double FAR_TARGET_X_BLUE = 5;
+    public static double FAR_TARGET_X_BLUE = 8;
 
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}

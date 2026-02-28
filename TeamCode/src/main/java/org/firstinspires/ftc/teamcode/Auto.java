@@ -66,7 +66,7 @@ public abstract class Auto extends RobotBaseOp {
             Math.toRadians(180)
         );
     private final Pose secondBlueNearShoot = new Pose (50, 102, Math.toRadians(180));
-    private final Pose thirdBlueNearShoot = new Pose (50, 93, Math.toRadians(180));
+    private final Pose thirdBlueNearShoot = new Pose (50, 87, Math.toRadians(180));
     private final Pose finalShootAndPark = new Pose (56, 111, Math.toRadians(180));
 
     // these are red coords
@@ -109,6 +109,7 @@ public abstract class Auto extends RobotBaseOp {
     //private final Pose wallControl = new Pose(57.624, 23.6 + yOffset, Math.toRadians(270));
     private final Pose wallClose = new Pose(xOffset, yOffset + 3, Math.toRadians(270));
     private final Pose wallClosish = new Pose(xOffset + 4, yOffset + 5, Math.toRadians(300));
+    private final Pose gatePoint = new Pose(50, 35.0 + 23.5, Math.toRadians(180));
 
     private final Pose humanPlayerIntake = new Pose(9.8, 8.6,Math.toRadians(180));
     private final Pose humanPlayerIntakeTwo = new Pose(11.42,23,Math.toRadians(180));
@@ -370,15 +371,15 @@ public abstract class Auto extends RobotBaseOp {
                     ),
                     new Delay(0.2)
                 )
-            ),
-            new SoftIntake()
+            )
+          //  new SoftIntake()
         );
 
         auto.addCommands(
             new PrepareToShoot(),
             new ParallelCommandGroup(
                 new SortSpindex(),
-                curveBetween(spikeEnd2, spikeStart2, thirdBlueNearShoot, 1.0)
+                curveBetween(spikeEnd2, gatePoint, thirdBlueNearShoot, 1.0)
             ),
             new Delay(0.100),
             new AutoOuttake(),
@@ -387,7 +388,7 @@ public abstract class Auto extends RobotBaseOp {
 
         // open gate plus intake from ramp
         auto.addCommands(
-            curveBetween(thirdBlueNearShoot, gateControl, gatePreIntake, 0.9),
+            curveBetween(thirdBlueNearShoot, gatePoint, gatePreIntake, 1.0),
             new ParallelRaceGroup(
                 new AutoIntake(),
                 new SequentialCommandGroup(
@@ -396,12 +397,12 @@ public abstract class Auto extends RobotBaseOp {
                     pathBetween(gateIntake, gateIntakeBack, 0.35)
                 )
             ),
-            new SoftIntake(),
+          //  new SoftIntake(),
             new ParallelCommandGroup(
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    curveBetween(gateIntakeBack, gateControl, thirdBlueNearShoot, 1.0)
+                    curveBetween(gateIntakeBack, gatePoint, thirdBlueNearShoot, 1.0)
                     //pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
                 )
             ),
@@ -411,7 +412,7 @@ public abstract class Auto extends RobotBaseOp {
         //gate intake 2
         if (gateIntake2) {
             auto.addCommands(
-                curveBetween(thirdBlueNearShoot, gateControl, gatePreIntake, 0.9),
+                curveBetween(thirdBlueNearShoot, gatePoint, gatePreIntake, 1.0),
                 new ParallelRaceGroup(
                     new AutoIntake(),
                     new SequentialCommandGroup(
@@ -420,12 +421,12 @@ public abstract class Auto extends RobotBaseOp {
                         pathBetween(gateIntake, gateIntakeBack, 0.35)
                     )
                 ),
-                new SoftIntake(),
+            //    new SoftIntake(),
                 new ParallelCommandGroup(
                     new PrepareToShoot(),
                     new ParallelCommandGroup(
                         new SortSpindex(),
-                        pathBetween(gateIntakeBack, thirdBlueNearShoot, 1.0)
+                            curveBetween(gateIntakeBack, gatePoint, thirdBlueNearShoot, 1.0)
                     )
                 ),
                 new Delay(0.1),
@@ -440,7 +441,7 @@ public abstract class Auto extends RobotBaseOp {
                 new AutoIntake(),
                 pathBetween(spikeStart3, spikeEnd3, 0.35)
                 ),
-            new SoftIntake(),
+          //  new SoftIntake(),
             new PrepareToShoot(),
             new ParallelCommandGroup(
                 new SortSpindex(),
@@ -542,9 +543,9 @@ public abstract class Auto extends RobotBaseOp {
 
     @Override
     public void loop(){
+        super.loop();
         follower.update();
         // the command-scheduler is run in our super-class
-        super.loop();
     }
 
     @Override

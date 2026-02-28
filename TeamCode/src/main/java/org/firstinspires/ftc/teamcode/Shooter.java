@@ -51,7 +51,7 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MIN = 0.05;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
-    public static double FAR_RPM = 5000;
+    public static double FAR_RPM = 4900;
     public static double FAR_HOOD = 0.50;
     //public static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
     //public static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
