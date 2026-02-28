@@ -44,6 +44,9 @@ public abstract class TeleOp extends RobotBaseOp {
         operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(
             spindexer.new IndexOnce()
         );
+        operator.getGamepadButton(GamepadKeys.Button.B).whenPressed(
+                new OperatorOffset()
+        );
         operator.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
                 new PrepareToShoot()
         );

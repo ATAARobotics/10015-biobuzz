@@ -47,6 +47,7 @@ public abstract class RobotBaseOp extends OpMode {
     private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
     public static double GEOM_TARGET_X = 5;
     public static double GEOM_TARGET_Y = 138;
+    public int operatorPattern = 0;
 
     public static double FAR_TARGET_X_BLUE = 9.5;
 
@@ -176,7 +177,8 @@ public abstract class RobotBaseOp extends OpMode {
                     // to shoot a green next, we're done.
                     if (turret.pattern != -1){
                         s = s - turret.pattern;
-                        if (s < 0){
+                        s = s - operatorPattern;
+                        while (s < 0){
                             s = s + 3;
                         }
                     }
@@ -204,6 +206,18 @@ public abstract class RobotBaseOp extends OpMode {
                 }
             }
 
+        }
+    }
+    public class OperatorOffset extends CommandBase{
+        @Override
+        public void initialize() {
+            operatorPattern += 1;
+            if (operatorPattern > 2){
+                operatorPattern = 0;
+            }
+        }
+        public boolean isFinished(){
+            return true;
         }
     }
 

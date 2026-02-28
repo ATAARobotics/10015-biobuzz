@@ -252,8 +252,8 @@ public class Turret extends SubsystemBase {
         if (mode == HeadingLockMode.Obelisk)
             faceFieldAngle(obeliskHeading);
 
-        if (mode == HeadingLockMode.Off)
-            faceRobotAngle(joystickAngle);
+     //   if (mode == HeadingLockMode.Off)
+      //      faceRobotAngle(joystickAngle);
 
         if (mode == HeadingLockMode.Trig)
             faceFieldAngle(targetHeading);
