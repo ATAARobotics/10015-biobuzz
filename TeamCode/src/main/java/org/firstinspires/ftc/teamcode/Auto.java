@@ -114,8 +114,9 @@ public abstract class Auto extends RobotBaseOp {
 
     private final Pose humanPlayerIntake = new Pose(9.8, 8.6,Math.toRadians(180));
     private final Pose humanPlayerIntakeTwo = new Pose(11.42,23,Math.toRadians(180));
-    private final Pose secretTunnelIntake = new Pose(11.42,43,130);
+    private final Pose secretTunnelIntake = new Pose(11.42,33,Math.toRadians(130));
     private final Pose theCorner = new Pose(yOffset, xOffset, Math.toRadians(180));
+    private final Pose tiltedCorner = new Pose(yOffset, xOffset, Math.toRadians(200));
     // trying a different human-player routing
     private final Pose wallDirectStart = new Pose(xOffset + 1, yOffset + 15, Math.toRadians(240));
     private final Pose wallDirectEnd = new Pose(xOffset + 1, yOffset, Math.toRadians(240));
@@ -267,25 +268,43 @@ public abstract class Auto extends RobotBaseOp {
 
         // collect and shoot human-player preloads
         auto.addCommands(
-            //curveBetween(blueFarShoot, wallControl, wallFar,  1.0),
-            pathBetween(blueFarShoot, wallFar,  1.0),
             new PrepareToShoot(),
             new ParallelRaceGroup(
                 new AutoIntake(),
                 new SequentialCommandGroup(
-                    pathBetween(wallFar, wallClose, 0.55),
-                    new Delay(1.0),
-                    pathBetween(wallClose, wallClosish, 0.55),
+                    pathBetween(blueFarShoot, tiltedCorner, 0.55),
                     new Delay(1.0)
                 )
              ),
             new SoftIntake(),
             new ParallelCommandGroup(
                 new SortSpindex(),
-                pathBetween(wallClose, blueFarShoot, 1.0)
+                pathBetween(tiltedCorner, blueFarShoot, 1.0)
             ),
             new AutoOuttake()
         );
+
+        /* Old routing
+        auto.addCommands(
+                //curveBetween(blueFarShoot, wallControl, wallFar,  1.0),
+                pathBetween(blueFarShoot, wallFar,  1.0),
+                new PrepareToShoot(),
+                new ParallelRaceGroup(
+                        new AutoIntake(),
+                        new SequentialCommandGroup(
+                                pathBetween(wallFar, wallClose, 0.55),
+                                new Delay(1.0),
+                                pathBetween(wallClose, wallClosish, 0.55),
+                                new Delay(1.0)
+                        )
+                ),
+                new SoftIntake(),
+                new ParallelCommandGroup(
+                        new SortSpindex(),
+                        pathBetween(wallClose, blueFarShoot, 1.0)
+                ),
+                new AutoOuttake()
+        );*/
 
 /*
         // collect and shoot middle spike mark
@@ -304,15 +323,16 @@ public abstract class Auto extends RobotBaseOp {
             auto.addCommands(
                 new PrepareToShoot(),
                 new ParallelRaceGroup(
-                    new ParallelCommandGroup(
+                    new SequentialCommandGroup(
                         pathBetween(blueFarShoot, theCorner, 0.55),
-                        new Delay(0.500)
+                        new Delay(0.500),
+                        pathBetween(theCorner, secretTunnelIntake, 0.7)
                     ),
                     new AutoIntake()
                 ),
                 new ParallelCommandGroup(
                     new SortSpindex(),
-                    pathBetween(theCorner, blueFarShoot, 1.0)
+                    pathBetween(secretTunnelIntake, blueFarShoot, 1.0)
                 ),
                     new SoftIntake(),
                 new AutoOuttake()

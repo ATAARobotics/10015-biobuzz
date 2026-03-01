@@ -278,12 +278,6 @@ public class Turret extends SubsystemBase {
                 // TODO: change color depending on motif pattern
                 motifLight.setPosition(PINK);
             }
-        } else {
-            if (haveAprilLock) {
-                motifLight.setPosition(PINK);
-            } else {
-                motifLight.setPosition(0.0);
-            }
         }
 
         currentTurretAngle = getTurretAngle();

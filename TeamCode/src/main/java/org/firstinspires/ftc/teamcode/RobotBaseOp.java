@@ -50,6 +50,7 @@ public abstract class RobotBaseOp extends OpMode {
     public int operatorPattern = 0;
 
     public static double FAR_TARGET_X_BLUE = 9.5;
+    public static double FAR_TARGET_X_RED =  6.5;
 
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
@@ -208,7 +209,7 @@ public abstract class RobotBaseOp extends OpMode {
 
         }
     }
-    public class OperatorOffset extends CommandBase{
+    public class OperatorPattern extends CommandBase{
         @Override
         public void initialize() {
             operatorPattern += 1;
@@ -649,7 +650,7 @@ public abstract class RobotBaseOp extends OpMode {
                 targetX = FAR_TARGET_X_BLUE;
             }
             else {
-                targetX = 141 - FAR_TARGET_X_BLUE;
+                targetX = 141 - FAR_TARGET_X_RED;
             }
         }
         geometricTargetHeading = Math.toDegrees(
