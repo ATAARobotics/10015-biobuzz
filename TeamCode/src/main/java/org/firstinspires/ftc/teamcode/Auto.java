@@ -169,6 +169,7 @@ public abstract class Auto extends RobotBaseOp {
     class FollowPathCommand extends CommandBase {
         Path path;
         double speed;
+        double startTime;
 
         public FollowPathCommand(Path p, double s) {
             path = p;
@@ -178,9 +179,11 @@ public abstract class Auto extends RobotBaseOp {
         public void initialize() {
             follower.followPath(path);
             follower.setMaxPower(speed);
+            startTime = time;
         }
         public boolean isFinished() {
-            return !follower.isBusy();
+            double elapsed = time - startTime;
+            return !follower.isBusy() || elapsed > 3;
         }
     }
 

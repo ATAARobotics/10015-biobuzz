@@ -37,7 +37,7 @@ public class Turret extends SubsystemBase {
     AnalogInput encoder0;
     AnalogInput encoder1;
     DcMotor revEncoder;
-    Servo motifLight;
+   public Servo motifLight;
 
     double PINK = 0.71;
 

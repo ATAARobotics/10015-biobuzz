@@ -590,6 +590,17 @@ public abstract class RobotBaseOp extends OpMode {
         clearCache();
         readControls();
         readSensors();
+        if (!isAuto()){
+            if (operatorPattern == 0){
+                turret.motifLight.setPosition(0);
+            }
+            if (operatorPattern == 1){
+                turret.motifLight.setPosition(0.71);
+            }
+            if (operatorPattern == 2){
+                turret.motifLight.setPosition(0.61);
+            }
+        }
 
         if (!minuteWarning && runtime.seconds() > 60){
             minuteWarning = true;
