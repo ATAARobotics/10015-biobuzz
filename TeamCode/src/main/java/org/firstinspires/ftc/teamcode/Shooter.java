@@ -25,6 +25,10 @@ public class Shooter extends SubsystemBase {
     double ticksPerSecond;
     double power;
     double appliedVoltage; // proportion of batteries current voltage needed to achieve rpm target (based on flywheel testing)
+    double tbhOutput = 0.0;
+    double tbhLastCrossedOutput = 0.0;
+    double tbhLastError = 0.0;
+    public static double TBH_GAIN = 0.000007;
 
     // shot-counter
     int shotsFired = 0;
@@ -237,8 +241,34 @@ public class Shooter extends SubsystemBase {
             targetHood = MANUAL_HOOD;
         }
 
-        appliedVoltage = (kv * targetRpm) + ks;
-        power = appliedVoltage / voltage;
+       //
+        if (targetRpm == 0){
+            tbhOutput = 0;
+            tbhLastCrossedOutput = 0;
+            tbhLastError = 0;
+            power = 0;
+        }
+        else{
+            if (tbhLastError == 0.0){
+                appliedVoltage = (kv * targetRpm) + ks;
+                tbhOutput = appliedVoltage/voltage;
+                tbhLastCrossedOutput = tbhOutput;
+            }
+        }
+        //tbh controller
+       double error = targetRpm - currentRpm;
+        tbhOutput += TBH_GAIN * error;
+       tbhOutput = Math.max(0, Math.min(1,tbhOutput)); //Maintain a value between 0 and 1
+        if (Math.signum(error) != Math.signum(tbhLastError) && tbhLastError != 0.0){
+            tbhOutput = 0.5 * (tbhOutput + tbhLastCrossedOutput);
+            tbhLastCrossedOutput = tbhOutput;
+        }
+        tbhLastError = error;
+        power = tbhOutput;
+
+
+
+      /*  power = appliedVoltage / voltage;
 
         if (currentRpm < (targetRpm - RPM_TOLERANCE)) {
             power = BANG_POWER;
@@ -248,11 +278,10 @@ public class Shooter extends SubsystemBase {
         }
         if (targetRpm == 0) power = 0;
 
-
+*/
         if (POWER_OVERRIDE > 0.0) {
             power = POWER_OVERRIDE;
         }
-
 
         if (power < 0) power = 0;
 
