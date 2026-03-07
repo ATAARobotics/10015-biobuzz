@@ -324,9 +324,8 @@ public abstract class Auto extends RobotBaseOp {
                 new PrepareToShoot(),
                 new ParallelRaceGroup(
                     new SequentialCommandGroup(
-                        pathBetween(blueFarShoot, theCorner, 0.55),
-                        new Delay(0.500),
-                        pathBetween(theCorner, secretTunnelIntake, 0.7)
+                        curveBetween(blueFarShoot, theCorner, secretTunnelIntake, 0.55),
+                        new Delay(0.500)
                     ),
                     new AutoIntake()
                 ),
