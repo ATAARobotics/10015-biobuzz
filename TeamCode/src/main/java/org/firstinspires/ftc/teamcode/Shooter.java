@@ -266,17 +266,16 @@ public class Shooter extends SubsystemBase {
         tbhLastError = error;
         power = tbhOutput;
 
+        if (currentRpm < (targetRpm - RPM_TOLERANCE)) {
+            power = BANG_POWER;
+        }
+
+
 
 
       /*  power = appliedVoltage / voltage;
 
-        if (currentRpm < (targetRpm - RPM_TOLERANCE)) {
-            power = BANG_POWER;
-        }
-        if (currentRpm > (targetRpm + BAND)) {
-            power = 0.0;
-        }
-        if (targetRpm == 0) power = 0;
+
 
 */
         if (POWER_OVERRIDE > 0.0) {
