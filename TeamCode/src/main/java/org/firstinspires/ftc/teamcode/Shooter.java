@@ -66,7 +66,7 @@ public class Shooter extends SubsystemBase {
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
     public static double FAR_DISTANCE = 125.0;
 
-    public static double BAND = 10;
+    public static double BAND = 50;
     public static double BANG_POWER = 1.0;
     public static double RPM_TOLERANCE = 50;
     public static double RPM_TOLERANCE_OVER = 250;
@@ -266,7 +266,7 @@ public class Shooter extends SubsystemBase {
         tbhLastError = error;
         power = tbhOutput;
 
-        if (currentRpm < (targetRpm - RPM_TOLERANCE)) {
+        if (currentRpm < (targetRpm - BAND)) {
             power = BANG_POWER;
         }
 
