@@ -79,7 +79,7 @@ public class Turret extends SubsystemBase {
     // tuned dec 22 from first principals
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
-    public static double turretP = 0.0055, turretI = 0.002, turretD = 0.0005, turretF = 0.07;
+    public static double turretP = 0.0055, turretI = 0.002, turretD = 0.0008, turretF = 0.065;
     public static double TURRET_TOLERANCE = 4; // in degrees
     public static double TURRET_TWEAK = 3;
     public double targetHeading;  // from geometry via RobotBaseOp
@@ -252,8 +252,8 @@ public class Turret extends SubsystemBase {
         if (mode == HeadingLockMode.Obelisk)
             faceFieldAngle(obeliskHeading);
 
-        if (mode == HeadingLockMode.Off)
-            faceRobotAngle(joystickAngle);
+     //   if (mode == HeadingLockMode.Off)
+      //      faceRobotAngle(joystickAngle);
 
         if (mode == HeadingLockMode.Trig)
             faceFieldAngle(targetHeading);
