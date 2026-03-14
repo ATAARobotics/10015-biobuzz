@@ -55,7 +55,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     public static double FAR_TARGET_X_BLUE = 9.5;
     public static double FAR_TARGET_X_RED =  3.5;
-    public static double SHOOT_PREDICT = 0.900;
+    public static double SHOOT_PREDICT = 0.570;
 
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
@@ -256,7 +256,9 @@ public abstract class RobotBaseOp extends OpMode {
                 // - the operator pressed A
                 if ((shooter.readyToShoot() &&
                    // turret.isLocked(time) &&
-                    turret.atTargetAngle()) || operator.wasJustPressed(GamepadKeys.Button.A)) {
+                     inZone() &&
+                        turret.atTargetAngle()) || operator.wasJustPressed(GamepadKeys.Button.A)
+                ) {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
                     shotSlot = spindexer.currentSlot();
@@ -296,9 +298,15 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void end(boolean interrupted){
             if (!interrupted) {
-                turret.noLock();
-                shooter.manualShootRpm();
-                spindexer.spinModeIndex();
+                if (isAuto()){
+                    turret.noLock();
+                    spindexer.spinModeIndex();
+                }
+                else {
+                    turret.noLock();
+                    shooter.manualShootRpm();
+                    spindexer.spinModeIndex();
+                }
             }
         }
     }
@@ -521,6 +529,29 @@ public abstract class RobotBaseOp extends OpMode {
         }
     }
 
+    public boolean inZone(){
+        if (isAuto()) {
+            double x  = drive.getPosition().getX(DistanceUnit.INCH);
+            double y  = drive.getPosition().getY(DistanceUnit.INCH);
+            if (getAlliance() == Alliance.BLUE) {
+                // Blue: are we in the upper left quadrant of the field, and are we within the triangle, or we are in the far zone "box"
+                if ((y >= 63.5 && x <= 70.5 && x + y >= 131.1) || (y < 17 && x > 24 && x < 36)) {
+                    return true;
+                }
+            }
+            else if (getAlliance() == Alliance.RED) {
+                // Red: are we in the upper right quadrant of the field, and in the triangle, or we are in the far zone "box"
+                if ((y >= 63.5 && x >= 70.5 && y >= x - 9.9) || (y < 17 && x > 36 && x < 48)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
     // based on recentPositions, predict our Post2D in "t" seconds
     // from now (just x, y works velocity)
     protected Pose2D predictPose(double t) {
@@ -563,6 +594,7 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("aim-offset-y", aimOffsetY);
         telem.log("predicted-x", predictedX);
         telem.log("predicted-y", predictedY);
+        telem.log("in-zone", inZone());
 
 
 
