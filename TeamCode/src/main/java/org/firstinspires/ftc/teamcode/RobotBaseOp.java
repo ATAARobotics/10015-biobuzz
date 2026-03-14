@@ -44,6 +44,8 @@ public abstract class RobotBaseOp extends OpMode {
     double geometricTargetHeading;
     double aimOffsetX;
     double aimOffsetY;
+    double predictedX;
+    double predictedY;
     double geometricDistance;
     // offset robot / turret centers is 66.70mm
     private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
@@ -559,6 +561,8 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("time-of-flight", timeOfFlight(geometricDistance));
         telem.log("aim-offset-x", aimOffsetX);
         telem.log("aim-offset-y", aimOffsetY);
+        telem.log("predicted-x", predictedX);
+        telem.log("predicted-y", predictedY);
 
 
 
@@ -636,8 +640,11 @@ public abstract class RobotBaseOp extends OpMode {
         aimOffsetY = drive.y_velocity * tof;
         robotX += aimOffsetX;
         robotY += aimOffsetY;
+        predictedX = robotX;
+        predictedY = robotY;
 
-        if (robotHeading < 0) robotHeading = robotHeading + 360;
+        // We prefer angels from 0-360, but atan2 likes 180 to -180
+      //  if (robotHeading < 0) robotHeading = robotHeading + 360;
 
         // we need to offset the robot x and y values to be at the
         // center of the turret.
@@ -653,7 +660,7 @@ public abstract class RobotBaseOp extends OpMode {
         //double targetY = -turret.target.fieldPosition.get(0);
         // TODO: red vs blue targets
         double targetX = GEOM_TARGET_X;
-        double targetY = GEOM_TARGET_Y;
+        double targetY =  GEOM_TARGET_Y;
 
 
         if (getAlliance() == Alliance.RED){
