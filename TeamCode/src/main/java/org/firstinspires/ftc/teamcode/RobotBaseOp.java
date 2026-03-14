@@ -42,6 +42,8 @@ public abstract class RobotBaseOp extends OpMode {
 
     // targeting based on odometry
     double geometricTargetHeading;
+    double aimOffsetX;
+    double aimOffsetY;
     double geometricDistance;
     // offset robot / turret centers is 66.70mm
     private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
@@ -534,6 +536,10 @@ public abstract class RobotBaseOp extends OpMode {
         }
         loops++;
     }
+    private double timeOfFlight(double distance){
+        double t = 0.00008 * distance * distance - 0.0093 * distance + 0.8551;
+        return t;
+    }
 
     protected void addTelemetry(HyperTelemetry telem) {
     }
@@ -548,6 +554,12 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("geometric-distance", geometricDistance);
         telem.log("alliance", getAlliance());
         telem.log("zone", getStartZone());
+        telem.log("shooter-ready-to-shoot", shooter.readyToShoot());
+        telem.log("time-of-flight", timeOfFlight(geometricDistance));
+        telem.log("aim-offset-x", aimOffsetX);
+        telem.log("aim-offset-y", aimOffsetY);
+
+
 
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);
@@ -653,8 +665,11 @@ public abstract class RobotBaseOp extends OpMode {
                 targetX = 141 - FAR_TARGET_X_RED;
             }
         }
+        aimOffsetX = drive.x_velocity * timeOfFlight(geometricDistance);
+        aimOffsetY = drive.y_velocity * timeOfFlight(geometricDistance);
         geometricTargetHeading = Math.toDegrees(
-            Math.atan2(targetY - turretY, targetX - turretX)
+            Math.atan2(targetY - turretY - aimOffsetY,
+                    targetX - turretX - aimOffsetX)
         );
 
         turret.robotHeading = robotHeading;

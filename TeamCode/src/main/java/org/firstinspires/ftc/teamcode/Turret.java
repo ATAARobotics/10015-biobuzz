@@ -255,7 +255,7 @@ public class Turret extends SubsystemBase {
      //   if (mode == HeadingLockMode.Off)
       //      faceRobotAngle(joystickAngle);
 
-        if (mode == HeadingLockMode.Trig)
+        if (/*mode == HeadingLockMode.Trig*/ true)
             faceFieldAngle(targetHeading);
         if (mode == HeadingLockMode.Camera) {
             haveAprilLock = aprilTagLock();
