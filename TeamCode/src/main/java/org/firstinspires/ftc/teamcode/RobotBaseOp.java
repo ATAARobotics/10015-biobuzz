@@ -53,6 +53,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     public static double FAR_TARGET_X_BLUE = 9.5;
     public static double FAR_TARGET_X_RED =  3.5;
+    public static double SHOOT_PREDICT = 0.900;
 
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
@@ -630,6 +631,12 @@ public abstract class RobotBaseOp extends OpMode {
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
         double robotY = drive.getPosition().getY(DistanceUnit.INCH);
 
+        double tof = SHOOT_PREDICT; // timeOfFlight(geometricDistance);
+        aimOffsetX = drive.x_velocity * tof;
+        aimOffsetY = drive.y_velocity * tof;
+        robotX += aimOffsetX;
+        robotY += aimOffsetY;
+
         if (robotHeading < 0) robotHeading = robotHeading + 360;
 
         // we need to offset the robot x and y values to be at the
@@ -665,11 +672,9 @@ public abstract class RobotBaseOp extends OpMode {
                 targetX = 141 - FAR_TARGET_X_RED;
             }
         }
-        aimOffsetX = drive.x_velocity * timeOfFlight(geometricDistance);
-        aimOffsetY = drive.y_velocity * timeOfFlight(geometricDistance);
         geometricTargetHeading = Math.toDegrees(
-            Math.atan2(targetY - turretY - aimOffsetY,
-                    targetX - turretX - aimOffsetX)
+            Math.atan2(targetY - turretY,
+                       targetX - turretX)
         );
 
         turret.robotHeading = robotHeading;
