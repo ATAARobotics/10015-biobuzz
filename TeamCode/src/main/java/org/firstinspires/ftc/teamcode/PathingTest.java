@@ -10,6 +10,10 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 
@@ -25,13 +29,12 @@ public class PathingTest extends RobotBaseOp {
     protected void bindDriverControls(){
     }
 
-
     public Follower follower;
     double xOffset = 8.124;
     double yOffset = 8.0984;
     private final Pose blueFarStart = new Pose(70 - yOffset, xOffset, Math.toRadians(180));
-    private final Pose positionOne = new Pose(12 + yOffset,22,Math.toRadians(180));
-    private final Pose positionTwo = new Pose (60 - yOffset, 22, Math.toRadians(180));
+    private final Pose positionOne = new Pose(24 + yOffset,45,Math.toRadians(180));
+    private final Pose positionTwo = new Pose (120 - yOffset, 45, Math.toRadians(180));
     Pose lastPose = blueFarStart;
 
     private Command _lastCommandRun = null;
@@ -48,20 +51,6 @@ public class PathingTest extends RobotBaseOp {
         // via Brogan M Pratt, default is 1.0 .. lower numbers stop SOONER.
         // brakingStart default is 1
         ///p.setBrakingStrength(1.2);
-        return new FollowPathCommand(p, speed);
-    }
-    public FollowPathCommand curveBetween(Pose b, Pose c,Pose e,  double speed) {
-        Pose begin = b;
-        Pose end = e;
-        Pose control = c;
-        Path p = new Path(new BezierCurve(begin, control, end));
-
-        if (begin.getHeading() != end.getHeading()) {
-            p.setLinearHeadingInterpolation(begin.getHeading(), end.getHeading());
-        } else {
-            p.setConstantHeadingInterpolation(end.getHeading());
-        }
-        //p.setBrakingStrength(1.2);  // same as passing in setGlobalDeceleration()
         return new FollowPathCommand(p, speed);
     }
 
@@ -119,6 +108,19 @@ public class PathingTest extends RobotBaseOp {
         // we must run this _before_ the "pathing" options because
         // those set the start-position of the robot
         super.start();
+
+        Pose start = blueFarStart;
+        drive.setPosition(
+                new Pose2D(
+                        DistanceUnit.INCH,
+                        start.getX(),
+                        start.getY(),
+                        AngleUnit.RADIANS,
+                        start.getHeading()
+                )
+        );
+        follower.setStartingPose(start);
+
 
         // "Tuning.Line" tuner does this .. really needed?
         follower.activateAllPIDFs();
