@@ -23,6 +23,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
+
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.function.Consumer;
@@ -420,8 +421,9 @@ public abstract class Auto extends RobotBaseOp {
                 new AutoIntake(),
                 new SequentialCommandGroup(
                     pathBetween(gatePreIntake, gateIntake, 0.7),
-                    new Delay(0.650),
-                    pathBetween(gateIntake, gateIntakeBack, 0.35)
+                    new Delay(0.300),
+                    pathBetween(gateIntake, gateIntakeBack, 0.35),
+                       new Delay(0.300)
                 )
             ),
           //  new SoftIntake(),
@@ -447,8 +449,9 @@ public abstract class Auto extends RobotBaseOp {
                     new AutoIntake(),
                     new SequentialCommandGroup(
                         pathBetween(gatePreIntake, gateIntake, 0.7),
-                        new Delay(0.650),
-                        pathBetween(gateIntake, gateIntakeBack, 0.35)
+                        new Delay(0.300),
+                        pathBetween(gateIntake, gateIntakeBack, 0.35),
+                    new Delay(0.300)
                     )
                 ),
             //    new SoftIntake(),
