@@ -74,7 +74,7 @@ public abstract class Auto extends RobotBaseOp {
     //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
     private final Pose gatePreIntake = new Pose(13.0, 58.7, Math.toRadians(150));
     private final Pose gateIntake = new Pose(11.5, 58.7, Math.toRadians(150));
-    private final Pose gateIntakeBack = new Pose(11.25, 53.0, Math.toRadians(150));
+    private final Pose gateIntakeBack = new Pose(11.25, 53.0, Math.toRadians(140));
     private final Pose gateControl = new Pose(30.0, 58.7, Math.toRadians(180));
 
     private final Pose spikeStart1 = new Pose (42, 35.0, Math.toRadians(180));

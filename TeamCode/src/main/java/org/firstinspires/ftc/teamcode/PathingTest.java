@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.BezierCurve;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
@@ -16,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-
+@Configurable
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="pathingTest", group="Opmode")
 public class PathingTest extends RobotBaseOp {
     public Alliance getAlliance() { return Alliance.BLUE; }
@@ -36,7 +37,8 @@ public class PathingTest extends RobotBaseOp {
     private final Pose positionOne = new Pose(24 + yOffset,45,Math.toRadians(180));
     private final Pose positionTwo = new Pose (120 - yOffset, 45, Math.toRadians(180));
     Pose lastPose = blueFarStart;
-
+    public static double brakingStrength = 1.0;
+    public static double brakingStart = 1.3;
     private Command _lastCommandRun = null;
 
     public FollowPathCommand pathBetween(Pose b, Pose e, double speed) {
@@ -50,7 +52,8 @@ public class PathingTest extends RobotBaseOp {
         }
         // via Brogan M Pratt, default is 1.0 .. lower numbers stop SOONER.
         // brakingStart default is 1
-        ///p.setBrakingStrength(1.2);
+        p.setBrakingStart(brakingStart);
+        p.setBrakingStrength(brakingStrength);
         return new FollowPathCommand(p, speed);
     }
 
