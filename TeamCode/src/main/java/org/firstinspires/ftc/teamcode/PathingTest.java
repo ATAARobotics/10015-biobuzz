@@ -14,9 +14,18 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="pathingTest", group="Opmode")
-public class PathingTest extends org.firstinspires.ftc.teamcode.TeleOp {
+public class PathingTest extends RobotBaseOp {
     public Alliance getAlliance() { return Alliance.BLUE; }
     public StartZone getStartZone() { return StartZone.FAR; }
+    public boolean isAuto(){
+        return true;
+    }
+    protected void bindOperatorControls(){
+    }
+    protected void bindDriverControls(){
+    }
+
+
     public Follower follower;
     double xOffset = 8.124;
     double yOffset = 8.0984;
@@ -115,8 +124,6 @@ public class PathingTest extends org.firstinspires.ftc.teamcode.TeleOp {
         follower.activateAllPIDFs();
 
         Command cmds = null;
-
-        CommandScheduler.getInstance().schedule(cmds);
     }
 
     @Override
@@ -130,7 +137,6 @@ public class PathingTest extends org.firstinspires.ftc.teamcode.TeleOp {
     public void loop(){
         super.loop();
         follower.update();
-        readControls();
 
         if (driver.wasJustPressed(GamepadKeys.Button.X)){
             Command c = pathBetween(lastPose,positionOne, 1.0);
@@ -143,8 +149,8 @@ public class PathingTest extends org.firstinspires.ftc.teamcode.TeleOp {
             CommandScheduler.getInstance().schedule(c);
             lastPose = positionTwo;
         }
+        CommandScheduler.getInstance().run();
 
-        // the command-scheduler is run in our super-class
     }
 
     @Override

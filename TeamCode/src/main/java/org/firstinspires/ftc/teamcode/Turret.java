@@ -267,7 +267,7 @@ public class Turret extends SubsystemBase {
             }
         }
         // TEMP: always face our april-tag
-        faceFieldAngle(targetHeading);
+       // faceFieldAngle(targetHeading);
 
        // maybe only in auto?
         if (isAuto) {
