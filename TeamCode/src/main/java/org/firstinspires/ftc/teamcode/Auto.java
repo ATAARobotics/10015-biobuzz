@@ -23,6 +23,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
+
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.function.Consumer;
@@ -73,7 +74,7 @@ public abstract class Auto extends RobotBaseOp {
     //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
     private final Pose gatePreIntake = new Pose(13.0, 58.7, Math.toRadians(150));
     private final Pose gateIntake = new Pose(11.5, 58.7, Math.toRadians(150));
-    private final Pose gateIntakeBack = new Pose(11.25, 53.0, Math.toRadians(150));
+    private final Pose gateIntakeBack = new Pose(11.25, 53.0, Math.toRadians(140));
     private final Pose gateControl = new Pose(30.0, 58.7, Math.toRadians(180));
 
     private final Pose spikeStart1 = new Pose (42, 35.0, Math.toRadians(180));
@@ -420,8 +421,9 @@ public abstract class Auto extends RobotBaseOp {
                 new AutoIntake(),
                 new SequentialCommandGroup(
                     pathBetween(gatePreIntake, gateIntake, 0.7),
-                    new Delay(0.650),
-                    pathBetween(gateIntake, gateIntakeBack, 0.35)
+                    new Delay(0.300),
+                    pathBetween(gateIntake, gateIntakeBack, 0.35),
+                       new Delay(0.300)
                 )
             ),
           //  new SoftIntake(),
@@ -447,8 +449,9 @@ public abstract class Auto extends RobotBaseOp {
                     new AutoIntake(),
                     new SequentialCommandGroup(
                         pathBetween(gatePreIntake, gateIntake, 0.7),
-                        new Delay(0.650),
-                        pathBetween(gateIntake, gateIntakeBack, 0.35)
+                        new Delay(0.300),
+                        pathBetween(gateIntake, gateIntakeBack, 0.35),
+                    new Delay(0.300)
                     )
                 ),
             //    new SoftIntake(),
