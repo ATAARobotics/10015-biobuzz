@@ -95,12 +95,12 @@ public class Shooter extends SubsystemBase {
         motor0 = new MotorEx(hardwareMap, "shooterL", Motor.GoBILDA.BARE);
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        motor0.setInverted(true);
+        motor0.setInverted(false);
 
         motor1 = new MotorEx(hardwareMap, "shooterR", Motor.GoBILDA.BARE);
         motor1.setRunMode(Motor.RunMode.RawPower);
         motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        motor1.setInverted(false);
+        motor1.setInverted(true);
 
         shooterMotor = new MotorGroup(motor0, motor1);
         targetRpm = 0;
