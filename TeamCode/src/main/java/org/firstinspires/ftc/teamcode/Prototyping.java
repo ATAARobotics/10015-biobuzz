@@ -34,10 +34,10 @@ public class  Prototyping extends OpMode {
         shooter.read_sensors(time);
 
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
-            shooter.MANUAL_RPM += 200;
+            shooter.MANUAL_RPM += 100;
         }
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
-            shooter.MANUAL_RPM -= 200;
+            shooter.MANUAL_RPM -= 100;
             if (shooter.MANUAL_RPM < 0) shooter.MANUAL_RPM = 0.0;
         }
         if (control.wasJustPressed(GamepadKeys.Button.Y)){
@@ -48,12 +48,18 @@ public class  Prototyping extends OpMode {
         }
         if (control.wasJustPressed(GamepadKeys.Button.X)){
         }
+        if (control.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
+            shooter.MANUAL_HOOD +=0.1;
+        }
 
+        if (control.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
+            shooter.MANUAL_HOOD -= 0.1;
+        }
         CommandScheduler.getInstance().run();
 
 
         HyperTelemetry telem = new HyperTelemetry(telemetry);
         shooter.addTelemetry(telem);
-        telemetry.update();
+        telem.update();
     }
 }

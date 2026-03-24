@@ -51,8 +51,8 @@ public class Shooter extends SubsystemBase {
 
     double hoodSlope;
     public static double RPM_PERCENT = 1;
-    public static double HOOD_MAX = 0.80;
-    public static double HOOD_MIN = 0.05;
+    public static double HOOD_MAX = 0.90;
+    public static double HOOD_MIN = 0.2;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
     public static double FAR_RPM = 5000;
