@@ -34,10 +34,15 @@ public class  Prototyping extends OpMode {
         shooter.read_sensors(time);
 
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
+            shooter.MANUAL_RPM += 200;
         }
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
+            shooter.MANUAL_RPM -= 200;
+            if (shooter.MANUAL_RPM < 0) shooter.MANUAL_RPM = 0.0;
         }
         if (control.wasJustPressed(GamepadKeys.Button.Y)){
+            shooter.MANUAL_RPM = 0.0;
+            shooter.manualShootRpm();
         }
         if (control.wasJustPressed(GamepadKeys.Button.A)) {
         }

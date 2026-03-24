@@ -122,8 +122,8 @@ public class Shooter extends SubsystemBase {
     public void read_sensors(double time) {
         // get any inputs from our encoders or other sensors
         // ("shooterL" is in port 2, a hardware port, "shooterR" is in port 3)
-        ticks = motor1.getCurrentPosition();
-        ticksPerSecond = motor1.getVelocity();
+        ticks = motor0.getCurrentPosition();
+        ticksPerSecond = motor0.getVelocity();
         currentRpm = (ticksPerSecond * 60) / TICKS_PER_REV;
         voltage = battery.getVoltage();
 
