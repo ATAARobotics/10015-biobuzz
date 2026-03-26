@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static com.sun.tools.doclint.HtmlTag.B;
+
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
@@ -76,6 +78,7 @@ public class Shooter extends SubsystemBase {
     VoltageSensor battery;
     double MAX_RPM = 5250;
     double targetRpm;
+    double targetHoodAngle = 30.75;
     double targetHood = HOOD_MIN;
     double currentRpm;
     double voltage; // current battery voltage
@@ -89,6 +92,7 @@ public class Shooter extends SubsystemBase {
     // new model january 26
     public static double kv = 0.0021;
     public static double ks = 1.0892;
+
 
     public Shooter(HardwareMap hardwareMap) {
         // do any one-time initialization here
@@ -155,6 +159,15 @@ public class Shooter extends SubsystemBase {
         return 0.000304388 * rpm + -0.692439;
         //tuned feb 16
       //  return -9e8 * (rpm * rpm) + 0.001 * rpm - 2.03;
+    }
+
+    public double degreeToServo(double degrees){
+        double intercept = 27;
+        double slope = 25;
+        double servo = (degrees - intercept)/slope;
+            if (servo < 0.15) servo = 0.15;
+            if (servo > 0.95) servo = 0.95;
+           return servo;
     }
 
     public boolean readyToShoot() {
@@ -281,6 +294,7 @@ public class Shooter extends SubsystemBase {
         }
 
         if (power < 0) power = 0;
+        targetHood=degreeToServo(targetHoodAngle);
 
         if (targetHood < HOOD_MIN){
             targetHood = HOOD_MIN;

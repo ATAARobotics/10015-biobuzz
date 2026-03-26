@@ -49,11 +49,11 @@ public class  Prototyping extends OpMode {
         if (control.wasJustPressed(GamepadKeys.Button.X)){
         }
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
-            shooter.MANUAL_HOOD +=0.1;
+            shooter.targetHoodAngle +=1.0;
         }
 
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-            shooter.MANUAL_HOOD -= 0.1;
+            shooter.targetHoodAngle -= 1.0;
         }
         CommandScheduler.getInstance().run();
 
