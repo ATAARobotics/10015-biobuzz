@@ -49,7 +49,7 @@ public class  Prototyping extends OpMode {
         if (control.wasJustPressed(GamepadKeys.Button.X)){
         }
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
-            shooter.targetHoodAngle +=1.0;
+            shooter.targetHoodAngle += 1.0;
         }
 
         if (control.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
@@ -59,6 +59,7 @@ public class  Prototyping extends OpMode {
 
 
         HyperTelemetry telem = new HyperTelemetry(telemetry);
+        telem.log("time", time);
         shooter.addTelemetry(telem);
         telem.update();
     }
