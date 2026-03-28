@@ -31,7 +31,7 @@ public class Shooter extends SubsystemBase {
     double tbhLastCrossedOutput = 0.0;
     double tbhLastError = 0.0;
     boolean tbhCrossed = false;
-    public static double TBH_GAIN = 0.000007;
+    public static double TBH_GAIN = 0.01;
 
     // shot-counter
     int shotsFired = 0;
@@ -55,7 +55,7 @@ public class Shooter extends SubsystemBase {
     double hoodSlope;
     public static double RPM_PERCENT = 1;
     public static double HOOD_MAX = 0.90;
-    public static double HOOD_MIN = 0.2;
+    public static double HOOD_MIN = 0.1;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
     public static double FAR_RPM = 5000;
@@ -100,12 +100,12 @@ public class Shooter extends SubsystemBase {
         motor0 = new MotorEx(hardwareMap, "shooterL", Motor.GoBILDA.BARE);
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        motor0.setInverted(true);
+        motor0.setInverted(false);
 
         motor1 = new MotorEx(hardwareMap, "shooterR", Motor.GoBILDA.BARE);
         motor1.setRunMode(Motor.RunMode.RawPower);
         motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        motor1.setInverted(false);
+        motor1.setInverted(true);
 
         shooterMotor = new MotorGroup(motor0, motor1);
         targetRpm = 0;
@@ -127,8 +127,8 @@ public class Shooter extends SubsystemBase {
     public void read_sensors(double time) {
         // get any inputs from our encoders or other sensors
         // ("shooterL" is in port 2, a hardware port, "shooterR" is in port 3)
-        ticks = motor1.getCurrentPosition();
-        ticksPerSecond = motor1.getVelocity();
+        ticks = motor0.getCurrentPosition();
+        ticksPerSecond = motor0.getVelocity();
         currentRpm = (ticksPerSecond * 60) / TICKS_PER_REV;
         voltage = battery.getVoltage();
 
@@ -162,12 +162,14 @@ public class Shooter extends SubsystemBase {
     }
 
     public double degreeToServo(double degrees){
+	// 0.10 == 30.75 degrees
+	// 0.85 == 50.75 degrees
         double intercept = 27;
         double slope = 25;
         double servo = (degrees - intercept)/slope;
-            if (servo < 0.15) servo = 0.15;
-            if (servo > 0.95) servo = 0.95;
-           return servo;
+	if (servo < 0.10) servo = 0.10;
+	if (servo > 0.80) servo = 0.80;
+	return servo;
     }
 
     public boolean readyToShoot() {
@@ -222,7 +224,7 @@ public class Shooter extends SubsystemBase {
             targetRpm = rpmMin() + (RPM_PERCENT * dif);
 
             // "new idea" to target hood angle based of RPM, not distance
-            targetHood = hoodAngle(currentRpm);
+            //targetHood = hoodAngle(currentRpm);
 
             //targetHood = HOOD_COEF *Math.pow(aprilDistance, HOOD_EXP);
             //targetHood = -0.00006 * aprilDistance * aprilDistance + 0.0167 * aprilDistance - 0.4328;
@@ -242,7 +244,7 @@ public class Shooter extends SubsystemBase {
 
         // TODO we are special-casing the far-zone for now and not using the regression algorithm
         if (autoRpm && aprilDistance > FAR_DISTANCE) {
-            targetHood = FAR_HOOD;
+            //targetHood = FAR_HOOD;
             targetRpm = FAR_RPM;
         }
         if (targetRpm > 5300){
@@ -282,11 +284,11 @@ public class Shooter extends SubsystemBase {
 	    power = tbhOutput;
 	}
 
-
+	/*
         if (currentRpm < (targetRpm - BAND)) {
             power = BANG_POWER;
         }
-
+	*/
 
 
         if (POWER_OVERRIDE > 0.0) {
@@ -294,7 +296,7 @@ public class Shooter extends SubsystemBase {
         }
 
         if (power < 0) power = 0;
-        ///// for now targetHood=degreeToServo(targetHoodAngle);
+        targetHood = degreeToServo(targetHoodAngle);
 
         if (targetHood < HOOD_MIN){
             targetHood = HOOD_MIN;
@@ -329,11 +331,13 @@ public class Shooter extends SubsystemBase {
         telem.logBoth("Current RPM", currentRpm);
         telem.logBoth("Applied Voltage", appliedVoltage);
         telem.logBoth("Shots Fired" , shotsFired);
+	telem.logDrivers("Hood", targetHoodAngle);
        // pack.put("ticksPerSecond", ticksPerSecond);
         telem.log("shooter-rpm-target", targetRpm);
         telem.log("shooter-rpm-current", currentRpm);
         telem.log("shooter-power", power);
         telem.log("shooter-hood-angle", targetHood);
+        telem.log("shooter-hood-target-angle", targetHoodAngle);
         telem.log("shooter-auto-rpm", autoRpm);
         telem.log("shooter-distance", aprilDistance);
         telem.log("shooter-voltage", voltage);
