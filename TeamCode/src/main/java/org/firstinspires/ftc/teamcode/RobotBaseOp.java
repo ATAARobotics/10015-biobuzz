@@ -304,7 +304,7 @@ public abstract class RobotBaseOp extends OpMode {
                 }
                 else {
                     turret.noLock();
-                    shooter.manualShootRpm();
+                    //shooter.manualShootRpm();
                     spindexer.spinModeIndex();
                 }
             }

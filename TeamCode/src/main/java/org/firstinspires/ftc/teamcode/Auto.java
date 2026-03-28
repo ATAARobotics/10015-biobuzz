@@ -75,6 +75,7 @@ public abstract class Auto extends RobotBaseOp {
     //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
     private final Pose gatePreIntake = new Pose(13.0, 58.7, Math.toRadians(150));
     private final Pose gateIntake = new Pose(11.5, 58.7, Math.toRadians(150));
+    private final Pose gateCloser = new Pose(11.5, 60, Math.toRadians(150));
     private final Pose gateIntakeBack = new Pose(10, 53.0, Math.toRadians(140));
     private final Pose gateControl = new Pose(30.0, 58.7, Math.toRadians(180));
 
@@ -400,12 +401,12 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
                         new SequentialCommandGroup(
                                 new ParallelCommandGroup(
-                                        pathBetween(spikeStart2, spikeEnd2, 0.35),
+                                        pathBetween(spikeStart2, spikeEnd2, 0.5),
                                         new LookAtObelisk()
                                 ),
-                                new Delay(0.2),
-                                pathBetween(spikeEnd2, gatePreIntake, 1.0),
-                                pathBetween (gatePreIntake, gateIntake, 1.0)
+                                new Delay(0.2)
+                          //      pathBetween(spikeEnd2, gatePreIntake, 1.0),
+                    //            pathBetween (gatePreIntake, gateCloser, 1.0)
                         )
                 )
                 //  new SoftIntake()
@@ -418,7 +419,7 @@ public abstract class Auto extends RobotBaseOp {
                                 new SortSpindex(),
                                 new AutoOuttake()
                         ),
-                        curveBetween(gateIntake, gatePoint, thirdBlueNearShoot, 1.0, false)
+                        curveBetween(spikeEnd2, gatePoint, thirdBlueNearShoot, 1.0, false)
                 )
 
         );
@@ -430,8 +431,8 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
                         new SequentialCommandGroup(
                                 pathBetween(gatePreIntake, gateIntake, 0.7),
-                                new Delay(1.0),
-                                pathBetween(gateIntake, gateIntakeBack, 0.35)
+                                new Delay(0.8),
+                                pathBetween(gateIntake, gateIntakeBack, 0.5)
                         )
                 ),
                 //  new SoftIntake(),
@@ -457,8 +458,8 @@ public abstract class Auto extends RobotBaseOp {
                             new AutoIntake(),
                             new SequentialCommandGroup(
                                     pathBetween(gatePreIntake, gateIntake, 0.7),
-                                    new Delay(1.0),
-                                    pathBetween(gateIntake, gateIntakeBack, 0.35)
+                                    new Delay(0.8),
+                                    pathBetween(gateIntake, gateIntakeBack, 0.5)
                             )
                     ),
                     //    new SoftIntake(),
@@ -479,7 +480,7 @@ public abstract class Auto extends RobotBaseOp {
         auto.addCommands(
                 new ParallelRaceGroup(
                         new AutoIntake(),
-                        pathBetween(spikeStart3, spikeEnd3, 0.35)
+                        pathBetween(spikeStart3, spikeEnd3, 0.5)
                 ),
                 //  new SoftIntake(),
                 // new PrepareToShoot(),
@@ -488,7 +489,21 @@ public abstract class Auto extends RobotBaseOp {
                                 new SortSpindex(),
                                 new AutoOuttake()
                         ),
-                        pathBetween(spikeEnd3, finalShootAndPark, 1.0)
+                        pathBetween(spikeEnd3, thirdBlueNearShoot, 1.0)
+                )
+        );
+
+        auto.addCommands(
+                curveBetween(thirdBlueNearShoot, gatePoint, gatePreIntake, 1.0, false),
+                new ParallelRaceGroup(
+                        new AutoIntake(),
+                        new SequentialCommandGroup(
+                                pathBetween(gatePreIntake, gateIntake, 0.7),
+                                new Delay(0.5),
+                                curveBetween(gateIntake, gatePoint, finalShootAndPark, 1.0, false)
+
+
+                        )
                 )
         );
 
