@@ -100,12 +100,12 @@ public class Shooter extends SubsystemBase {
         motor0 = new MotorEx(hardwareMap, "shooterL", Motor.GoBILDA.BARE);
         motor0.setRunMode(Motor.RunMode.RawPower);
         motor0.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        motor0.setInverted(false);
+        motor0.setInverted(true);
 
         motor1 = new MotorEx(hardwareMap, "shooterR", Motor.GoBILDA.BARE);
         motor1.setRunMode(Motor.RunMode.RawPower);
         motor1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        motor1.setInverted(true);
+        motor1.setInverted(false);
 
         shooterMotor = new MotorGroup(motor0, motor1);
         targetRpm = 0;
@@ -127,8 +127,8 @@ public class Shooter extends SubsystemBase {
     public void read_sensors(double time) {
         // get any inputs from our encoders or other sensors
         // ("shooterL" is in port 2, a hardware port, "shooterR" is in port 3)
-        ticks = motor0.getCurrentPosition();
-        ticksPerSecond = motor0.getVelocity();
+        ticks = motor1.getCurrentPosition();
+        ticksPerSecond = motor1.getVelocity();
         currentRpm = (ticksPerSecond * 60) / TICKS_PER_REV;
         voltage = battery.getVoltage();
 
@@ -284,11 +284,11 @@ public class Shooter extends SubsystemBase {
 	    power = tbhOutput;
 	}
 
-	/*
+
         if (currentRpm < (targetRpm - BAND)) {
             power = BANG_POWER;
         }
-	*/
+
 
 
         if (POWER_OVERRIDE > 0.0) {

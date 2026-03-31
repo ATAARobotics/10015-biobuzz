@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.AnalogSensor;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
@@ -19,12 +21,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class  Prototyping extends OpMode {
     GamepadEx control;
     Shooter shooter;
+    AnalogInput analog;
 
     @Override
     //setting up the gamepad and motor
     public void init() {
         shooter = new Shooter(hardwareMap);
         control = new GamepadEx(gamepad2);
+        analog = hardwareMap.get(AnalogInput.class, "analog");
         CommandScheduler.getInstance().registerSubsystem(shooter);
     }
 
@@ -60,6 +64,7 @@ public class  Prototyping extends OpMode {
 
         HyperTelemetry telem = new HyperTelemetry(telemetry);
         telem.log("time", time);
+        telem.logBoth("analog", analog.getVoltage());
         shooter.addTelemetry(telem);
         telem.update();
     }
