@@ -121,7 +121,7 @@ public class Turret extends SubsystemBase {
 
         //AprilTagLibrary decode_tags = ;
         // game manual says april tag family is 36h11
-        april_tags = new AprilTagProcessor.Builder()
+      /*  april_tags = new AprilTagProcessor.Builder()
                 //.setTagLibrary(decode_tags)
                 .setDrawTagID(true)
                 .setDrawTagOutline(false)//true)
@@ -135,7 +135,7 @@ public class Turret extends SubsystemBase {
                 .setCameraResolution(new Size(1024, 768))
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setAutoStopLiveView(true)
-                .build();
+                .build();*/
     }
 
     public void faceFieldAngle(double fieldAngleDeg) {
@@ -413,6 +413,9 @@ public class Turret extends SubsystemBase {
     }
 
     private void processAprilTags() {
+        if (april_tags == null){
+            return;
+        }
         List<AprilTagDetection> detections = april_tags.getFreshDetections();
         if (detections == null) {
             // there are no _fresh_ detections, but we may have had a

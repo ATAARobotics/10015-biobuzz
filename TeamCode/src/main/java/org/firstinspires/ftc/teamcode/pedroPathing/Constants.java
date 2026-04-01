@@ -19,17 +19,17 @@ public class Constants {
     public static double brakingStart = 0.25;
 
     public static FollowerConstants followerConstants = new FollowerConstants()
-        .mass(12.474) // kilograms!
-        .forwardZeroPowerAcceleration(-30.0)
-        .lateralZeroPowerAcceleration(-68.5)
-        .translationalPIDFCoefficients(new PIDFCoefficients(0.15, 0, 0.01, 0.025))
-        .headingPIDFCoefficients(new PIDFCoefficients(1.4, 0, 0.04, 0.02))
-        .drivePIDFCoefficients(new FilteredPIDFCoefficients(1,0.0,0.0,0.0,0.0))
-        .useSecondaryDrivePIDF(false)
+        .mass(11.86) // kilograms!
+        .forwardZeroPowerAcceleration(-31.7)
+        .lateralZeroPowerAcceleration(-59.6)
+        .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0.0))
+        .headingPIDFCoefficients(new PIDFCoefficients(1.0, 0.0, 0.06, 0.0))
+        .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.5,0.0,0.0,0.0,0.0))
+        .useSecondaryDrivePIDF(true)
         .useSecondaryTranslationalPIDF(true)
         .useSecondaryHeadingPIDF(true)
-        .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.17,0,0.013,0))
-        .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.8,0,0.04,0))
+        .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.2,0,0.01,0))
+        .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(3.0,0.0,0.0,0.0))
         .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.01,0,0,0,0))
         ;
 
@@ -43,17 +43,17 @@ public class Constants {
         .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
         .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
         .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-        .xVelocity(76.7)
-        .yVelocity(58.4)
+        .xVelocity(75.2)
+        .yVelocity(62.5)
         ;
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
         .distanceUnit(DistanceUnit.INCH)
-        .forwardPodY(6.65)
-        .strafePodX(0.886)
+        .forwardPodY(5.693)
+        .strafePodX(1.899)
         .hardwareMapName("pinpoint")
         .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-        .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+        .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
         .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
         ;
 

@@ -130,10 +130,11 @@ public class Drive extends SubsystemBase {
         // configure odometry sensor
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         // Configure the sensor
-        pinpoint.setOffsets(6.65, 0.866, DistanceUnit.INCH); // Note: Y is forward, X is right
+        //Updated March 31 for v3. old offsets are: 6.65, 0.866,
+        pinpoint.setOffsets(5.693, 1.899, DistanceUnit.INCH); // Note: Y is forward, X is right.
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
+                GoBildaPinpointDriver.EncoderDirection.FORWARD); //These have to match what is in Constants
 
         pinpoint.resetPosAndIMU();
     }
