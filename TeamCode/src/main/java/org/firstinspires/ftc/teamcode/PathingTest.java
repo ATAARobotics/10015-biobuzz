@@ -33,12 +33,13 @@ public class PathingTest extends RobotBaseOp {
     public Follower follower;
     double xOffset = 8.124;
     double yOffset = 8.0984;
+    double pathingHeading = Math.toRadians(180);
     private final Pose blueFarStart = new Pose(70 - yOffset, xOffset, Math.toRadians(180));
-    private final Pose positionOne = new Pose(24 + yOffset,45,Math.toRadians(180));
-    private final Pose positionTwo = new Pose (120 - yOffset, 45, Math.toRadians(180));
+    private Pose positionOne = new Pose(24 + yOffset,45, pathingHeading);
+    private Pose positionTwo = new Pose (120 - yOffset, 45, pathingHeading );
     Pose lastPose = blueFarStart;
     public static double brakingStrength = 1.0;
-    public static double brakingStart = 1.3;
+    public static double brakingStart = 0.25;
     private Command _lastCommandRun = null;
 
     public FollowPathCommand pathBetween(Pose b, Pose e, double speed) {
@@ -136,6 +137,7 @@ public class PathingTest extends RobotBaseOp {
 
         super.addTelemetry(telem);
         telem.logBoth("Pinpoint-status", drive.pinpoint.getDeviceStatus());
+        telem.logBoth("pathing-heading", Math.toDegrees(pathingHeading));
     }
 
     @Override
@@ -153,6 +155,16 @@ public class PathingTest extends RobotBaseOp {
             Command c = pathBetween(lastPose, positionTwo, 1.0);
             CommandScheduler.getInstance().schedule(c);
             lastPose = positionTwo;
+        }
+        if (driver.wasJustPressed(GamepadKeys.Button.Y)){
+              if (pathingHeading == Math.toRadians(180)){
+                pathingHeading = Math.toRadians(90);
+            }
+            else {
+                pathingHeading = Math.toRadians(180);
+            }
+            positionOne = new Pose(24 + yOffset,45, pathingHeading);
+            positionTwo = new Pose (120 - yOffset, 45, pathingHeading );
         }
         CommandScheduler.getInstance().run();
 

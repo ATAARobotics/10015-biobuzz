@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static double brakingStrength = 1.0;
-    public static double brakingStart = 1.0;
+    public static double brakingStart = 0.25;
 
     public static FollowerConstants followerConstants = new FollowerConstants()
         .mass(12.474) // kilograms!
