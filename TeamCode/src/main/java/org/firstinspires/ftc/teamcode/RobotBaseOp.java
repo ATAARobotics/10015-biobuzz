@@ -154,7 +154,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void execute() {
             if (state == InState.INTAKE) {
-                if (spindexer.artifactInSlot()) {
+                if (spindexer.haveFrontAndBack()) {
                     if (spindexer.isFull()) {
                         state = InState.SORT;
                         driver.gamepad.rumble(250);

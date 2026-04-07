@@ -10,16 +10,11 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.util.Timing;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Configurable
@@ -37,6 +32,13 @@ public class Spindexer extends SubsystemBase {
     double currentAngle;    // computed from our encoder
     AnalogInput analog_hsv;
     AnalogInput analog_distance;
+    AnalogInput frontBeamBreak;
+    AnalogInput backBeamBreak;
+    AnalogInput intakeBeamBreak;
+    // for beam breaks
+    double lastFrontVoltage;
+    double lastBackVoltage;
+    double lastIntakeVoltage;
 
     // stuff we derive
     public enum SpinDirection {Shoot, Index}
@@ -106,6 +108,10 @@ public class Spindexer extends SubsystemBase {
         // the two brushland labs sensors, in analog mode (now)
         analog_hsv = hardwareMap.analogInput.get("artifact_hsv");
         analog_distance = hardwareMap.analogInput.get("artifact_distance");
+        //beam break sensors
+        frontBeamBreak = hardwareMap.analogInput.get("front_beam_break");
+        backBeamBreak = hardwareMap.analogInput.get("back_beam_break");
+        intakeBeamBreak = hardwareMap.analogInput.get("intake_beam_break");
     }
 
     public void reset() {
@@ -150,17 +156,25 @@ public class Spindexer extends SubsystemBase {
         return count;
     }
 
-    public boolean haveArtifact() {
-        if (recentDist.size() < DISTANCE_WINDOW){
-            return false;
+    public boolean haveArtifactFront() {
+        if (lastFrontVoltage > 1.0){
+            return true;
         }
-        double avg = 0.0;
-        for (double rd : recentDist) {
-            avg += rd;
-        }
-        avg /= recentDist.size();
-        return (avg < DISTANCE_THRESHOLD);
+        return false;
     }
+    public boolean haveArtifactBack() {
+        if (lastBackVoltage > 1.0){
+            return true;
+        }
+        return false;
+    }
+    public boolean haveArtifactIntake() {
+        if (lastIntakeVoltage > 1.0){
+            return true;
+        }
+        return false;
+    }
+
 
     public void spinShoot(){
         // todo: we should use the Shooter's ability to detect shots
@@ -207,6 +221,19 @@ public class Spindexer extends SubsystemBase {
         if (norm == 240) return 1;
         if (norm == 120) return 2;
         return 0;
+    }
+    public int currentBackSlot(){
+        int slot = currentSlot() + 1;
+        if (slot > 2){
+            slot = 0;
+        }
+        return slot;
+    }
+    public boolean haveFrontAndBack(){
+        if (haveArtifactBack() && haveArtifactFront()){
+            return true;
+        }
+        return false;
     }
 
     // the "shoot slot" is the next one after the currentSlot() but
@@ -303,6 +330,9 @@ public class Spindexer extends SubsystemBase {
         recentColors.removeFirst();
         lastDistance = (analog_distance.getVoltage() / 3.3) * 100.0;
         recentDist.addLast(lastDistance);
+        lastFrontVoltage = (frontBeamBreak.getVoltage());
+        lastBackVoltage = (backBeamBreak.getVoltage());
+        lastIntakeVoltage = (intakeBeamBreak.getVoltage());
         clearRecentDist();
     }
 
@@ -334,10 +364,9 @@ if interrupt "during" spin then it gets confused about which slot is what
             // slot (but only if we also believe we are actually AT the
             // current slot)
             if (spin == SpinDirection.Index && atTarget()) {
-                if (haveArtifact()) {
-                    if (slots[currentSlot()] == SlotContent.Nothing) {
-                        slots[currentSlot()] = recentPurple() ? SlotContent.Purple : SlotContent.Green;
-                    }
+                if (haveFrontAndBack()) {
+                    slots[currentSlot()] = SlotContent.Purple; //Fix me: correct colour
+                    slots[currentBackSlot()] = SlotContent.Purple; //"                "
                 }
             }
 
@@ -453,7 +482,7 @@ if interrupt "during" spin then it gets confused about which slot is what
         telem.log("spindexer-analog-hue", lastHue);
         telem.log("spindexer-analog-distance", lastDistance);
         telem.log("spindexer-have-artifact-debug", recentDist);
-        telem.log("spindexer-have-artifact", haveArtifact());
+        telem.log("spindexer-have-artifact", haveFrontAndBack());
         telem.log("spindexer-slot-0", slots[0]);
         telem.log("spindexer-slot-1", slots[1]);
         telem.log("spindexer-slot-2", slots[2]);
