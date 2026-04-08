@@ -107,7 +107,7 @@ public class Spindexer extends SubsystemBase {
 
         // the two brushland labs sensors, in analog mode (now)
         analog_hsv = hardwareMap.analogInput.get("artifact_hsv");
-        analog_distance = hardwareMap.analogInput.get("artifact_distance");
+       // analog_distance = hardwareMap.analogInput.get("artifact_distance");
         //beam break sensors
         frontBeamBreak = hardwareMap.analogInput.get("front_beam_break");
         backBeamBreak = hardwareMap.analogInput.get("back_beam_break");
