@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Color;
+
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
@@ -30,7 +33,8 @@ public class Spindexer extends SubsystemBase {
 
     // stuff we read from sensors
     double currentAngle;    // computed from our encoder
-    AnalogInput analog_hsv;
+    RevColorSensorV3 colorBack = null;
+    RevColorSensorV3 colorFront = null;
     AnalogInput frontBeamBreak;
     AnalogInput backBeamBreak;
     AnalogInput intakeBeamBreak;
@@ -38,6 +42,9 @@ public class Spindexer extends SubsystemBase {
     double lastFrontVoltage;
     double lastBackVoltage;
     double lastIntakeVoltage;
+    // color sensors
+    float[] hsvBack = new float[3];
+    float[] hsvFront = new float[3];
 
     // stuff we derive
     public enum SpinDirection {Shoot, Index}
@@ -105,8 +112,9 @@ public class Spindexer extends SubsystemBase {
                 SlotContent.Nothing
         };
 
-        // the two brushland labs sensors, in analog mode (now)
-        analog_hsv = hardwareMap.analogInput.get("artifact_hsv");
+        // the two brushland labs sensors (i2c mode because not enough analog ports) 
+        colorBack = hardwareMap.get(RevColorSensorV3.class, "color_back");
+
         //beam break sensors
         frontBeamBreak = hardwareMap.analogInput.get("front_beam_break");
         backBeamBreak = hardwareMap.analogInput.get("back_beam_break");
@@ -315,11 +323,8 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void read_sensors(double time) {
+	    Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
-        lastHue = (analog_hsv.getVoltage() / 3.3) * 360.0;
-        recentColors.addLast((lastHue >= 130.0 && lastHue <= 185.0));
-        //recentColors.addLast(artifact_color.getState());
-        recentColors.removeFirst();
         lastFrontVoltage = (frontBeamBreak.getVoltage());
         lastBackVoltage = (backBeamBreak.getVoltage());
         lastIntakeVoltage = (intakeBeamBreak.getVoltage());
@@ -467,7 +472,6 @@ if interrupt "during" spin then it gets confused about which slot is what
         telem.log("spindexer-at-target", atTarget());
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
-        telem.log("spindexer-purple", recentColors.getFirst());
         telem.log("spindexer-analog-hue", lastHue);
         telem.log("spindexer-have-artifact-debug", recentDist);
         telem.log("spindexer-have-artifact", haveFrontAndBack());
@@ -475,6 +479,8 @@ if interrupt "during" spin then it gets confused about which slot is what
         telem.log("spindexer-slot-1", slots[1]);
         telem.log("spindexer-slot-2", slots[2]);
         telem.log("spindexer-spin", spin);
+	telem.log("spindexer-beam-intake", lastIntakeVoltage);
+	telem.log("spindexer-color-back", hsvBack[0]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }
 
