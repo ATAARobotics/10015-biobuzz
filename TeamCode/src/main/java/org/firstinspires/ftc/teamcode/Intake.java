@@ -15,6 +15,7 @@ public class Intake extends SubsystemBase {
     private double power = 1.0;
     public Intake (HardwareMap hardwareMap){
         intake = new MotorEx(hardwareMap, "intake");
+        intake.setInverted(true);
         intake.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
     }
     public void reset(){

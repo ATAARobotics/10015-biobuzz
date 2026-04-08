@@ -31,7 +31,6 @@ public class Spindexer extends SubsystemBase {
     // stuff we read from sensors
     double currentAngle;    // computed from our encoder
     AnalogInput analog_hsv;
-    AnalogInput analog_distance;
     AnalogInput frontBeamBreak;
     AnalogInput backBeamBreak;
     AnalogInput intakeBeamBreak;
@@ -63,7 +62,6 @@ public class Spindexer extends SubsystemBase {
     public SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
     double lastHue;
-    double lastDistance;
     LinkedList<Boolean> recentColors;
     LinkedList<Double> recentDist;
 
@@ -76,8 +74,10 @@ public class Spindexer extends SubsystemBase {
     // tuned December 10 with latest hardware rev (target collar, ramps, etc)
     //public static PIDCoefficients pid = new PIDCoefficients(0.006, 0.02, 0.0003);
     // more aggressive feb 2
-    public static PIDCoefficients pid = new PIDCoefficients(0.008, 0.02, 0.0003);
-    public static double pid_f = 0.026; // tuned at 0.03 but that twitched a little
+    //public static PIDCoefficients pid = new PIDCoefficients(0.008, 0.02, 0.0003);
+    // april 7 new spindexer
+    public static PIDCoefficients pid = new PIDCoefficients(0.022, 0.0, 0.00022);
+    public static double pid_f = 0.20; //0.026; // tuned at 0.03 but that twitched a little
 
     public Spindexer (HardwareMap hardwareMap) {
         spindexerMotor = new MotorEx(hardwareMap, "spindexer", Motor.GoBILDA.RPM_312);
@@ -107,7 +107,6 @@ public class Spindexer extends SubsystemBase {
 
         // the two brushland labs sensors, in analog mode (now)
         analog_hsv = hardwareMap.analogInput.get("artifact_hsv");
-       // analog_distance = hardwareMap.analogInput.get("artifact_distance");
         //beam break sensors
         frontBeamBreak = hardwareMap.analogInput.get("front_beam_break");
         backBeamBreak = hardwareMap.analogInput.get("back_beam_break");
@@ -134,12 +133,6 @@ public class Spindexer extends SubsystemBase {
             x = rc;
         }
         return x;
-    }
-
-    public void clearRecentDist() {
-        while (recentDist.size() > DISTANCE_WINDOW) {
-            recentDist.removeFirst();
-        }
     }
 
     public boolean artifactInSlot() {
@@ -198,7 +191,6 @@ public class Spindexer extends SubsystemBase {
         spin = SpinDirection.Index;
         control.reset();
         targetAngle -= STEP_DEG;
-        recentDist.clear();
     }
 
     public void spinModeIndex() {
@@ -328,12 +320,9 @@ public class Spindexer extends SubsystemBase {
         recentColors.addLast((lastHue >= 130.0 && lastHue <= 185.0));
         //recentColors.addLast(artifact_color.getState());
         recentColors.removeFirst();
-        lastDistance = (analog_distance.getVoltage() / 3.3) * 100.0;
-        recentDist.addLast(lastDistance);
         lastFrontVoltage = (frontBeamBreak.getVoltage());
         lastBackVoltage = (backBeamBreak.getVoltage());
         lastIntakeVoltage = (intakeBeamBreak.getVoltage());
-        clearRecentDist();
     }
 
 /*
@@ -480,7 +469,6 @@ if interrupt "during" spin then it gets confused about which slot is what
         telem.log("spindexer-stuck", isStuck());
         telem.log("spindexer-purple", recentColors.getFirst());
         telem.log("spindexer-analog-hue", lastHue);
-        telem.log("spindexer-analog-distance", lastDistance);
         telem.log("spindexer-have-artifact-debug", recentDist);
         telem.log("spindexer-have-artifact", haveFrontAndBack());
         telem.log("spindexer-slot-0", slots[0]);
