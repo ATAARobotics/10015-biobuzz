@@ -83,8 +83,8 @@ public class Spindexer extends SubsystemBase {
     // more aggressive feb 2
     //public static PIDCoefficients pid = new PIDCoefficients(0.008, 0.02, 0.0003);
     // april 7 new spindexer
-    public static PIDCoefficients pid = new PIDCoefficients(0.022, 0.0, 0.00022);
-    public static double pid_f = 0.20; //0.026; // tuned at 0.03 but that twitched a little
+    public static PIDCoefficients pid = new PIDCoefficients(0.004, 0.0, 0.00022);
+    public static double pid_f = 0.035; //0.026; // tuned at 0.03 but that twitched a little
 
     public Spindexer (HardwareMap hardwareMap) {
         spindexerMotor = new MotorEx(hardwareMap, "spindexer", Motor.GoBILDA.RPM_312);
@@ -399,7 +399,7 @@ if interrupt "during" spin then it gets confused about which slot is what
             if (slots[currentShootSlot()] == SlotContent.Nothing) {
                 // if we have an empty slot coming up to shoot, we
                 // _don't_ want to apply the boost
-                boostF = false;
+              //  boostF = false;
             }
             if (boostF && spin == SpinDirection.Shoot) {
                 if (currentAngle < targetAngle) {//(spindexerPower > 0.0) {
