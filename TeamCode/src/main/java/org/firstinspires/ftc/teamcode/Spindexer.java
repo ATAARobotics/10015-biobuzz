@@ -86,7 +86,7 @@ public class Spindexer extends SubsystemBase {
     //public static PIDCoefficients pid = new PIDCoefficients(0.008, 0.02, 0.0003);
     // april 7 new spindexer
     public static PIDCoefficients pid = new PIDCoefficients(0.004, 0.0, 0.00022);
-    public static double pid_f = 0.035; //0.026; // tuned at 0.03 but that twitched a little
+    public static double pid_f = 0.025; //0.026; // tuned at 0.03 but that twitched a little
 
     public Spindexer (HardwareMap hardwareMap) {
         spindexerMotor = new MotorEx(hardwareMap, "spindexer", Motor.GoBILDA.RPM_312);
@@ -116,6 +116,7 @@ public class Spindexer extends SubsystemBase {
 
         // the two brushland labs sensors (i2c mode because not enough analog ports) 
         colorBack = hardwareMap.get(RevColorSensorV3.class, "color_back");
+        colorFront = hardwareMap.get(RevColorSensorV3.class, "color_front");
 
         //beam break sensors
         frontBeamBreak = hardwareMap.analogInput.get("front_beam_break");
@@ -160,19 +161,19 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean haveArtifactFront() {
-        if (lastFrontVoltage > 1.0){
+        if (lastFrontVoltage < 1.0){
             return true;
         }
         return false;
     }
     public boolean haveArtifactBack() {
-        if (lastBackVoltage > 1.0){
+        if (lastBackVoltage < 1.0){
             return true;
         }
         return false;
     }
     public boolean haveArtifactIntake() {
-        if (lastIntakeVoltage > 1.0){
+        if (lastIntakeVoltage < 1.0){
             return true;
         }
         return false;
@@ -325,11 +326,13 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void read_sensors(double time) {
-            Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
+     //       Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
+    //    Color.RGBToHSV(colorFront.red(), colorFront.green(), colorFront.blue(), hsvFront);
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
         lastFrontVoltage = (frontBeamBreak.getVoltage());
         lastBackVoltage = (backBeamBreak.getVoltage());
         lastIntakeVoltage = (intakeBeamBreak.getVoltage());
+
 
 	prevIntake = thisIntake;
 	thisIntake = (lastIntakeVoltage < 1.0);
@@ -489,7 +492,10 @@ if interrupt "during" spin then it gets confused about which slot is what
         telem.log("spindexer-slot-2", slots[2]);
         telem.log("spindexer-spin", spin);
 	telem.log("spindexer-beam-intake", lastIntakeVoltage);
+    telem.log("spindexer-beam-front", lastFrontVoltage);
+    telem.log("spindexer-beam-back", lastBackVoltage);
 	telem.log("spindexer-color-back", hsvBack[0]);
+        telem.log("spindexer-color-front", hsvFront[0]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }
 

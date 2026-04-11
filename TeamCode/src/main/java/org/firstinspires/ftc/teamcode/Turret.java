@@ -157,8 +157,8 @@ public class Turret extends SubsystemBase {
         // with turret starting backwards, we can move ~170 degrees on each side
         // so angles < (180 - 170) or angles > (180 + 170) are out
         double maxAngleMove = 90;
-        if (angle < 180 - maxAngleMove) angle = (180 - maxAngleMove);
-        if (angle > 180 + maxAngleMove) angle = (180 + maxAngleMove);
+      //  if (angle < 360 - maxAngleMove) angle = (360 - maxAngleMove);
+      //  if (angle > maxAngleMove) angle = (maxAngleMove);
         turretHeadingControl.setSetPoint(angle);
     }
 
@@ -273,6 +273,7 @@ public class Turret extends SubsystemBase {
                 faceFieldAngle(targetHeading);
             }
         }
+        faceRobotAngle(joystickAngle);
         // TEMP: always face our april-tag
        // faceFieldAngle(targetHeading);
 
@@ -395,7 +396,7 @@ public class Turret extends SubsystemBase {
             // only do the joystick control if it has moved "a lot" (1.0 is slammed)
             if (Math.hypot(rx, ry) > 0.8) {
                 joystickAngle = Math.toDegrees(Math.atan2(rx, ry));
-		//                joystickAngle += 180.0;
+		               // joystickAngle += 180.0;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
                 operatorOffset += TURRET_TWEAK;

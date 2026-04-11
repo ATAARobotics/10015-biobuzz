@@ -55,18 +55,18 @@ public class ConfigureColorRangefinder extends LinearOpMode {
 
         if (mode == "telemetry") {
             try {
-                sensor0 = hardwareMap.get(RevColorSensorV3.class, "color");
+                sensor0 = hardwareMap.get(RevColorSensorV3.class, "color_front");
             } catch (IllegalArgumentException e) {
                 sensor0 = null;
             }
-            sensor1 = hardwareMap.get(RevColorSensorV3.class, "color2");
+            sensor1 = hardwareMap.get(RevColorSensorV3.class, "color_back");
         } else if (mode == "program") {
             try {
-                crf0 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color"));
+                crf0 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color_front"));
             } catch (IllegalArgumentException e) {
                 crf0 = null;
             }
-            crf1 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color2"));
+            crf1 = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color_back"));
         } else if (mode == "test") {
             //pin0 = hardwareMap.digitalChannel.get("artifact_color");
             //pin1 = hardwareMap.digitalChannel.get("artifact_distance");
