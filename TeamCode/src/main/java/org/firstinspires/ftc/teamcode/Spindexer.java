@@ -42,6 +42,8 @@ public class Spindexer extends SubsystemBase {
     double lastFrontVoltage;
     double lastBackVoltage;
     double lastIntakeVoltage;
+    boolean prevIntake = false;
+    boolean thisIntake = false;
     // color sensors
     float[] hsvBack = new float[3];
     float[] hsvFront = new float[3];
@@ -323,11 +325,18 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void read_sensors(double time) {
-	    Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
+            Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
         lastFrontVoltage = (frontBeamBreak.getVoltage());
         lastBackVoltage = (backBeamBreak.getVoltage());
         lastIntakeVoltage = (intakeBeamBreak.getVoltage());
+
+	prevIntake = thisIntake;
+	thisIntake = (lastIntakeVoltage < 1.0);
+    }
+
+    public boolean intakeJustBroken() {
+	return thisIntake && !prevIntake;
     }
 
 /*
@@ -399,7 +408,7 @@ if interrupt "during" spin then it gets confused about which slot is what
             if (slots[currentShootSlot()] == SlotContent.Nothing) {
                 // if we have an empty slot coming up to shoot, we
                 // _don't_ want to apply the boost
-              //  boostF = false;
+              //boostF = false;
             }
             if (boostF && spin == SpinDirection.Shoot) {
                 if (currentAngle < targetAngle) {//(spindexerPower > 0.0) {

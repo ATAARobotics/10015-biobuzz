@@ -79,7 +79,7 @@ public class Turret extends SubsystemBase {
     // tuned dec 22 from first principals
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
-    public static double turretP = 0.0055, turretI = 0.002, turretD = 0.0008, turretF = 0.065;
+    public static double turretP = 0.0065, turretI = 0.02, turretD = 0.0009, turretF = 0.14;
     public static double TURRET_TOLERANCE = 4; // in degrees
     public static double TURRET_TWEAK = 3;
     public double targetHeading;  // from geometry via RobotBaseOp
@@ -151,7 +151,7 @@ public class Turret extends SubsystemBase {
     public void faceRobotAngle(double angle) {
         // with turret starting backwards, we can move ~170 degrees on each side
         // so angles < (180 - 170) or angles > (180 + 170) are out
-        double maxAngleMove = 170;
+        double maxAngleMove = 90;
         if (angle < 180 - maxAngleMove) angle = (180 - maxAngleMove);
         if (angle > 180 + maxAngleMove) angle = (180 + maxAngleMove);
         turretHeadingControl.setSetPoint(angle);
@@ -181,8 +181,8 @@ public class Turret extends SubsystemBase {
     // f "just below moving" = 0.11
     // pidf = 0.003, 0, 0.07, 0.0   <-- seems pretty good?
     public void reset() {
-        currentTurretAngle = 180;
-        joystickAngle = 180;
+        currentTurretAngle = 0;
+        joystickAngle = 0;
         lastEncoder = 0.0;
         revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -195,7 +195,7 @@ public class Turret extends SubsystemBase {
         //servoTurnCount = 0;
         servo1.stop();
         servo2.stop();
-        faceRobotAngle(180);
+        faceRobotAngle(0);
         mode = HeadingLockMode.Off;
     }
 
@@ -225,11 +225,10 @@ public class Turret extends SubsystemBase {
     }
 
     public double getTurretAngle() {
-        double shaftRevs = -(ticks + lastEncoder) / REV_ENCODER_TICKS_PER_REV;
-        double turretRevs = shaftRevs * ENCODER_GEAR_RATIO;
-        double rawAngle = 360.0 * turretRevs;
-        // we start the turret backwards, so add 180
-        return rawAngle + 180;
+        //double shaftRevs = -(ticks + lastEncoder) / REV_ENCODER_TICKS_PER_REV;
+        //double turretRevs = shaftRevs * ENCODER_GEAR_RATIO;
+	double rawAngle = getServoAngle();
+        return rawAngle;
     }
 
     public double getOtherServoAngle() {
@@ -252,8 +251,8 @@ public class Turret extends SubsystemBase {
         if (mode == HeadingLockMode.Obelisk)
             faceFieldAngle(obeliskHeading);
 
-     //   if (mode == HeadingLockMode.Off)
-      //      faceRobotAngle(joystickAngle);
+	if (mode == HeadingLockMode.Off)
+	    faceRobotAngle(joystickAngle);
 
         if (mode == HeadingLockMode.Trig)
             faceFieldAngle(targetHeading);
