@@ -84,7 +84,7 @@ public class Turret extends SubsystemBase {
     // tuned dec 22 from first principals
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
-    public static double turretP = 0.0065, turretI = 0.02, turretD = 0.0009, turretF = 0.14;
+    public static double turretP = 0.01, turretI = 0.035, turretD = 0.0005, turretF = 0.08;
     public static double TURRET_TOLERANCE = 4; // in degrees
     public static double TURRET_TWEAK = 3;
     public double targetHeading;  // from geometry via RobotBaseOp

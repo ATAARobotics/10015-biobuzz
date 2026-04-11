@@ -50,6 +50,7 @@ public class Spindexer extends SubsystemBase {
 
     // stuff we derive
     public enum SpinDirection {Shoot, Index}
+    public enum IntakeState {Waiting, BallEntering}
     SpinDirection spin = SpinDirection.Index;
     public enum Mode {Auto, Manual}
     Mode mode = Mode.Auto;
@@ -85,6 +86,8 @@ public class Spindexer extends SubsystemBase {
     // more aggressive feb 2
     //public static PIDCoefficients pid = new PIDCoefficients(0.008, 0.02, 0.0003);
     // april 7 new spindexer
+    int ballCounter = 0;
+    private IntakeState intakeState;
     public static PIDCoefficients pid = new PIDCoefficients(0.004, 0.0, 0.00022);
     public static double pid_f = 0.025; //0.026; // tuned at 0.03 but that twitched a little
 
@@ -325,6 +328,22 @@ public class Spindexer extends SubsystemBase {
         return control.atSetPoint();
     }
 
+    public void updateIntakeState(){
+        switch(intakeState) {
+            case Waiting:
+                if (intakeJustBroken()) {
+                    ballCounter++;
+                    intakeState = IntakeState.BallEntering;
+                }
+                break;
+            case BallEntering:
+                if (!haveArtifactIntake()){
+                    intakeState = IntakeState.Waiting;
+                }
+                break;
+        }
+    }
+
     public void read_sensors(double time) {
      //       Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
     //    Color.RGBToHSV(colorFront.red(), colorFront.green(), colorFront.blue(), hsvFront);
@@ -429,6 +448,7 @@ if interrupt "during" spin then it gets confused about which slot is what
         }
 
         spindexerMotor.set(spindexerPower);
+        updateIntakeState();
     }
 
 
@@ -491,9 +511,10 @@ if interrupt "during" spin then it gets confused about which slot is what
         telem.log("spindexer-slot-1", slots[1]);
         telem.log("spindexer-slot-2", slots[2]);
         telem.log("spindexer-spin", spin);
-	telem.log("spindexer-beam-intake", lastIntakeVoltage);
-    telem.log("spindexer-beam-front", lastFrontVoltage);
-    telem.log("spindexer-beam-back", lastBackVoltage);
+	telem.logBoth("spindexer-beam-intake", lastIntakeVoltage);
+    telem.logBoth("spindexer-beam-front", lastFrontVoltage);
+    telem.logBoth("spindexer-beam-back", lastBackVoltage);
+    telem.logBoth("spindexer-ballcount", ballCounter);
 	telem.log("spindexer-color-back", hsvBack[0]);
         telem.log("spindexer-color-front", hsvFront[0]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
