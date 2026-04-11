@@ -154,12 +154,31 @@ public class Turret extends SubsystemBase {
     }
 
     public void faceRobotAngle(double angle) {
-        // with turret starting backwards, we can move ~170 degrees on each side
-        // so angles < (180 - 170) or angles > (180 + 170) are out
-        double maxAngleMove = 90;
-      //  if (angle < 360 - maxAngleMove) angle = (360 - maxAngleMove);
-      //  if (angle > maxAngleMove) angle = (maxAngleMove);
-        turretHeadingControl.setSetPoint(angle);
+	// "angle" is 0 -> 360 but for the PID controller we want to
+	// do 0 as the middle, with negative angles to the left and
+	// positive to the right
+        turretHeadingControl.setSetPoint(convertAngleRobotRelative(angle));
+    }
+
+    // convert a 0->360 angle to range -180 -> +180 where 0 is robot-forward
+    public double convertAngleRobotRelative(double angle) {
+	// make sure angle isn't crazy
+	if (angle > 360) {
+	    angle -= 360.0;
+	}
+	if (angle < 0) {
+	    angle = 360 - angle;
+	}
+
+	// note: might be better for wire management for this to be
+	// "asymmetric", that is +90 to -260 for example
+	
+	// so if angle is "more than straight backwards" we make it a
+	// negative angle (i.e. 190 becomes -170)
+	if (angle > 180) {
+	    angle = -180 - (180 - angle);
+	}
+	return angle;
     }
 
     public void faceObelisk(double angle) {
@@ -273,7 +292,6 @@ public class Turret extends SubsystemBase {
                 faceFieldAngle(targetHeading);
             }
         }
-        faceRobotAngle(joystickAngle);
         // TEMP: always face our april-tag
        // faceFieldAngle(targetHeading);
 
@@ -292,7 +310,7 @@ public class Turret extends SubsystemBase {
 
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
-        servoPower = turretHeadingControl.calculate(currentTurretAngle) + turretF * Math.signum(turretHeadingControl.getPositionError());
+        servoPower = turretHeadingControl.calculate(convertAngleRobotRelative(currentTurretAngle)) + turretF * Math.signum(turretHeadingControl.getPositionError());
         if (servoPower > 1.0) servoPower = 1.0;
         if (servoPower < -1.0) servoPower = -1.0;
         servo1.set(servoPower);
@@ -396,7 +414,7 @@ public class Turret extends SubsystemBase {
             // only do the joystick control if it has moved "a lot" (1.0 is slammed)
             if (Math.hypot(rx, ry) > 0.8) {
                 joystickAngle = Math.toDegrees(Math.atan2(rx, ry));
-		               // joystickAngle += 180.0;
+		joystickAngle += 180.0;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
                 operatorOffset += TURRET_TWEAK;
