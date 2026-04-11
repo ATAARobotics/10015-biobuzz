@@ -55,6 +55,7 @@ public class Turret extends SubsystemBase {
     private double servoDelta = Double.NaN;
     private double lastServoAngle = Double.NaN;
     public double lastEncoder = 0.0;
+    private double servoReset;
     //private int servoTurnCount;
     double joystickAngle;
     double operatorOffset = 0;
@@ -73,6 +74,10 @@ public class Turret extends SubsystemBase {
     ///private static final double ENCODER_GEAR_RATIO = 40.0 / 185.0; ///(when we tried smaller teeth)
     private static final double ENCODER_GEAR_RATIO = 25.0 / 125.0; /// with bigger teeth
     private static final double REV_ENCODER_TICKS_PER_REV = 8192;
+
+    // this is the total gear-ratio from the servos to the (belted) turret.
+    // that is, one servo rotation equals 0.9153 turret rotations
+    private static final double SERVO_BELT_RATIO = 0.9153;
 
     // tuned december 11, bare servos for PID, attach turret for F
     //public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
@@ -186,6 +191,7 @@ public class Turret extends SubsystemBase {
         lastEncoder = 0.0;
         revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+	servoReset = getServoAngle();
 
         // jan 30: we aren't using more than +/- 90 degrees yet, and
         // still having weird issues. team-lead call is to mount
@@ -227,8 +233,10 @@ public class Turret extends SubsystemBase {
     public double getTurretAngle() {
         //double shaftRevs = -(ticks + lastEncoder) / REV_ENCODER_TICKS_PER_REV;
         //double turretRevs = shaftRevs * ENCODER_GEAR_RATIO;
-	double rawAngle = getServoAngle();
-        return rawAngle;
+	double servo = getServoAngle() - servoReset;
+	if (servo < 0) servo += 360.0;
+	if (servo > 360) servo -= 360.0;
+	return servo * SERVO_BELT_RATIO;
     }
 
     public double getOtherServoAngle() {
@@ -387,7 +395,7 @@ public class Turret extends SubsystemBase {
             // only do the joystick control if it has moved "a lot" (1.0 is slammed)
             if (Math.hypot(rx, ry) > 0.8) {
                 joystickAngle = Math.toDegrees(Math.atan2(rx, ry));
-                joystickAngle += 180.0;
+		//                joystickAngle += 180.0;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
                 operatorOffset += TURRET_TWEAK;
