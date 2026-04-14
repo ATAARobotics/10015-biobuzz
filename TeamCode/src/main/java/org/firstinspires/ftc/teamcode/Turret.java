@@ -49,18 +49,6 @@ public class Turret extends SubsystemBase {
     // 88.67mm
     private final double CAMERA_TO_TURRET_CENTER_INCHES = 3.491;
 
-    public PIDController turretHeadingControl;
-    public double servoPower;
-    public double currentTurretAngle;
-    public double targetTurretAngle;
-    private double servoAngle;
-    private double servoDelta = Double.NaN;
-    private double lastServoAngle = Double.NaN;
-    public double lastEncoder = 0.0;
-    private double servoReset;
-    //private int servoTurnCount;
-    double joystickAngle;
-    double operatorOffset = 0;
     double obeliskHeading;
 
     public boolean haveAprilLock;
@@ -69,13 +57,6 @@ public class Turret extends SubsystemBase {
     public double angleAdjust;
     public double aprilDistance;
     public double aprilFloorDistance;
-
-    private static final double GEAR_RATIO = 0.865; // changed february 13. 1 servo rotation equals 0.865 turret rotations
-
-    // the ratio for the turret shaft connected to the Rev encoder
-    ///private static final double ENCODER_GEAR_RATIO = 40.0 / 185.0; ///(when we tried smaller teeth)
-    private static final double ENCODER_GEAR_RATIO = 25.0 / 125.0; /// with bigger teeth
-    private static final double REV_ENCODER_TICKS_PER_REV = 8192;
 
     // this is the total gear-ratio from the servos to the (belted) turret.
     // that is, one servo rotation equals 0.9153 turret rotations
@@ -89,7 +70,7 @@ public class Turret extends SubsystemBase {
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
     // april 13, both servos definitely working.
-    public static double turretP = 0.003, turretI = 0.0, turretD = 0.0002, turretF = 0.08;
+    public static double turretP = 0.004, turretI = 0.04, turretD = 0.0003, turretF = 0.08;
     public static double TURRET_TOLERANCE = 4; // in degrees
     public static double TURRET_TWEAK = 3;
     public double targetHeading;  // from geometry via RobotBaseOp
@@ -100,6 +81,21 @@ public class Turret extends SubsystemBase {
     private HeadingLockMode mode = HeadingLockMode.Off;
     private HeadingLockMode modeOverride = HeadingLockMode.Trig;
     private boolean modeJustChanged = false;
+
+
+    // servo -> turret angle and wrapping issues and PID control of
+    // turret heading (controlled by targetTurretAngle)
+    public PIDController turretHeadingControl;
+    public double servoPower;
+    public double currentTurretAngle;
+    public double targetTurretAngle;
+    public double servoAngle;
+    public double servoReset;
+    double joystickAngle;
+    double operatorOffset = 0;
+
+    public enum MovementMode {Left, Middle, Right};
+    private MovementMode movement = MovementMode.Middle;
 
     // prototyping with some AprilTags, Sept 15
     AprilTagProcessor april_tags;
@@ -159,9 +155,10 @@ public class Turret extends SubsystemBase {
     }
 
     public void faceRobotAngle(double angle) {
+	double maxAngle = 160;
 	// +/- 100 angles for now
-	if (angle < -100) angle = -100;
-	if (angle > 100) angle = 100;
+	if (angle < -maxAngle) angle = -maxAngle;
+	if (angle > maxAngle) angle = maxAngle;
 	targetTurretAngle = angle;
 	// "set point" is always zero and we compute the error ourselves
         turretHeadingControl.setSetPoint(0.0);
@@ -216,12 +213,13 @@ public class Turret extends SubsystemBase {
         servo2.stop();
         currentTurretAngle = 0;
 	targetTurretAngle = 0;
+	movement = MovementMode.Middle;
+	
         joystickAngle = 0;
-        lastEncoder = 0.0;
         revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-	servoReset = encoder0.getVoltage();
+	servoReset = getServoAngle();
         faceRobotAngle(0);
         mode = HeadingLockMode.Off;
     }
@@ -252,13 +250,56 @@ public class Turret extends SubsystemBase {
     }
 
     public double getTurretAngle() {
-	// "servoReset" is the VOLTAGE of encoder0 at start
-	double voltage = (voltage0 - servoReset);
-	if (voltage < 0.0) voltage += 3.3;  // deal with wrap
+	// we want as much range as possible, but the absolute
+	// encoders on the Axons "flip over" on every revolution, and
+	// one revolution of the servo is less than one revolution of
+	// the turret.
 
-	double servoAngle = voltage / 3.3 * 360;
-	double angle = servoAngle * SERVO_BELT_RATIO;
-	return angle;
+	// this is solved by remembering "which way" we're moving near
+	// the ends of the ranges so that we can "tack on" the extra
+	// to the correct direction -- this wouldn't work for
+	// multi-revolution turret, but we only go about +/- 180 (but
+	// can overshoot a bit etc and don't want to get confused). We
+	// had problems trying to count "complete revolutions" of the
+	// individual servos because there's a decent amount of noise
+	// in the encoder values.
+
+	double servoAngle = getServoAngle();
+	double angle = 0.0;
+	switch(movement) {
+	case Middle:
+	    if (servoReset < 180) {
+		if (servoAngle > (servoReset + 180))
+		    angle = -(servoReset + (360 - servoAngle));
+		else
+		    angle = servoAngle - servoReset;
+	    } else {
+		/// todo don't we need an if/else in here too?
+		angle = servoAngle - servoReset;
+	    }
+	    break;
+
+	case Left:
+	    if (servoAngle > servoReset) {
+		double extra = 360 - servoAngle;
+		angle = -servoReset - extra;
+	    } else {
+		angle = servoAngle - servoReset;
+	    }
+	    break;
+
+	case Right:
+	    if (servoAngle < servoReset) {
+		angle = (360 - servoReset) + servoAngle;
+	    } else {
+		angle = servoAngle - servoReset;
+	    }
+	    break;
+	}
+
+	// account for gear ratios (above we basically measured the
+	// "servo angle")
+	return angle * SERVO_BELT_RATIO;
     }
 
     public double getOtherServoAngle() {
@@ -314,9 +355,12 @@ public class Turret extends SubsystemBase {
 
 	double error = wrapAngle(currentTurretAngle) - targetTurretAngle;
         servoPower = turretHeadingControl.calculate(error) + turretF * Math.signum(turretHeadingControl.getPositionError());
+	if (currentTurretAngle < -90) movement = MovementMode.Left;
+	else if (currentTurretAngle > 90) movement = MovementMode.Right;
+	else movement = MovementMode.Middle;
+
         if (servoPower > 1.0) servoPower = 1.0;
         if (servoPower < -1.0) servoPower = -1.0;
-	servoPower = 0.0;
         servo1.set(servoPower);
         servo2.set(servoPower);
 //        try { writer.write(servoAngle+"\t"+currentTurretAngle+"\t"+delta+"\n"); } catch (IOException e) { e.printStackTrace(); }
@@ -355,10 +399,8 @@ public class Turret extends SubsystemBase {
         telem.log("turret-joystick", joystickAngle);
         telem.log("turret-servo-angle0", getServoAngle());
         telem.log("turret-servo-angle1", getOtherServoAngle());
-        telem.log("turret-last-servo-angle", lastServoAngle);
+	telem.log("turret-movement", movement);
         telem.log("turret-servo-reset", servoReset);
-        telem.log("turret-servo-last", lastServoAngle);
-        telem.log("turret-servo-delta", servoDelta);
         telem.log("turret-april-bearing", aprilBearing);
         telem.log("turret-angle-adjust", angleAdjust);
         telem.log("turret-april-distance", aprilDistance);
@@ -379,7 +421,9 @@ public class Turret extends SubsystemBase {
         telem.logDrivers("Heading Lock Mode", mode);
         telem.logDrivers("Obelisk", logPattern);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
-        telem.logDrivers("Turret Target Angle ", turretHeadingControl.getSetPoint());
+        telem.logDrivers("Turret Target Angle ", targetTurretAngle);
+	telem.logDrivers("Servo Reset", servoReset);
+	telem.logDrivers("Servo Angle", getServoAngle());
         telem.logDrivers("Turret Power", servoPower);
         telem.logDrivers("Turret Angle Error", turretHeadingControl.getPositionError());
         telem.logDrivers("Joystick Angle", joystickAngle);

@@ -18,8 +18,8 @@ public abstract class TeleOpNoReset extends TeleOp {
         float h = prefs.getFloat("heading", 0.0f);
         drive.setPosition(new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, h));
         int spinTarget = prefs.getInt("spindex-target", 0);
-        float turretTicks = prefs.getFloat("turret", 0.0f);
-        turret.lastEncoder = turretTicks;
+        float turretServoReset = prefs.getFloat("turret", 0.0f);
+        turret.servoReset = turretServoReset;
         int pattern = prefs.getInt("oblelisk", -1);
         turret.pattern = pattern;
 
