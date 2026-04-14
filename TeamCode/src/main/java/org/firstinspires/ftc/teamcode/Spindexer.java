@@ -333,13 +333,14 @@ public class Spindexer extends SubsystemBase {
     public void updateIntakeState(){
         switch(intakeState) {
             case Waiting:
-                if (intakeJustBroken()) {
+                if (thisIntake) {
                     ballCounter++;
                     intakeState = IntakeState.BallEntering;
                 }
                 break;
+
             case BallEntering:
-                if (!haveArtifactIntake()){
+                if (!thisIntake){
                     intakeState = IntakeState.Waiting;
                 }
                 break;

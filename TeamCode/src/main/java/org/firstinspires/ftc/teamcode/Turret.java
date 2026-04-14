@@ -50,7 +50,9 @@ public class Turret extends SubsystemBase {
     private final double CAMERA_TO_TURRET_CENTER_INCHES = 3.491;
 
     public PIDController turretHeadingControl;
-    public double servoPower, currentTurretAngle;
+    public double servoPower;
+    public double currentTurretAngle;
+    public double targetTurretAngle;
     private double servoAngle;
     private double servoDelta = Double.NaN;
     private double lastServoAngle = Double.NaN;
@@ -77,14 +79,17 @@ public class Turret extends SubsystemBase {
 
     // this is the total gear-ratio from the servos to the (belted) turret.
     // that is, one servo rotation equals 0.9153 turret rotations
-    private static final double SERVO_BELT_RATIO = 0.9153;
+    private static final double SERVO_BELT_RATIO = 0.9153;  // 54 / 59
 
+    // 3:1 then 90:295
+    
     // tuned december 11, bare servos for PID, attach turret for F
     //public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
     // tuned dec 22 from first principals
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
-    public static double turretP = 0.01, turretI = 0.035, turretD = 0.0005, turretF = 0.08;
+    // april 13, both servos definitely working.
+    public static double turretP = 0.003, turretI = 0.0, turretD = 0.0002, turretF = 0.08;
     public static double TURRET_TOLERANCE = 4; // in degrees
     public static double TURRET_TWEAK = 3;
     public double targetHeading;  // from geometry via RobotBaseOp
@@ -147,17 +152,19 @@ public class Turret extends SubsystemBase {
         // Robot-relative angle: where turret must point relative to robot frame
         //double robotRelative = wrapAngle(fieldAngleDeg + operatorOffset - robotHeading);
         double robotRelative = fieldAngleDeg + operatorOffset - robotHeading;
-        if (robotRelative < 0.0) robotRelative = 360 + robotRelative;
+	robotRelative = wrapAngle(robotRelative);
 
         // Reuse existing robot-relative method
         faceRobotAngle(robotRelative);
     }
 
     public void faceRobotAngle(double angle) {
-	// "angle" is 0 -> 360 but for the PID controller we want to
-	// do 0 as the middle, with negative angles to the left and
-	// positive to the right
-        turretHeadingControl.setSetPoint(convertAngleRobotRelative(angle));
+	// +/- 100 angles for now
+	if (angle < -100) angle = -100;
+	if (angle > 100) angle = 100;
+	targetTurretAngle = angle;
+	// "set point" is always zero and we compute the error ourselves
+        turretHeadingControl.setSetPoint(0.0);
     }
 
     // convert a 0->360 angle to range -180 -> +180 where 0 is robot-forward
@@ -205,21 +212,16 @@ public class Turret extends SubsystemBase {
     // f "just below moving" = 0.11
     // pidf = 0.003, 0, 0.07, 0.0   <-- seems pretty good?
     public void reset() {
+        servo1.stop();
+        servo2.stop();
         currentTurretAngle = 0;
+	targetTurretAngle = 0;
         joystickAngle = 0;
         lastEncoder = 0.0;
         revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-	servoReset = getServoAngle();
 
-        // jan 30: we aren't using more than +/- 90 degrees yet, and
-        // still having weird issues. team-lead call is to mount
-        // servos approximately in the middle, and never do "servo
-        // turn counting" (because it should then be physically
-        // impossible)
-        //servoTurnCount = 0;
-        servo1.stop();
-        servo2.stop();
+	servoReset = encoder0.getVoltage();
         faceRobotAngle(0);
         mode = HeadingLockMode.Off;
     }
@@ -250,12 +252,13 @@ public class Turret extends SubsystemBase {
     }
 
     public double getTurretAngle() {
-        //double shaftRevs = -(ticks + lastEncoder) / REV_ENCODER_TICKS_PER_REV;
-        //double turretRevs = shaftRevs * ENCODER_GEAR_RATIO;
-	double servo = getServoAngle() - servoReset;
-	if (servo < 0) servo += 360.0;
-	if (servo > 360) servo -= 360.0;
-	return servo * SERVO_BELT_RATIO;
+	// "servoReset" is the VOLTAGE of encoder0 at start
+	double voltage = (voltage0 - servoReset);
+	if (voltage < 0.0) voltage += 3.3;  // deal with wrap
+
+	double servoAngle = voltage / 3.3 * 360;
+	double angle = servoAngle * SERVO_BELT_RATIO;
+	return angle;
     }
 
     public double getOtherServoAngle() {
@@ -266,8 +269,9 @@ public class Turret extends SubsystemBase {
     public void read_sensors(double time) {
         this.time = time;
         this.ticks = revEncoder.getCurrentPosition();
-        voltage1 = encoder0.getVoltage();
-        voltage0 = encoder1.getVoltage();
+        voltage0 = encoder0.getVoltage();
+        voltage1 = encoder1.getVoltage();
+        currentTurretAngle = getTurretAngle();
     }
 
     @Override
@@ -306,13 +310,13 @@ public class Turret extends SubsystemBase {
             }
         }
 
-        currentTurretAngle = getTurretAngle();
-
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
-        servoPower = turretHeadingControl.calculate(convertAngleRobotRelative(currentTurretAngle)) + turretF * Math.signum(turretHeadingControl.getPositionError());
+	double error = wrapAngle(currentTurretAngle) - targetTurretAngle;
+        servoPower = turretHeadingControl.calculate(error) + turretF * Math.signum(turretHeadingControl.getPositionError());
         if (servoPower > 1.0) servoPower = 1.0;
         if (servoPower < -1.0) servoPower = -1.0;
+	servoPower = 0.0;
         servo1.set(servoPower);
         servo2.set(servoPower);
 //        try { writer.write(servoAngle+"\t"+currentTurretAngle+"\t"+delta+"\n"); } catch (IOException e) { e.printStackTrace(); }
@@ -345,13 +349,14 @@ public class Turret extends SubsystemBase {
         telem.log("turret-current-angle", currentTurretAngle);
         telem.log("turret-voltage0", voltage0);
         telem.log("turret-voltage1", voltage1);
-        telem.log("turret-target-angle", turretHeadingControl.getSetPoint());
+        telem.log("turret-target-angle", targetTurretAngle);
         telem.log("turret-power", servoPower);
         telem.log("turret-error", turretHeadingControl.getPositionError());
         telem.log("turret-joystick", joystickAngle);
-        telem.log("turret-servo-angle", servoAngle);
+        telem.log("turret-servo-angle0", getServoAngle());
+        telem.log("turret-servo-angle1", getOtherServoAngle());
         telem.log("turret-last-servo-angle", lastServoAngle);
-        //telem.log("turret-servo-turn-count", servoTurnCount);
+        telem.log("turret-servo-reset", servoReset);
         telem.log("turret-servo-last", lastServoAngle);
         telem.log("turret-servo-delta", servoDelta);
         telem.log("turret-april-bearing", aprilBearing);
@@ -361,8 +366,6 @@ public class Turret extends SubsystemBase {
         telem.log("turret-last-april", lastAprilLock);
         telem.log("turret-april-mode", mode);
         telem.log("turret-obelisk", pattern);
-        telem.log("turret-rev-encoder", revEncoder.getCurrentPosition());
-        telem.log("turret-rev-angle", getTurretAngle());
         telem.log("turret-operator-offset", operatorOffset);
 
         String logPattern = "unknown";
@@ -413,19 +416,22 @@ public class Turret extends SubsystemBase {
 
             // only do the joystick control if it has moved "a lot" (1.0 is slammed)
             if (Math.hypot(rx, ry) > 0.8) {
+		// this returns -180 through +180
                 joystickAngle = Math.toDegrees(Math.atan2(rx, ry));
-		joystickAngle += 180.0;
+		// (if needed, can convert it to 0 .. 360)
+		//joystickAngle += 180.0;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
-                operatorOffset += TURRET_TWEAK;
-                //joystickAngle = 90;
+                //operatorOffset += TURRET_TWEAK;
+                joystickAngle = -90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-                operatorOffset -= TURRET_TWEAK;
-                //joystickAngle = -90;
+                //operatorOffset -= TURRET_TWEAK;
+                joystickAngle = 90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
-                operatorOffset = 0;
+                //operatorOffset = 0;
+		joystickAngle = 0;
             }
         }
     }
