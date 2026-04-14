@@ -125,6 +125,8 @@ public class Spindexer extends SubsystemBase {
         frontBeamBreak = hardwareMap.analogInput.get("front_beam_break");
         backBeamBreak = hardwareMap.analogInput.get("back_beam_break");
         intakeBeamBreak = hardwareMap.analogInput.get("intake_beam_break");
+
+	intakeState = IntakeState.Waiting;
     }
 
     public void reset() {
@@ -512,9 +514,9 @@ if interrupt "during" spin then it gets confused about which slot is what
         telem.log("spindexer-slot-2", slots[2]);
         telem.log("spindexer-spin", spin);
 	telem.logBoth("spindexer-beam-intake", lastIntakeVoltage);
-    telem.logBoth("spindexer-beam-front", lastFrontVoltage);
-    telem.logBoth("spindexer-beam-back", lastBackVoltage);
-    telem.logBoth("spindexer-ballcount", ballCounter);
+	telem.logBoth("spindexer-beam-front", lastFrontVoltage);
+	telem.logBoth("spindexer-beam-back", lastBackVoltage);
+	telem.logBoth("spindexer-ballcount", ballCounter);
 	telem.log("spindexer-color-back", hsvBack[0]);
         telem.log("spindexer-color-front", hsvFront[0]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
