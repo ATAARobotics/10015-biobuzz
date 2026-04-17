@@ -189,7 +189,7 @@ public abstract class RobotBaseOp extends OpMode {
                     spindexer.spinModeIndex();
                 }
             } else if (state == InState.THIRD) {
-                if (spindexer.haveArtifactFront()) {
+                if (spindexer.atTarget() && spindexer.haveArtifactFront()) {
                     state = InState.DONE;
 		    spindexer.pinBalls();
                     // todo: probably want two more states, to do this:

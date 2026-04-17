@@ -61,7 +61,7 @@ public class Spindexer extends SubsystemBase {
     public PIDController control;
     public boolean boostF = false;
     public static double boostAmount = 0.5;//0.85;
-    public static double PIN_ANGLE = 10.0;
+    public static double PIN_ANGLE = -30.0;
 
     double spindexerPower;
     public int targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
