@@ -161,7 +161,18 @@ public abstract class RobotBaseOp extends OpMode {
             if (spindexer.isFull()) {
                 state = InState.DONE;
             } else {
-                state = InState.FIRST_TWO;
+		// driver often "pulses" the intake trigger .. so if
+		// we've just before this gotten to "SPIN" or past
+		// state, and the intake gets pulsed, we need to
+		// actually start in THIRD.
+		//
+		// we can know this if the "front" slot is empty (or
+		// maybe similarly if the other two slots are full)
+		if (spindexer.artifactCount() == 2 && !spindexer.artifactInSlot()) {
+		    state = InState.THIRD;
+		} else {
+		    state = InState.FIRST_TWO;
+		}
                 intake.grab();
                 intake.fullPower();
                 spindexer.spinModeIndex();
