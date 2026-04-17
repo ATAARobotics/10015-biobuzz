@@ -156,7 +156,6 @@ public class Turret extends SubsystemBase {
 
     public void faceRobotAngle(double angle) {
 	double maxAngle = 160;
-	// +/- 100 angles for now
 	if (angle < -maxAngle) angle = -maxAngle;
 	if (angle > maxAngle) angle = maxAngle;
 	targetTurretAngle = angle;

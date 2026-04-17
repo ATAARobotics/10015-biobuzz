@@ -47,6 +47,7 @@ public class Spindexer extends SubsystemBase {
     // color sensors
     float[] hsvBack = new float[3];
     float[] hsvFront = new float[3];
+    boolean pinBalls = false;
 
     // stuff we derive
     public enum SpinDirection {Shoot, Index}
@@ -60,6 +61,7 @@ public class Spindexer extends SubsystemBase {
     public PIDController control;
     public boolean boostF = false;
     public static double boostAmount = 0.5;//0.85;
+    public static double PIN_ANGLE = 10.0;
 
     double spindexerPower;
     public int targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
@@ -68,7 +70,7 @@ public class Spindexer extends SubsystemBase {
     // slot 0 is the "forward" slot when we started (angle = 0)
     // slot 1 is the next one after that if we spindex "backwards" / non-shoot direction (so 1 position CCW from slot 0)
     // slot 2 is the next slot CCW from slot 1 (aka the slot 120degrees CW from slot 0)
-    public enum SlotContent {Nothing, Purple, Green};
+    public enum SlotContent {Nothing, Unknown, Purple, Green};
     public SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
     double lastHue;
@@ -126,6 +128,7 @@ public class Spindexer extends SubsystemBase {
         backBeamBreak = hardwareMap.analogInput.get("back_beam_break");
         intakeBeamBreak = hardwareMap.analogInput.get("intake_beam_break");
 
+	//for counting balls via intake beambreak
 	intakeState = IntakeState.Waiting;
     }
 
@@ -140,15 +143,6 @@ public class Spindexer extends SubsystemBase {
     private double ticksToDeg(int ticks){
        double motorRevs = ticks/spindexerMotor.getCPR();
        return motorRevs * 360;
-    }
-
-     public boolean recentPurple() {
-        boolean x = false;
-        for (boolean rc : recentColors) {
-         //   x |= rc;
-            x = rc;
-        }
-        return x;
     }
 
     public boolean artifactInSlot() {
@@ -184,8 +178,8 @@ public class Spindexer extends SubsystemBase {
         return false;
     }
 
-
     public void spinShoot(){
+	pinBalls = false;
         // todo: we should use the Shooter's ability to detect shots
         // to tell us when a shot went up .. meantime, we'll be
         // optimistic that anything in the "shoot" slot right now will
@@ -205,12 +199,19 @@ public class Spindexer extends SubsystemBase {
 
     public void spinIndex(){
         spin = SpinDirection.Index;
+	pinBalls = false;
         control.reset();
         targetAngle -= STEP_DEG;
     }
 
+    // "pin" the balls against the finger when we're full
+    public void pinBalls(){
+	pinBalls = true;
+    }
+
     public void spinModeIndex() {
         spin = SpinDirection.Index;
+	pinBalls = false;
         control.reset();
     }
 
@@ -347,9 +348,20 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
+
+    // reading from I2C devices is slow, so we only do this sometimes
+    public void readSlotColors() {
+	if (slots[currentSlot()] == SlotContent.Unknown) {
+	    Color.RGBToHSV(colorFront.red(), colorFront.green(), colorFront.blue(), hsvFront);
+	    // check color, change slots[currentSlot() ]
+	}
+	if (slots[currentBackSlot()] == SlotContent.Unknown) {
+	    Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
+	    // check array, set it
+	}
+    }
+
     public void read_sensors(double time) {
-     //       Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
-    //    Color.RGBToHSV(colorFront.red(), colorFront.green(), colorFront.blue(), hsvFront);
         currentAngle = ticksToDeg(spindexerMotor.getCurrentPosition());
         lastFrontVoltage = (frontBeamBreak.getVoltage());
         lastBackVoltage = (backBeamBreak.getVoltage());
@@ -364,15 +376,6 @@ public class Spindexer extends SubsystemBase {
 	return thisIntake && !prevIntake;
     }
 
-/*
-
-bug from adrian
-
-feathering "intake" mode
-if interrupt "during" spin then it gets confused about which slot is what
-
-*/
-
     @Override
     public void periodic() {
         // have to set these each loop in case we're setting from Panels/Dashboard
@@ -381,20 +384,24 @@ if interrupt "during" spin then it gets confused about which slot is what
             spindexerPower = manualPower;
         }
         else{
-            spindexerPower = control.calculate(currentAngle - targetAngle);
+	    double moreAngle = 0.0;
+	    if (pinBalls) {
+		moreAngle = PIN_ANGLE;
+	    }
+            spindexerPower = control.calculate(currentAngle - targetAngle + moreAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
             // note: it's important to call .calculate() on our controller
             // _before_ we ask "atTarget()" so we have current information
             // from _this_ loop
 
-            // let spindexer decide if there's something at the current
-            // slot (but only if we also believe we are actually AT the
-            // current slot)
+	    // when the spindexer thinks it's settled, we look at BOTH beambrakes and fill those two slots
+	    // if they're broken.
+	    // we look at both so that a ball moving over them doesn't cause a miss-count
             if (spin == SpinDirection.Index && atTarget()) {
                 if (haveFrontAndBack()) {
-                    slots[currentSlot()] = SlotContent.Purple; //Fix me: correct colour
-                    slots[currentBackSlot()] = SlotContent.Purple; //"                "
+                    slots[currentSlot()] = SlotContent.Unknown;
+                    slots[currentBackSlot()] = SlotContent.Unknown;
                 }
             }
 
@@ -497,6 +504,7 @@ if interrupt "during" spin then it gets confused about which slot is what
         if (slots[i] == SlotContent.Nothing) s += "     ]";
         if (slots[i] == SlotContent.Purple) s +=  "PPPP ]";
         if (slots[i] == SlotContent.Green) s += "GGGG ]";
+        if (slots[i] == SlotContent.Unknown) s += "---- ]";
         return s;
     }
 

@@ -138,7 +138,17 @@ public abstract class RobotBaseOp extends OpMode {
     // goal: fill up the spindexer
     // but: might already have 0, 1, 2 or 3 balls
     // (so _don't_ want to do anything at all if we e.g. have 3 balls)
-    public enum InState {INTAKE, SPIN, SORT, DONE};
+    //
+    // for v3 robot:
+    // - run intake
+    // - await front + back beambreaks broken
+    //   - spindex once
+    //   - await front beambreak broken
+    //   - full
+    // (note: we no longer sort here, that's a special mode, since
+    // it's kind of jam-prone currently and we don't need to during
+    // most teleop)
+    public enum InState {FIRST_TWO, SPIN, THIRD, DONE};
     public class AutoIntake extends CommandBase {
         private InState state;
 
@@ -147,22 +157,22 @@ public abstract class RobotBaseOp extends OpMode {
             addRequirements(intake);
         }
         public void initialize() {
-            state = InState.INTAKE;
-            intake.grab();
-            intake.fullPower();
-            spindexer.spinModeIndex();
+            // if we're already full, do not intake
+            if (spindexer.isFull()) {
+                state = InState.DONE;
+            } else {
+                state = InState.FIRST_TWO;
+                intake.grab();
+                intake.fullPower();
+                spindexer.spinModeIndex();
+            }
         }
         public void execute() {
-            if (state == InState.INTAKE) {
-                if (spindexer.haveFrontAndBack()) {
-                    if (spindexer.isFull()) {
-                        state = InState.SORT;
-                        driver.gamepad.rumble(250);
-                    } else {
-                        state = InState.SPIN;
-                        intake.lowPower();
-                        spindexer.spinIndex();
-                    }
+            if (state == InState.FIRST_TWO) {
+                if (spindexer.atTarget() && spindexer.haveFrontAndBack()) {
+                    state = InState.SPIN;
+                    intake.lowPower();
+                    spindexer.spinIndex();
                 }
             } else if (state == InState.SPIN) {
                 if (spindexer.isStuck()){
@@ -172,11 +182,26 @@ public abstract class RobotBaseOp extends OpMode {
                     intake.fullPower();
                 }
                 if (spindexer.atTarget()) {
-                    state = InState.INTAKE;
+                    state = InState.THIRD;
                     intake.grab();
+                    intake.fullPower();
+                    // why do we need to set the mode?
                     spindexer.spinModeIndex();
                 }
-            } else if (state == InState.SORT) {
+            } else if (state == InState.THIRD) {
+                if (spindexer.haveArtifactFront()) {
+                    state = InState.DONE;
+		    spindexer.pinBalls();
+                    // todo: probably want two more states, to do this:
+                    // - pause X milliseconds
+                    // - run intake backwards (in case we have too many balls)
+                    //
+                    // - maybe: "kink" spindexer one or the other way
+                    //   a few degrees to lock balls in?
+                }
+            }
+                /*
+                // old "SORT" logic, should go elsewhere when we're in "sort before shoot" mode
                 if (spindexer.atTarget()) {
                     int s = spindexer.currentShootSlot();
                     // if we have no green, or we're currently going
@@ -195,7 +220,7 @@ public abstract class RobotBaseOp extends OpMode {
                         spindexer.spinIndex();
                     }
                 }
-            }
+                */
 
             // don't keep slamming balls into a stuck spindexer
          //   if (!spindexer.atTarget() && spindexer.isStuck()) {
@@ -240,6 +265,7 @@ public abstract class RobotBaseOp extends OpMode {
             addRequirements(spindexer);
             addRequirements(shooter);
             addRequirements(turret);
+            addRequirements(intake);
         }
         public void initialize() {
             state = OutState.WAIT_SHOOT;
@@ -262,6 +288,7 @@ public abstract class RobotBaseOp extends OpMode {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
                     shotSlot = spindexer.currentSlot();
+		    intake.grab();
                     spindexer.spinShoot();
 
                     // try to rapid-shoot if we're close enough
