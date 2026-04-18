@@ -64,8 +64,8 @@ public class Shooter extends SubsystemBase {
     //public static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
     //public static double RPM_VS_DIST_SLOPE = 37.8; // down 10%
     //public static double RPM_VS_DIST_INTERCEPT = 1124; //up 10%
-    public static double RPM_VS_DIST_SLOPE = 38.0; // down 10%
-    public static double RPM_VS_DIST_INTERCEPT = 1200; //up 10%
+    public static double RPM_VS_DIST_SLOPE = 11.328;
+    public static double RPM_VS_DIST_INTERCEPT = 1921.3;
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
     public static double FAR_DISTANCE = 125.0;
 
@@ -155,8 +155,8 @@ public class Shooter extends SubsystemBase {
         return RPM_VS_DIST_SLOPE * aprilDistance + RPM_VS_DIST_INTERCEPT;
     }
     public double hoodAngle(double rpm) {
-        // linear fit of data from feb 13
-        return 0.000304388 * rpm + -0.692439;
+        // linear fit of data from april 17
+        return 0.01 * rpm + 8.15;
         //tuned feb 16
       //  return -9e8 * (rpm * rpm) + 0.001 * rpm - 2.03;
     }
@@ -219,9 +219,9 @@ public class Shooter extends SubsystemBase {
             // we have regression lines for "max" and "min" RPMs that
             // gets artifacts scored, and RPM_PERCENT controls where
             // we are between them (0% means min, 100% means max).
-            targetRpm = rpmMax();
-            double dif = rpmMax() - rpmMin();
-            targetRpm = rpmMin() + (RPM_PERCENT * dif);
+            targetRpm = rpmMax(); //went back to just rpm max april 17
+          //  double dif = rpmMax() - rpmMin();
+          //  targetRpm = rpmMin() + (RPM_PERCENT * dif);
 
             // "new idea" to target hood angle based of RPM, not distance
             //targetHood = hoodAngle(currentRpm);
@@ -305,7 +305,7 @@ public class Shooter extends SubsystemBase {
             targetHood = HOOD_MAX;
         }
 
-        hood.setPosition(targetHood);
+        hood.setPosition(degreeToServo(hoodAngle(currentRpm)));
         shooterMotor.set(power);
 
         // count shots
@@ -336,8 +336,9 @@ public class Shooter extends SubsystemBase {
         telem.log("shooter-rpm-target", targetRpm);
         telem.log("shooter-rpm-current", currentRpm);
         telem.log("shooter-power", power);
-        telem.log("shooter-hood-angle", targetHood);
-        telem.log("shooter-hood-target-angle", targetHoodAngle);
+        telem.log("shooter-hood-degrees", hoodAngle(currentRpm));
+        telem.log("shooter-hood-angle", degreeToServo(hoodAngle(currentRpm)));
+       // telem.log("shooter-hood-target-angle", targetHoodAngle);
         telem.log("shooter-auto-rpm", autoRpm);
         telem.log("shooter-distance", aprilDistance);
         telem.log("shooter-voltage", voltage);

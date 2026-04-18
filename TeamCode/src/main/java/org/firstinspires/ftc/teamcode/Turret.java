@@ -245,7 +245,7 @@ public class Turret extends SubsystemBase {
 
     public double getServoAngle() {
         // Read analog voltage, convert to degrees
-        return voltage0 / 3.3 * 360;
+        return 360 - (voltage0 / 3.3 * 360);
     }
 
     public double getTurretAngle() {
@@ -337,7 +337,7 @@ public class Turret extends SubsystemBase {
             }
         }
         // TEMP: always face our april-tag
-       // faceFieldAngle(targetHeading);
+        faceFieldAngle(targetHeading);
 
        // maybe only in auto?
         if (isAuto) {
@@ -353,7 +353,7 @@ public class Turret extends SubsystemBase {
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
 	double error = wrapAngle(currentTurretAngle) - targetTurretAngle;
-        servoPower = turretHeadingControl.calculate(error) + turretF * Math.signum(turretHeadingControl.getPositionError());
+        servoPower = -(turretHeadingControl.calculate(error) + turretF * Math.signum(turretHeadingControl.getPositionError()));
 	if (currentTurretAngle < -90) movement = MovementMode.Left;
 	else if (currentTurretAngle > 90) movement = MovementMode.Right;
 	else movement = MovementMode.Middle;

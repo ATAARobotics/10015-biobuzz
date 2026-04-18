@@ -657,7 +657,7 @@ public abstract class RobotBaseOp extends OpMode {
         turret.reset();
         spindexer.reset();
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
-        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 77.5 + 8.124 : 47.5 + 8.124, 8.0984, AngleUnit.DEGREES, 90));
+        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 94 - 7.4 : 47.5 + 7.4, 8.0984, AngleUnit.DEGREES, 90));
         loops = 0;
     }
 
