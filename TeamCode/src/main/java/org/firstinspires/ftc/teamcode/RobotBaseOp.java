@@ -161,18 +161,18 @@ public abstract class RobotBaseOp extends OpMode {
             if (spindexer.isFull()) {
                 state = InState.DONE;
             } else {
-		// driver often "pulses" the intake trigger .. so if
-		// we've just before this gotten to "SPIN" or past
-		// state, and the intake gets pulsed, we need to
-		// actually start in THIRD.
-		//
-		// we can know this if the "front" slot is empty (or
-		// maybe similarly if the other two slots are full)
-		if (spindexer.artifactCount() == 2 && !spindexer.artifactInSlot()) {
-		    state = InState.THIRD;
-		} else {
-		    state = InState.FIRST_TWO;
-		}
+                // driver often "pulses" the intake trigger .. so if
+                // we've just before this gotten to "SPIN" or past
+                // state, and the intake gets pulsed, we need to
+                // actually start in THIRD.
+                //
+                // we can know this if the "front" slot is empty (or
+                // maybe similarly if the other two slots are full)
+                if (spindexer.artifactCount() == 2 && !spindexer.artifactInSlot()) {
+                    state = InState.THIRD;
+                } else {
+                    state = InState.FIRST_TWO;
+                }
                 intake.grab();
                 intake.fullPower();
                 spindexer.spinModeIndex();
@@ -202,7 +202,7 @@ public abstract class RobotBaseOp extends OpMode {
             } else if (state == InState.THIRD) {
                 if (spindexer.atTarget() && spindexer.haveArtifactFront()) {
                     state = InState.DONE;
-		    spindexer.pinBalls();
+                    spindexer.pinBalls();
                     // todo: probably want two more states, to do this:
                     // - pause X milliseconds
                     // - run intake backwards (in case we have too many balls)
@@ -280,7 +280,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void initialize() {
             state = OutState.WAIT_SHOOT;
-	    intake.grab();
+            intake.grab();
         }
         public void execute() {
             if (state == OutState.WAIT_SHOOT) {
@@ -343,7 +343,7 @@ public abstract class RobotBaseOp extends OpMode {
                 }
                 else {
                     turret.noLock();
-                    //shooter.manualShootRpm();
+                    shooter.manualShootRpm();
                     spindexer.spinModeIndex();
                 }
             }
@@ -634,9 +634,7 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("predicted-x", predictedX);
         telem.log("predicted-y", predictedY);
         telem.log("in-zone", inZone());
-	telem.log("loops", loops);
-
-
+        telem.log("loops", loops);
 
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);

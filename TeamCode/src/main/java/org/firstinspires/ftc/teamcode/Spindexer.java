@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Configurable
 public class Spindexer extends SubsystemBase {
     public static double BOOST_AMOUNT = 0.5;//0.85;
-    public static double PIN_ANGLE = -35.0;
+    public static double PIN_ANGLE = -50.0;
     // if we want this lower, have to re-tune the PIDs (jan 22)
     public static double TOLERENCE_DEG = 10.0;
     public static double MANUAL_DIVISOR = 10;
@@ -108,10 +108,10 @@ public class Spindexer extends SubsystemBase {
                 SlotContent.Nothing
         };
 
-	// always have 5 items in these
-	recentFront = new LinkedList<Boolean>();
-	recentBack = new LinkedList<Boolean>();
-	resetBeamBreaks();
+        // always have 5 items in these
+        recentFront = new LinkedList<Boolean>();
+        recentBack = new LinkedList<Boolean>();
+        resetBeamBreaks();
 
         // the two brushland labs sensors (i2c mode because not enough analog ports) 
         colorBack = hardwareMap.get(RevColorSensorV3.class, "color_back");
@@ -154,33 +154,40 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void resetBeamBreaks() {
-	recentFront.clear();
-	recentFront.add(false);
-	recentFront.add(false);
-	recentFront.add(false);
-	recentFront.add(false);
-	recentFront.add(false);
+        recentFront.clear();
+        recentFront.add(false);
+        recentFront.add(false);
+        recentFront.add(false);
+        recentFront.add(false);
+        recentFront.add(false);
 
-	recentBack.clear();
-	recentBack.add(false);
-	recentBack.add(false);
-	recentBack.add(false);
-	recentBack.add(false);
-	recentBack.add(false);
+        recentBack.clear();
+        recentBack.add(false);
+        recentBack.add(false);
+        recentBack.add(false);
+        recentBack.add(false);
+        recentBack.add(false);
     }
 
     public boolean haveArtifactFront() {
-	for (boolean b : recentFront) {
-	    if (!b) return false;
-	}
-	return true;
+        for (boolean b : recentFront) {
+            if (!b) return false;
+        }
+        return true;
     }
     public boolean haveArtifactBack() {
-	for (boolean b : recentBack) {
-	    if (!b) return false;
-	}
-	return true;
+        for (boolean b : recentBack) {
+            if (!b) return false;
+        }
+        return true;
     }
+    public boolean haveFrontAndBack(){
+        if (haveArtifactBack() && haveArtifactFront()){
+            return true;
+        }
+        return false;
+    }
+
     public boolean haveArtifactIntake() {
         if (lastIntakeVoltage < 1.0){
             return true;
@@ -190,7 +197,6 @@ public class Spindexer extends SubsystemBase {
 
     public void spinShoot(){
         pinBalls = false;
-	resetBeamBreaks();
         // todo: we should use the Shooter's ability to detect shots
         // to tell us when a shot went up .. meantime, we'll be
         // optimistic that anything in the "shoot" slot right now will
@@ -206,16 +212,15 @@ public class Spindexer extends SubsystemBase {
         targetAngle += STEP_DEG;
         boostF = true;
         stuckTime.start();
-	moving = true;
+        moving = true;
     }
 
     public void spinIndex(){
         spin = SpinDirection.Index;
         pinBalls = false;
         control.reset();
-	resetBeamBreaks();
         targetAngle -= STEP_DEG;
-	moving = true;
+        moving = true;
     }
 
     // "pin" the balls against the finger when we're full
@@ -245,6 +250,7 @@ public class Spindexer extends SubsystemBase {
         if (norm == 120) return 2;
         return 0;
     }
+    
     public int currentBackSlot(){
         int slot = currentSlot() + 1;
         if (slot > 2){
@@ -252,13 +258,7 @@ public class Spindexer extends SubsystemBase {
         }
         return slot;
     }
-    public boolean haveFrontAndBack(){
-        if (haveArtifactBack() && haveArtifactFront()){
-            return true;
-        }
-        return false;
-    }
-
+    
     // the "shoot slot" is the next one after the currentSlot() but
     // wrapping..
     public int currentShootSlot() {
@@ -384,10 +384,10 @@ public class Spindexer extends SubsystemBase {
         prevIntake = thisIntake;
         thisIntake = (lastIntakeVoltage < 1.0);
 
-	recentFront.addLast(lastFrontVoltage < 1.0);
-	recentFront.removeFirst();
-	recentBack.addLast(lastBackVoltage < 1.0);
-	recentBack.removeFirst();
+        recentFront.addLast(lastFrontVoltage < 1.0);
+        recentFront.removeFirst();
+        recentBack.addLast(lastBackVoltage < 1.0);
+        recentBack.removeFirst();
     }
 
     public boolean intakeJustBroken() {
@@ -409,10 +409,10 @@ public class Spindexer extends SubsystemBase {
             spindexerPower = control.calculate(currentAngle - targetAngle + moreAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
-	    if (moving && atTarget()) {
-		moving = false;
-		resetBeamBreaks();
-	    }
+	    /*            if (moving && atTarget()) {
+                moving = false;
+                resetBeamBreaks();
+		}*/
 
             // note: it's important to call .calculate() on our controller
             // _before_ we ask "atTarget()" so we have current information
@@ -425,7 +425,6 @@ public class Spindexer extends SubsystemBase {
                 if (haveFrontAndBack()) {
                     slots[currentSlot()] = SlotContent.Unknown;
                     slots[currentBackSlot()] = SlotContent.Unknown;
-		    resetBeamBreaks();
                 }
             }
 
@@ -548,6 +547,7 @@ public class Spindexer extends SubsystemBase {
         telem.logBoth("spindexer-beam-front", lastFrontVoltage);
         telem.logBoth("spindexer-beam-back", lastBackVoltage);
         telem.logBoth("spindexer-ballcount", ballCounter);
+	telem.logBoth("spindexer-recent-front", recentFront);
         telem.log("spindexer-color-back", hsvBack[0]);
         telem.log("spindexer-color-front", hsvFront[0]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
@@ -555,11 +555,11 @@ public class Spindexer extends SubsystemBase {
 
     public class ManualAdjust extends CommandBase {
         GamepadEx operator;
-	
-	public ManualAdjust(GamepadEx operator) {
-	    this.operator = operator;
-	    addRequirements(Spindexer.this);
-	}
+        
+        public ManualAdjust(GamepadEx operator) {
+            this.operator = operator;
+            addRequirements(Spindexer.this);
+        }
         @Override
         public void execute() {
            /* if (operator.wasJustPressed(GamepadKeys.Button.A)) {
@@ -577,25 +577,25 @@ public class Spindexer extends SubsystemBase {
                     reset();
                 }
             }
-	}
+        }
     }
     public CommandBase manualAdjust(GamepadEx operator) {
-	return new Spindexer.ManualAdjust(operator);
+        return new Spindexer.ManualAdjust(operator);
     }
 
     public class ResetContents extends CommandBase {
-	public ResetContents() {
-	    addRequirements(Spindexer.this);
-	}
-	
+        public ResetContents() {
+            addRequirements(Spindexer.this);
+        }
+        
         @Override
         public void execute() {
-	    slots [0] = SlotContent.Nothing;
-	    slots [1] = SlotContent.Nothing;
-	    slots [2] = SlotContent.Nothing;
-	}
+            slots [0] = SlotContent.Nothing;
+            slots [1] = SlotContent.Nothing;
+            slots [2] = SlotContent.Nothing;
+        }
     }
     public CommandBase resetContents() {
-	return new ResetContents();
+        return new ResetContents();
     }
 }
