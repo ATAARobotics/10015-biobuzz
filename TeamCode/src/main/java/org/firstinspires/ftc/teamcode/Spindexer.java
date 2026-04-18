@@ -22,6 +22,17 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 public class Spindexer extends SubsystemBase {
+    public static double BOOST_AMOUNT = 0.5;//0.85;
+    public static double PIN_ANGLE = -35.0;
+    // if we want this lower, have to re-tune the PIDs (jan 22)
+    public static double TOLERENCE_DEG = 10.0;
+    public static double MANUAL_DIVISOR = 10;
+    public static double STEP_DEG = 120;
+    public static double DISTANCE_THRESHOLD = 20.0;
+    public static int DISTANCE_WINDOW = 3;
+    public static PIDCoefficients pid = new PIDCoefficients(0.004, 0.0, 0.00022);
+    public static double pid_f = 0.025; //0.026; // tuned at 0.03 but that twitched a little
+
     public MotorEx spindexerMotor;
     Servo indicatorLight;
 
@@ -38,12 +49,18 @@ public class Spindexer extends SubsystemBase {
     AnalogInput frontBeamBreak;
     AnalogInput backBeamBreak;
     AnalogInput intakeBeamBreak;
+    
     // for beam breaks
     double lastFrontVoltage;
     double lastBackVoltage;
     double lastIntakeVoltage;
     boolean prevIntake = false;
     boolean thisIntake = false;
+    // track beam-break status over several timesteps
+    LinkedList<Boolean> recentFront;
+    LinkedList<Boolean> recentBack;
+    boolean moving = false;
+    
     // color sensors
     float[] hsvBack = new float[3];
     float[] hsvFront = new float[3];
@@ -60,8 +77,6 @@ public class Spindexer extends SubsystemBase {
 
     public PIDController control;
     public boolean boostF = false;
-    public static double boostAmount = 0.5;//0.85;
-    public static double PIN_ANGLE = -30.0;
 
     double spindexerPower;
     public int targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
@@ -73,25 +88,8 @@ public class Spindexer extends SubsystemBase {
     public enum SlotContent {Nothing, Unknown, Purple, Green};
     public SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
-    double lastHue;
-    LinkedList<Boolean> recentColors;
-    LinkedList<Double> recentDist;
-
-    // if we want this lower, have to re-tune the PIDs (jan 22)
-    public static double TOLERENCE_DEG = 10.0;
-    public static double MANUAL_DIVISOR = 10;
-    public static double STEP_DEG = 120;
-    public static double DISTANCE_THRESHOLD = 20.0;
-    public static int DISTANCE_WINDOW = 3;
-    // tuned December 10 with latest hardware rev (target collar, ramps, etc)
-    //public static PIDCoefficients pid = new PIDCoefficients(0.006, 0.02, 0.0003);
-    // more aggressive feb 2
-    //public static PIDCoefficients pid = new PIDCoefficients(0.008, 0.02, 0.0003);
-    // april 7 new spindexer
     int ballCounter = 0;
     private IntakeState intakeState;
-    public static PIDCoefficients pid = new PIDCoefficients(0.004, 0.0, 0.00022);
-    public static double pid_f = 0.025; //0.026; // tuned at 0.03 but that twitched a little
 
     public Spindexer (HardwareMap hardwareMap) {
         spindexerMotor = new MotorEx(hardwareMap, "spindexer", Motor.GoBILDA.RPM_312);
@@ -103,21 +101,17 @@ public class Spindexer extends SubsystemBase {
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         stuckTime = new Timing.Timer(670, TimeUnit.MILLISECONDS);
 
-        recentColors = new LinkedList<Boolean>();
-        recentColors.add(false);
-        recentColors.add(false);
-        recentColors.add(false);
-        recentColors.add(false);
-        recentColors.add(false);
-
-        recentDist = new LinkedList<Double>();
-
         // we always have 3 slots in this array
         slots = new SlotContent[]{
                 SlotContent.Nothing,
                 SlotContent.Nothing,
                 SlotContent.Nothing
         };
+
+	// always have 5 items in these
+	recentFront = new LinkedList<Boolean>();
+	recentBack = new LinkedList<Boolean>();
+	resetBeamBreaks();
 
         // the two brushland labs sensors (i2c mode because not enough analog ports) 
         colorBack = hardwareMap.get(RevColorSensorV3.class, "color_back");
@@ -159,17 +153,33 @@ public class Spindexer extends SubsystemBase {
         return count;
     }
 
+    public void resetBeamBreaks() {
+	recentFront.clear();
+	recentFront.add(false);
+	recentFront.add(false);
+	recentFront.add(false);
+	recentFront.add(false);
+	recentFront.add(false);
+
+	recentBack.clear();
+	recentBack.add(false);
+	recentBack.add(false);
+	recentBack.add(false);
+	recentBack.add(false);
+	recentBack.add(false);
+    }
+
     public boolean haveArtifactFront() {
-        if (lastFrontVoltage < 1.0){
-            return true;
-        }
-        return false;
+	for (boolean b : recentFront) {
+	    if (!b) return false;
+	}
+	return true;
     }
     public boolean haveArtifactBack() {
-        if (lastBackVoltage < 1.0){
-            return true;
-        }
-        return false;
+	for (boolean b : recentBack) {
+	    if (!b) return false;
+	}
+	return true;
     }
     public boolean haveArtifactIntake() {
         if (lastIntakeVoltage < 1.0){
@@ -180,6 +190,7 @@ public class Spindexer extends SubsystemBase {
 
     public void spinShoot(){
         pinBalls = false;
+	resetBeamBreaks();
         // todo: we should use the Shooter's ability to detect shots
         // to tell us when a shot went up .. meantime, we'll be
         // optimistic that anything in the "shoot" slot right now will
@@ -195,13 +206,16 @@ public class Spindexer extends SubsystemBase {
         targetAngle += STEP_DEG;
         boostF = true;
         stuckTime.start();
+	moving = true;
     }
 
     public void spinIndex(){
         spin = SpinDirection.Index;
         pinBalls = false;
         control.reset();
+	resetBeamBreaks();
         targetAngle -= STEP_DEG;
+	moving = true;
     }
 
     // "pin" the balls against the finger when we're full
@@ -367,9 +381,13 @@ public class Spindexer extends SubsystemBase {
         lastBackVoltage = (backBeamBreak.getVoltage());
         lastIntakeVoltage = (intakeBeamBreak.getVoltage());
 
-
         prevIntake = thisIntake;
         thisIntake = (lastIntakeVoltage < 1.0);
+
+	recentFront.addLast(lastFrontVoltage < 1.0);
+	recentFront.removeFirst();
+	recentBack.addLast(lastBackVoltage < 1.0);
+	recentBack.removeFirst();
     }
 
     public boolean intakeJustBroken() {
@@ -391,6 +409,11 @@ public class Spindexer extends SubsystemBase {
             spindexerPower = control.calculate(currentAngle - targetAngle + moreAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
+	    if (moving && atTarget()) {
+		moving = false;
+		resetBeamBreaks();
+	    }
+
             // note: it's important to call .calculate() on our controller
             // _before_ we ask "atTarget()" so we have current information
             // from _this_ loop
@@ -402,6 +425,7 @@ public class Spindexer extends SubsystemBase {
                 if (haveFrontAndBack()) {
                     slots[currentSlot()] = SlotContent.Unknown;
                     slots[currentBackSlot()] = SlotContent.Unknown;
+		    resetBeamBreaks();
                 }
             }
 
@@ -444,7 +468,7 @@ public class Spindexer extends SubsystemBase {
             }
             if (boostF && spin == SpinDirection.Shoot) {
                 if (currentAngle < targetAngle) {//(spindexerPower > 0.0) {
-                    spindexerPower += boostAmount;
+                    spindexerPower += BOOST_AMOUNT;
                 } else {
                     // we've passed our setpoint (at least once) because
                     // power went negative
@@ -515,8 +539,6 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-at-target", atTarget());
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
-        telem.log("spindexer-analog-hue", lastHue);
-        telem.log("spindexer-have-artifact-debug", recentDist);
         telem.log("spindexer-have-artifact", haveFrontAndBack());
         telem.log("spindexer-slot-0", slots[0]);
         telem.log("spindexer-slot-1", slots[1]);
@@ -531,17 +553,13 @@ public class Spindexer extends SubsystemBase {
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }
 
-    //temp
-    public class HumanInputs extends CommandBase {
-        GamepadEx driver;
+    public class ManualAdjust extends CommandBase {
         GamepadEx operator;
-
-        public HumanInputs(GamepadEx operator, GamepadEx driver) {
-            this.operator = operator;
-            this.driver = driver;
-            addRequirements(Spindexer.this);
-        }
-
+	
+	public ManualAdjust(GamepadEx operator) {
+	    this.operator = operator;
+	    addRequirements(Spindexer.this);
+	}
         @Override
         public void execute() {
            /* if (operator.wasJustPressed(GamepadKeys.Button.A)) {
@@ -550,30 +568,34 @@ public class Spindexer extends SubsystemBase {
             if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
                 spinIndex();
             }*/
-            manualPower = operator.getLeftX()/ MANUAL_DIVISOR;
-            if (operator.isDown(GamepadKeys.Button.LEFT_STICK_BUTTON)){
+            manualPower = operator.getLeftX() / MANUAL_DIVISOR;
+            if (operator.isDown(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
                     mode = Mode.Manual;
-            }
-            else{
-                if (mode == Mode.Manual){
+            } else {
+                if (mode == Mode.Manual) {
                     mode = Mode.Auto;
                     reset();
                 }
             }
-            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
-                slots [0] = SlotContent.Nothing;
-                slots [1] = SlotContent.Nothing;
-                slots [2] = SlotContent.Nothing;
-            }
-/*
-kind of for high-speed shoot debugging
-            if (operator.wasJustPressed(GamepadKeys.Button.X)) {
-                spin = SpinDirection.Shoot;
-                control.reset();
-                targetAngle += (3 * STEP_DEG);
-                stuckTime.start();
-            }
-*/
-        }
+	}
+    }
+    public CommandBase manualAdjust(GamepadEx operator) {
+	return new Spindexer.ManualAdjust(operator);
+    }
+
+    public class ResetContents extends CommandBase {
+	public ResetContents() {
+	    addRequirements(Spindexer.this);
+	}
+	
+        @Override
+        public void execute() {
+	    slots [0] = SlotContent.Nothing;
+	    slots [1] = SlotContent.Nothing;
+	    slots [2] = SlotContent.Nothing;
+	}
+    }
+    public CommandBase resetContents() {
+	return new ResetContents();
     }
 }

@@ -634,6 +634,7 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("predicted-x", predictedX);
         telem.log("predicted-y", predictedY);
         telem.log("in-zone", inZone());
+	telem.log("loops", loops);
 
 
 

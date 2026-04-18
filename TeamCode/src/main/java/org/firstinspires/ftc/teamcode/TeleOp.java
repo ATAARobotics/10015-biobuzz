@@ -26,7 +26,6 @@ public abstract class TeleOp extends RobotBaseOp {
         CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(intake, intake.new HumanInputs(operator, driver));
-        CommandScheduler.getInstance().setDefaultCommand(spindexer, spindexer.new HumanInputs(operator, driver));
     }
 
     protected void bindOperatorControls() {
@@ -53,5 +52,8 @@ public abstract class TeleOp extends RobotBaseOp {
         operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
                 new UnShoot()
         );
+
+	operator.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON).whileHeld(spindexer.manualAdjust(operator));
+	operator.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(spindexer.resetContents());
     }
 }
