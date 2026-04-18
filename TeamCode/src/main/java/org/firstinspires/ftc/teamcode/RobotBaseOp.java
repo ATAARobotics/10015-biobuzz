@@ -280,6 +280,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void initialize() {
             state = OutState.WAIT_SHOOT;
+	    intake.grab();
         }
         public void execute() {
             if (state == OutState.WAIT_SHOOT) {
@@ -299,7 +300,6 @@ public abstract class RobotBaseOp extends OpMode {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
                     shotSlot = spindexer.currentSlot();
-		    intake.grab();
                     spindexer.spinShoot();
 
                     // try to rapid-shoot if we're close enough
@@ -335,6 +335,7 @@ public abstract class RobotBaseOp extends OpMode {
             return state == OutState.DONE;
         }
         public void end(boolean interrupted){
+            intake.stop();
             if (!interrupted) {
                 if (isAuto()){
                     turret.noLock();

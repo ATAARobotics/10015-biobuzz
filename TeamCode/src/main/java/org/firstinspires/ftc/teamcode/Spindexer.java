@@ -128,8 +128,8 @@ public class Spindexer extends SubsystemBase {
         backBeamBreak = hardwareMap.analogInput.get("back_beam_break");
         intakeBeamBreak = hardwareMap.analogInput.get("intake_beam_break");
 
-	//for counting balls via intake beambreak
-	intakeState = IntakeState.Waiting;
+        //for counting balls via intake beambreak
+        intakeState = IntakeState.Waiting;
     }
 
     public void reset() {
@@ -179,7 +179,7 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void spinShoot(){
-	pinBalls = false;
+        pinBalls = false;
         // todo: we should use the Shooter's ability to detect shots
         // to tell us when a shot went up .. meantime, we'll be
         // optimistic that anything in the "shoot" slot right now will
@@ -199,19 +199,19 @@ public class Spindexer extends SubsystemBase {
 
     public void spinIndex(){
         spin = SpinDirection.Index;
-	pinBalls = false;
+        pinBalls = false;
         control.reset();
         targetAngle -= STEP_DEG;
     }
 
     // "pin" the balls against the finger when we're full
     public void pinBalls(){
-	pinBalls = true;
+        pinBalls = true;
     }
 
     public void spinModeIndex() {
         spin = SpinDirection.Index;
-	pinBalls = false;
+        pinBalls = false;
         control.reset();
     }
 
@@ -351,14 +351,14 @@ public class Spindexer extends SubsystemBase {
 
     // reading from I2C devices is slow, so we only do this sometimes
     public void readSlotColors() {
-	if (slots[currentSlot()] == SlotContent.Unknown) {
-	    Color.RGBToHSV(colorFront.red(), colorFront.green(), colorFront.blue(), hsvFront);
-	    // check color, change slots[currentSlot() ]
-	}
-	if (slots[currentBackSlot()] == SlotContent.Unknown) {
-	    Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
-	    // check array, set it
-	}
+        if (slots[currentSlot()] == SlotContent.Unknown) {
+            Color.RGBToHSV(colorFront.red(), colorFront.green(), colorFront.blue(), hsvFront);
+            // check color, change slots[currentSlot() ]
+        }
+        if (slots[currentBackSlot()] == SlotContent.Unknown) {
+            Color.RGBToHSV(colorBack.red(), colorBack.green(), colorBack.blue(), hsvBack);
+            // check array, set it
+        }
     }
 
     public void read_sensors(double time) {
@@ -368,12 +368,12 @@ public class Spindexer extends SubsystemBase {
         lastIntakeVoltage = (intakeBeamBreak.getVoltage());
 
 
-	prevIntake = thisIntake;
-	thisIntake = (lastIntakeVoltage < 1.0);
+        prevIntake = thisIntake;
+        thisIntake = (lastIntakeVoltage < 1.0);
     }
 
     public boolean intakeJustBroken() {
-	return thisIntake && !prevIntake;
+        return thisIntake && !prevIntake;
     }
 
     @Override
@@ -384,10 +384,10 @@ public class Spindexer extends SubsystemBase {
             spindexerPower = manualPower;
         }
         else{
-	    double moreAngle = 0.0;
-	    if (pinBalls) {
-		moreAngle = PIN_ANGLE;
-	    }
+            double moreAngle = 0.0;
+            if (pinBalls) {
+                moreAngle = PIN_ANGLE;
+            }
             spindexerPower = control.calculate(currentAngle - targetAngle + moreAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
@@ -395,9 +395,9 @@ public class Spindexer extends SubsystemBase {
             // _before_ we ask "atTarget()" so we have current information
             // from _this_ loop
 
-	    // when the spindexer thinks it's settled, we look at BOTH beambrakes and fill those two slots
-	    // if they're broken.
-	    // we look at both so that a ball moving over them doesn't cause a miss-count
+            // when the spindexer thinks it's settled, we look at BOTH beambrakes and fill those two slots
+            // if they're broken.
+            // we look at both so that a ball moving over them doesn't cause a miss-count
             if (spin == SpinDirection.Index && atTarget()) {
                 if (haveFrontAndBack()) {
                     slots[currentSlot()] = SlotContent.Unknown;
@@ -522,11 +522,11 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-slot-1", slots[1]);
         telem.log("spindexer-slot-2", slots[2]);
         telem.log("spindexer-spin", spin);
-	telem.logBoth("spindexer-beam-intake", lastIntakeVoltage);
-	telem.logBoth("spindexer-beam-front", lastFrontVoltage);
-	telem.logBoth("spindexer-beam-back", lastBackVoltage);
-	telem.logBoth("spindexer-ballcount", ballCounter);
-	telem.log("spindexer-color-back", hsvBack[0]);
+        telem.logBoth("spindexer-beam-intake", lastIntakeVoltage);
+        telem.logBoth("spindexer-beam-front", lastFrontVoltage);
+        telem.logBoth("spindexer-beam-back", lastBackVoltage);
+        telem.logBoth("spindexer-ballcount", ballCounter);
+        telem.log("spindexer-color-back", hsvBack[0]);
         telem.log("spindexer-color-front", hsvFront[0]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
     }

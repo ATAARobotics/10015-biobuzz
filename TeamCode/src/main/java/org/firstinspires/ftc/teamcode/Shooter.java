@@ -58,7 +58,7 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MIN = 0.1;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
-    public static double FAR_RPM = 2000;
+    public static double FAR_RPM = 1111; // FIXME TODO temp for testing
     public static double FAR_HOOD = 0.50;
     //public static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
     //public static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
@@ -162,14 +162,14 @@ public class Shooter extends SubsystemBase {
     }
 
     public double degreeToServo(double degrees){
-	// 0.10 == 30.75 degrees
-	// 0.85 == 50.75 degrees
+        // 0.10 == 30.75 degrees
+        // 0.85 == 50.75 degrees
         double intercept = 27;
         double slope = 25;
         double servo = (degrees - intercept)/slope;
-	if (servo < 0.10) servo = 0.10;
-	if (servo > 0.80) servo = 0.80;
-	return servo;
+        if (servo < 0.10) servo = 0.10;
+        if (servo > 0.80) servo = 0.80;
+        return servo;
     }
 
     public boolean readyToShoot() {
@@ -208,7 +208,7 @@ public class Shooter extends SubsystemBase {
     public void manualShootRpm() {
         autoRpm = false;
         targetRpm = 0;
-	tbhCrossed = false;
+        tbhCrossed = false;
     }
 
     @Override
@@ -258,31 +258,31 @@ public class Shooter extends SubsystemBase {
             targetHood = MANUAL_HOOD;
         }
 
-	// "take back half" computations
+        // "take back half" computations
         if (targetRpm == 0){
             tbhOutput = 0;
             tbhLastCrossedOutput = 0;
             tbhLastError = 0;
             power = 0;
-	    tbhCrossed = false;
+            tbhCrossed = false;
         } else {
-	    //tbh controller
-	    // (see also https://www.vexforum.com/t/flywheel-velocity-control/29892/2 )
-	    double error = targetRpm - currentRpm;
-	    tbhOutput = tbhOutput + (TBH_GAIN * error);
-	    tbhOutput = Math.max(0, Math.min(1,tbhOutput)); //Maintain a value between 0 and 1
-	    if (Math.signum(error) != Math.signum(tbhLastError)) {
-		// double check this "first zero crossing" stuff
-		if (! tbhCrossed) {
-		    tbhCrossed = true;
-		    tbhOutput = 1.0;
-		}
-		tbhOutput = 0.5 * (tbhOutput + tbhLastCrossedOutput);
-		tbhLastCrossedOutput = tbhOutput;
-	    }
-	    tbhLastError = error;
-	    power = tbhOutput;
-	}
+            //tbh controller
+            // (see also https://www.vexforum.com/t/flywheel-velocity-control/29892/2 )
+            double error = targetRpm - currentRpm;
+            tbhOutput = tbhOutput + (TBH_GAIN * error);
+            tbhOutput = Math.max(0, Math.min(1,tbhOutput)); //Maintain a value between 0 and 1
+            if (Math.signum(error) != Math.signum(tbhLastError)) {
+                // double check this "first zero crossing" stuff
+                if (! tbhCrossed) {
+                    tbhCrossed = true;
+                    tbhOutput = 1.0;
+                }
+                tbhOutput = 0.5 * (tbhOutput + tbhLastCrossedOutput);
+                tbhLastCrossedOutput = tbhOutput;
+            }
+            tbhLastError = error;
+            power = tbhOutput;
+        }
 
 
         if (currentRpm < (targetRpm - BAND)) {
@@ -331,7 +331,7 @@ public class Shooter extends SubsystemBase {
         telem.logBoth("Current RPM", currentRpm);
         telem.logBoth("Applied Voltage", appliedVoltage);
         telem.logBoth("Shots Fired" , shotsFired);
-	telem.logDrivers("Hood", targetHoodAngle);
+        telem.logDrivers("Hood", targetHoodAngle);
        // pack.put("ticksPerSecond", ticksPerSecond);
         telem.log("shooter-rpm-target", targetRpm);
         telem.log("shooter-rpm-current", currentRpm);
