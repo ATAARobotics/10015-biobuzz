@@ -168,7 +168,7 @@ public abstract class RobotBaseOp extends OpMode {
                 //
                 // we can know this if the "front" slot is empty (or
                 // maybe similarly if the other two slots are full)
-                if (spindexer.artifactCount() == 2 && !spindexer.artifactInSlot()) {
+                if (spindexer.artifactCount() == 2/* && !spindexer.artifactInSlot()*/) {
                     state = InState.THIRD;
                 } else {
                     state = InState.FIRST_TWO;
@@ -669,6 +669,7 @@ public abstract class RobotBaseOp extends OpMode {
         telemetry.addData("turret-ticks", turret.revEncoder.getCurrentPosition());
         telemetry.addData("turret-servo", turret.getServoAngle());
         telemetry.addData("turret-angle", turret.getTurretAngle());
+        telemetry.addData("spindexer-ticks", spindexer.spindexerMotor.getCurrentPosition());
       /*  telemetry.addData("Turret Servo Right", turret.getServoAngle());
         telemetry.addData("Turret Servo Left", turret.getOtherServoAngle());
         telemetry.update(); */

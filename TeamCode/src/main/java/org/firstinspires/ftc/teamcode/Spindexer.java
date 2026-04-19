@@ -30,7 +30,7 @@ public class Spindexer extends SubsystemBase {
     public static double STEP_DEG = 120;
     public static double DISTANCE_THRESHOLD = 20.0;
     public static int DISTANCE_WINDOW = 3;
-    public static PIDCoefficients pid = new PIDCoefficients(0.004, 0.0, 0.00022);
+    public static PIDCoefficients pid = new PIDCoefficients(0.0055, 0.0, 0.0003);
     public static double pid_f = 0.025; //0.026; // tuned at 0.03 but that twitched a little
 
     public MotorEx spindexerMotor;
@@ -124,6 +124,7 @@ public class Spindexer extends SubsystemBase {
 
         //for counting balls via intake beambreak
         intakeState = IntakeState.Waiting;
+        reset();
     }
 
     public void reset() {
@@ -170,16 +171,18 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean haveArtifactFront() {
-        for (boolean b : recentFront) {
+        return lastFrontVoltage < 1.0;
+        /*for (boolean b : recentFront) {
             if (!b) return false;
         }
-        return true;
+        return true;*/
     }
     public boolean haveArtifactBack() {
-        for (boolean b : recentBack) {
+        return lastBackVoltage < 1.0;
+      /*  for (boolean b : recentBack) {
             if (!b) return false;
         }
-        return true;
+        return true;*/
     }
     public boolean haveFrontAndBack(){
         if (haveArtifactBack() && haveArtifactFront()){
@@ -208,7 +211,7 @@ public class Spindexer extends SubsystemBase {
         }
 
         spin = SpinDirection.Shoot;
-        control.reset();
+        //control.reset();
         targetAngle += STEP_DEG;
         boostF = true;
         stuckTime.start();
@@ -218,7 +221,7 @@ public class Spindexer extends SubsystemBase {
     public void spinIndex(){
         spin = SpinDirection.Index;
         pinBalls = false;
-        control.reset();
+        //control.reset();
         targetAngle -= STEP_DEG;
         moving = true;
     }
@@ -231,7 +234,7 @@ public class Spindexer extends SubsystemBase {
     public void spinModeIndex() {
         spin = SpinDirection.Index;
         pinBalls = false;
-        control.reset();
+        //control.reset();
     }
 
     // returns the index of the slot that's at the front of the robot;
@@ -339,6 +342,9 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean atTarget() {
+        if (pinBalls){
+            return false;
+        }
         if (spin == SpinDirection.Shoot) {
             return control.atSetPoint() || control.getPositionError() < 0.0;
         }
@@ -532,6 +538,8 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void addTelemetry(HyperTelemetry telem) {
+        telem.log("spindexer-pin", pinBalls);
+        telem.log("spindexer-ticks", spindexerMotor.getCurrentPosition());
         telem.log("spindexer-target-angle", targetAngle);
         telem.log("spindexer-current-angle", currentAngle);
         telem.log("spindexer-current-slot", currentSlot());
@@ -569,14 +577,11 @@ public class Spindexer extends SubsystemBase {
                 spinIndex();
             }*/
             manualPower = operator.getLeftX() / MANUAL_DIVISOR;
-            if (operator.isDown(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
-                    mode = Mode.Manual;
-            } else {
-                if (mode == Mode.Manual) {
-                    mode = Mode.Auto;
-                    reset();
-                }
-            }
+            mode = Mode.Manual;
+        }
+        public void end(boolean inturupted){
+            mode = Mode.Auto;
+            reset();
         }
     }
     public CommandBase manualAdjust(GamepadEx operator) {

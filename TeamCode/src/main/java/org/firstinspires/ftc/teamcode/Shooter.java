@@ -1,12 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import static com.sun.tools.doclint.HtmlTag.B;
-
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
-import com.seattlesolvers.solverslib.hardware.SimpleServo;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
@@ -53,6 +49,8 @@ public class Shooter extends SubsystemBase {
     // during shots (normal spin-down is slower so the 200ms window can't see it)
 
     double hoodSlope;
+    public static double RPM_LOW = 2500;
+    public static double RPM_HIGH = 3500;
     public static double RPM_PERCENT = 1;
     public static double HOOD_MAX = 0.90;
     public static double HOOD_MIN = 0.1;
@@ -64,8 +62,8 @@ public class Shooter extends SubsystemBase {
     //public static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
     //public static double RPM_VS_DIST_SLOPE = 37.8; // down 10%
     //public static double RPM_VS_DIST_INTERCEPT = 1124; //up 10%
-    public static double RPM_VS_DIST_SLOPE = 11.328;
-    public static double RPM_VS_DIST_INTERCEPT = 1921.3;
+    public double rpmSlope;
+    public double rpmIntercept;
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
     public static double FAR_DISTANCE = 125.0;
 
@@ -152,7 +150,9 @@ public class Shooter extends SubsystemBase {
         return 41.9 * aprilDistance + 351;
     }
     public double rpmMax(){
-        return RPM_VS_DIST_SLOPE * aprilDistance + RPM_VS_DIST_INTERCEPT;
+        rpmSlope = (RPM_HIGH - RPM_LOW) / (140 - 48.5);
+        rpmIntercept = RPM_LOW + (rpmSlope * -48.5);
+        return (rpmSlope * aprilDistance) + rpmIntercept;
     }
     public double hoodAngle(double rpm) {
         // linear fit of data from april 17
