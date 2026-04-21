@@ -72,6 +72,7 @@ public class Shooter extends SubsystemBase {
     public static double RPM_TOLERANCE_OVER = 250;
     public static double POWER_OVERRIDE = 0.0;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
+    public static double P = 0.01;
     VoltageSensor battery;
     double MAX_RPM = 5250;
     double targetRpm;
@@ -86,9 +87,9 @@ public class Shooter extends SubsystemBase {
     //public static double kv = 0.002213; //kv is Feed Forward Model slope, determined experimentally with flywheel
     //public static double ks = 0.129514; //ks is Feed Forward Model Y intercept (represents power needed to overcome friction)
 
-    // new model january 26
-    public static double kv = 0.0021;
-    public static double ks = 1.0892;
+    // tuned kv and ks on April 20
+    public static double kv = 0.0023;
+    public static double ks = 2.3245;
 
 
     public Shooter(HardwareMap hardwareMap) {
@@ -256,7 +257,7 @@ public class Shooter extends SubsystemBase {
         }
 
 	// "take back half" computations
-        if (targetRpm == 0){
+      /*  if (targetRpm == 0){
             tbhOutput = 0;
             tbhLastCrossedOutput = 0;
             tbhLastError = 0;
@@ -278,12 +279,19 @@ public class Shooter extends SubsystemBase {
             tbhLastCrossedOutput = tbhOutput;
         }
         tbhLastError = error;
-        appliedVoltage = tbhOutput;
-        power = appliedVoltage/voltage;
+        power = tbhOutput;*/
+      //  power = appliedVoltage/voltage;
 
-        if (currentRpm < (targetRpm - BAND)) {
-            power = BANG_POWER;
+        double error = targetRpm - currentRpm;
+        power = (error * P);
+        if (power > 0){
+            appliedVoltage = ((kv * targetRpm) + ks)/voltage;
+            power += appliedVoltage;
         }
+
+     /*   if (currentRpm < (targetRpm - BAND)) {
+            power = BANG_POWER;
+        }*/
 
         // Above here can be messed with
         if (POWER_OVERRIDE > 0.0) {
