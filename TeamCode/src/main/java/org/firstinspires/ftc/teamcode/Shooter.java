@@ -26,8 +26,7 @@ public class Shooter extends SubsystemBase {
     double tbhOutput = 0.0;
     double tbhLastCrossedOutput = 0.0;
     double tbhLastError = 0.0;
-    boolean tbhCrossed = false;
-    public static double TBH_GAIN = 0.01;
+    public static double TBH_GAIN = 0.000007;
 
     // shot-counter
     int shotsFired = 0;
@@ -207,7 +206,6 @@ public class Shooter extends SubsystemBase {
     public void manualShootRpm() {
         autoRpm = false;
         targetRpm = 0;
-        tbhCrossed = false;
     }
 
     @Override
@@ -257,36 +255,42 @@ public class Shooter extends SubsystemBase {
             targetHood = MANUAL_HOOD;
         }
 
-        // "take back half" computations
+	// "take back half" computations
         if (targetRpm == 0){
             tbhOutput = 0;
             tbhLastCrossedOutput = 0;
             tbhLastError = 0;
             power = 0;
-            tbhCrossed = false;
-        } else {
-            //tbh controller
-            // (see also https://www.vexforum.com/t/flywheel-velocity-control/29892/2 )
-            double error = targetRpm - currentRpm;
-            tbhOutput = tbhOutput + (TBH_GAIN * error);
-            tbhOutput = Math.max(0, Math.min(1,tbhOutput)); //Maintain a value between 0 and 1
-            if (Math.signum(error) != Math.signum(tbhLastError)) {
-                // double check this "first zero crossing" stuff
-                if (! tbhCrossed) {
-                    tbhCrossed = true;
-                    tbhOutput = 1.0;
-                }
-                tbhOutput = 0.5 * (tbhOutput + tbhLastCrossedOutput);
+        }
+        else{
+            if (tbhLastError == 0.0){
+                appliedVoltage = (kv * targetRpm) + ks;
+                tbhOutput = appliedVoltage/voltage;
                 tbhLastCrossedOutput = tbhOutput;
             }
-            tbhLastError = error;
-            power = tbhOutput;
         }
+        //tbh controller
+       double error = targetRpm - currentRpm;
+        tbhOutput += TBH_GAIN * error;
+       tbhOutput = Math.max(0, Math.min(1,tbhOutput)); //Maintain a value between 0 and 1
+        if (Math.signum(error) != Math.signum(tbhLastError) && tbhLastError != 0.0){
+            tbhOutput = 0.5 * (tbhOutput + tbhLastCrossedOutput);
+            tbhLastCrossedOutput = tbhOutput;
+        }
+        tbhLastError = error;
+        power = tbhOutput;
 
         if (currentRpm < (targetRpm - BAND)) {
             power = BANG_POWER;
         }
 
+
+
+      /*  power = appliedVoltage / voltage;
+
+
+
+*/
         if (POWER_OVERRIDE > 0.0) {
             power = POWER_OVERRIDE;
         }
