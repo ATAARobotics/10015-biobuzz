@@ -22,19 +22,20 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 public class Spindexer extends SubsystemBase {
-    public static double BOOST_AMOUNT = 0.5;//0.85;
+    public static double BOOST_AMOUNT = 0.25;
     public static double PIN_ANGLE = -50.0;
     // if we want this lower, have to re-tune the PIDs (jan 22)
     public static double TOLERENCE_DEG = 10.0;
     public static double MANUAL_DIVISOR = 10;
     public static double STEP_DEG = 120;
-    public static double DISTANCE_THRESHOLD = 20.0;
-    public static int DISTANCE_WINDOW = 3;
     public static PIDCoefficients pid = new PIDCoefficients(0.0055, 0.0, 0.0003);
     public static double pid_f = 0.025; //0.026; // tuned at 0.03 but that twitched a little
 
-    public MotorEx spindexerMotor;
     Servo indicatorLight;
+    //public MotorEx spindexerMotor;
+    public FloodMotor spindexerMotor;
+    RevColorSensorV3 colorBack = null;
+    RevColorSensorV3 colorFront = null;
 
     // colors for indicator light
     double RED = 0.28;
@@ -44,8 +45,6 @@ public class Spindexer extends SubsystemBase {
 
     // stuff we read from sensors
     double currentAngle;    // computed from our encoder
-    RevColorSensorV3 colorBack = null;
-    RevColorSensorV3 colorFront = null;
     AnalogInput frontBeamBreak;
     AnalogInput backBeamBreak;
     AnalogInput intakeBeamBreak;
@@ -56,10 +55,10 @@ public class Spindexer extends SubsystemBase {
     double lastIntakeVoltage;
     boolean prevIntake = false;
     boolean thisIntake = false;
+    
     // track beam-break status over several timesteps
     LinkedList<Boolean> recentFront;
     LinkedList<Boolean> recentBack;
-    boolean moving = false;
     
     // color sensors
     float[] hsvBack = new float[3];
@@ -67,16 +66,20 @@ public class Spindexer extends SubsystemBase {
     boolean pinBalls = false;
 
     // stuff we derive
-    public enum SpinDirection {Shoot, Index}
     public enum IntakeState {Waiting, BallEntering}
+
+    public enum SpinDirection {Shoot, Index}
     SpinDirection spin = SpinDirection.Index;
+
     public enum Mode {Auto, Manual}
     Mode mode = Mode.Auto;
     double manualPower;
+
     Timing.Timer stuckTime;
 
     public PIDController control;
     public boolean boostF = false;
+    private boolean _atTarget = false; // were we atTarget() last loop, after .calculate()?
 
     double spindexerPower;
     public int targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
@@ -88,18 +91,23 @@ public class Spindexer extends SubsystemBase {
     public enum SlotContent {Nothing, Unknown, Purple, Green};
     public SlotContent[] slots;  // this always has 3 elements: 0, 1 and 2
 
+    // use front beam-break to (attempt to) count balls in
     int ballCounter = 0;
     private IntakeState intakeState;
 
     public Spindexer (HardwareMap hardwareMap) {
-        spindexerMotor = new MotorEx(hardwareMap, "spindexer", Motor.GoBILDA.RPM_312);
+	// note: using the "FloodMotor" here since that caps "max
+	// change in power" -- to overcome the Floodgate switch
+	// hardware issues originally, but right now to stop the
+	// spindexer doing crazy stuff
+        spindexerMotor = new FloodMotor(hardwareMap, "spindexer");//, Motor.GoBILDA.RPM_312);
         indicatorLight = hardwareMap.get(Servo.class, "indicator");
 
         control = new PIDController(pid.p, pid.i, pid.d);
         control.setTolerance(TOLERENCE_DEG);
 
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        stuckTime = new Timing.Timer(670, TimeUnit.MILLISECONDS);
+        stuckTime = new Timing.Timer(1000, TimeUnit.MILLISECONDS);
 
         // we always have 3 slots in this array
         slots = new SlotContent[]{
@@ -135,9 +143,12 @@ public class Spindexer extends SubsystemBase {
         spindexerMotor.resetEncoder();
     }
 
-    private double ticksToDeg(int ticks){
-       double motorRevs = ticks/spindexerMotor.getCPR();
-       return motorRevs * 360;
+    //private static double TICKS_PER_REV = 384.5;  // 435
+    private static double TICKS_PER_REV = 537.7;  // 312
+
+    private double ticksToDeg(double ticks){
+	double motorRevs = ticks / TICKS_PER_REV;
+	return motorRevs * 360.0;
     }
 
     public boolean artifactInSlot() {
@@ -189,13 +200,6 @@ public class Spindexer extends SubsystemBase {
         return false;
     }
 
-    public boolean haveArtifactIntake() {
-        if (lastIntakeVoltage < 1.0){
-            return true;
-        }
-        return false;
-    }
-
     public void spinShoot(){
         pinBalls = false;
         // todo: we should use the Shooter's ability to detect shots
@@ -213,7 +217,6 @@ public class Spindexer extends SubsystemBase {
         targetAngle += STEP_DEG;
         boostF = true;
         stuckTime.start();
-        moving = true;
     }
 
     public void spinIndex(){
@@ -221,7 +224,6 @@ public class Spindexer extends SubsystemBase {
         pinBalls = false;
         //control.reset();
         targetAngle -= STEP_DEG;
-        moving = true;
     }
 
     // "pin" the balls against the finger when we're full
@@ -232,7 +234,7 @@ public class Spindexer extends SubsystemBase {
     public void spinModeIndex() {
         spin = SpinDirection.Index;
         pinBalls = false;
-        //control.reset();
+        control.reset();
     }
 
     // returns the index of the slot that's at the front of the robot;
@@ -281,7 +283,7 @@ public class Spindexer extends SubsystemBase {
     public boolean isStuck(){
         if (stuckTime.done()){
             double diff = Math.abs(targetAngle - currentAngle);
-            if (diff > 10){
+            if (diff > TOLERENCE_DEG){
                 return true;
             }
         }
@@ -340,9 +342,9 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean atTarget() {
-	if (pinBalls){
+	/*if (pinBalls){
 	    return false;
-	}
+	    }*/
         if (spin == SpinDirection.Shoot) {
             return control.atSetPoint() || control.getPositionError() < 0.0;
         }
@@ -388,7 +390,7 @@ public class Spindexer extends SubsystemBase {
         prevIntake = thisIntake;
         thisIntake = (lastIntakeVoltage < 1.0);
 
-	if (atTarget()) {
+	if (_atTarget) {
 	    recentFront.addLast(lastFrontVoltage < 1.0);
 	    recentFront.removeFirst();
 	    recentBack.addLast(lastBackVoltage < 1.0);
@@ -396,18 +398,20 @@ public class Spindexer extends SubsystemBase {
 	}
     }
 
-    public boolean intakeJustBroken() {
-        return thisIntake && !prevIntake;
-    }
 
     @Override
     public void periodic() {
         // have to set these each loop in case we're setting from Panels/Dashboard
         control.setTolerance(TOLERENCE_DEG);
+	control.setPID(pid.p, pid.i, pid.d);
+
+	// note: positive power to spindexerPower is "shoot" direection
+
         if (mode == Mode.Manual){
             spindexerPower = manualPower;
-        }
-        else{
+        } else {
+	    // we "pin" the ball against the launch finger if we're
+	    // full, so add in some angle adjustment
             double moreAngle = 0.0;
 	    if (pinBalls) {
 		moreAngle = PIN_ANGLE;
@@ -415,19 +419,15 @@ public class Spindexer extends SubsystemBase {
             spindexerPower = control.calculate(currentAngle - targetAngle + moreAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
-	    /*            if (moving && atTarget()) {
-                moving = false;
-                resetBeamBreaks();
-		}*/
-
             // note: it's important to call .calculate() on our controller
             // _before_ we ask "atTarget()" so we have current information
             // from _this_ loop
+	    _atTarget = atTarget();
 
             // when the spindexer thinks it's settled, we look at BOTH beambrakes and fill those two slots
             // if they're broken.
             // we look at both so that a ball moving over them doesn't cause a miss-count
-            if (spin == SpinDirection.Index && atTarget()) {
+            if (spin == SpinDirection.Index && _atTarget) {
                 if (haveFrontAndBack()) {
                     slots[currentSlot()] = SlotContent.Unknown;
                     slots[currentBackSlot()] = SlotContent.Unknown;
@@ -456,40 +456,35 @@ public class Spindexer extends SubsystemBase {
                     break;
             }
 
-            control.setPID(pid.p, pid.i, pid.d);
-
-            //if (spindexerPower > 0.5) spindexerPower = 0.5;
-            //if (spindexerPower < -0.5) spindexerPower = -0.5;
-
             // temporary "boost" for the shoot-direction .. if we've "not
             // yet passed our goal" AND boostF is still true, we add extra
             // power (because the launched needs to have more power right
             // when it's super close to its goal).
 
-            if (slots[currentShootSlot()] == SlotContent.Nothing) {
-                // if we have an empty slot coming up to shoot, we
-                // _don't_ want to apply the boost
-              //boostF = false;
-            }
+	    // note: shoot direction is positive angles, and positive power
             if (boostF && spin == SpinDirection.Shoot) {
-                if (currentAngle < targetAngle) {//(spindexerPower > 0.0) {
+                if (currentAngle < targetAngle) {
                     spindexerPower += BOOST_AMOUNT;
                 } else {
-                    // we've passed our setpoint (at least once) because
-                    // power went negative
+                    // we've passed our setpoint (at least once)
                     boostF = false;
                 }
             }
         }
 
+	/*
         if (spindexerPower < 0.0 && spin == SpinDirection.Shoot) {
             spindexerPower = 0.0;
         }
+	*/
+
+	if (false && isStuck()) {
+	    spindexerPower = 0.0;
+	}
 
         spindexerMotor.set(spindexerPower);
         updateIntakeState();
     }
-
 
 
     // leave this here for easy copy-pasting when creating a new command
@@ -511,10 +506,9 @@ public class Spindexer extends SubsystemBase {
             spinIndex();
         }
         public boolean isFinished() {
-            return atTarget();
+            return _atTarget;
         }
     }
-
 
     public class ShootOnce extends CommandBase {
         public ShootOnce() {
@@ -524,7 +518,7 @@ public class Spindexer extends SubsystemBase {
             spinShoot();
         }
         public boolean isFinished() {
-            return atTarget();
+            return _atTarget;
         }
     }
 
@@ -543,7 +537,7 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-target-angle", targetAngle);
         telem.log("spindexer-current-angle", currentAngle);
         telem.log("spindexer-current-slot", currentSlot());
-        telem.log("spindexer-at-target", atTarget());
+        telem.log("spindexer-at-target", _atTarget);
         telem.log("spindexer-power", spindexerPower);
         telem.log("spindexer-stuck", isStuck());
         telem.log("spindexer-have-artifact", haveFrontAndBack());

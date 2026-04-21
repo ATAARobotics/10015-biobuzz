@@ -608,7 +608,7 @@ public abstract class RobotBaseOp extends OpMode {
     protected void logTelemetry() {
         //TelemetryPacket pack = new TelemetryPacket();
         HyperTelemetry telem = new HyperTelemetry(telemetry); //, pack);
-        telem.log("elapsed", runtime.toString());
+        telem.log("elapsed", runtime.seconds());
         telem.log("time", time);
         telem.log("battery", battery.getVoltage());
         telem.log("geometric-target", geometricTargetHeading);
