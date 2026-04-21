@@ -67,7 +67,7 @@ public class Shooter extends SubsystemBase {
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
     public static double FAR_DISTANCE = 125.0;
 
-    public static double BAND = 50;
+    public static double BAND = 500;
     public static double BANG_POWER = 1.0;
     public static double RPM_TOLERANCE = 50;
     public static double RPM_TOLERANCE_OVER = 250;
@@ -162,13 +162,12 @@ public class Shooter extends SubsystemBase {
     }
 
     public double degreeToServo(double degrees){
-        // 0.10 == 30.75 degrees
+        // 0.20 == 30.75 degrees
         // 0.85 == 50.75 degrees
-        double intercept = 27;
-        double slope = 25;
-        double servo = (degrees - intercept)/slope;
-        if (servo < 0.10) servo = 0.10;
-        if (servo > 0.80) servo = 0.80;
+	double percent = (degrees - 30.75) / (50.75 - 30.75);
+	double servo = ((0.85 - 0.20) * percent) + 0.20;
+        if (servo < 0.20) servo = 0.20;
+        if (servo > 0.85) servo = 0.85;
         return servo;
     }
 
@@ -284,12 +283,9 @@ public class Shooter extends SubsystemBase {
             power = tbhOutput;
         }
 
-
         if (currentRpm < (targetRpm - BAND)) {
             power = BANG_POWER;
         }
-
-
 
         if (POWER_OVERRIDE > 0.0) {
             power = POWER_OVERRIDE;

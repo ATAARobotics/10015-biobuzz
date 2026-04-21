@@ -171,18 +171,16 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean haveArtifactFront() {
-        return lastFrontVoltage < 1.0;
-        /*for (boolean b : recentFront) {
+        for (boolean b : recentFront) {
             if (!b) return false;
         }
-        return true;*/
+        return true;
     }
     public boolean haveArtifactBack() {
-        return lastBackVoltage < 1.0;
-      /*  for (boolean b : recentBack) {
+	for (boolean b : recentBack) {
             if (!b) return false;
         }
-        return true;*/
+        return true;
     }
     public boolean haveFrontAndBack(){
         if (haveArtifactBack() && haveArtifactFront()){
@@ -342,9 +340,9 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean atTarget() {
-        if (pinBalls){
-            return false;
-        }
+	if (pinBalls){
+	    return false;
+	}
         if (spin == SpinDirection.Shoot) {
             return control.atSetPoint() || control.getPositionError() < 0.0;
         }
@@ -390,10 +388,12 @@ public class Spindexer extends SubsystemBase {
         prevIntake = thisIntake;
         thisIntake = (lastIntakeVoltage < 1.0);
 
-        recentFront.addLast(lastFrontVoltage < 1.0);
-        recentFront.removeFirst();
-        recentBack.addLast(lastBackVoltage < 1.0);
-        recentBack.removeFirst();
+	if (atTarget()) {
+	    recentFront.addLast(lastFrontVoltage < 1.0);
+	    recentFront.removeFirst();
+	    recentBack.addLast(lastBackVoltage < 1.0);
+	    recentBack.removeFirst();
+	}
     }
 
     public boolean intakeJustBroken() {
@@ -409,9 +409,9 @@ public class Spindexer extends SubsystemBase {
         }
         else{
             double moreAngle = 0.0;
-            if (pinBalls) {
-                moreAngle = PIN_ANGLE;
-            }
+	    if (pinBalls) {
+		moreAngle = PIN_ANGLE;
+	    }
             spindexerPower = control.calculate(currentAngle - targetAngle + moreAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
@@ -533,7 +533,7 @@ public class Spindexer extends SubsystemBase {
         if (slots[i] == SlotContent.Nothing) s += "     ]";
         if (slots[i] == SlotContent.Purple) s +=  "PPPP ]";
         if (slots[i] == SlotContent.Green) s += "GGGG ]";
-        if (slots[i] == SlotContent.Unknown) s += "---- ]";
+        if (slots[i] == SlotContent.Unknown) s += "**** ]";
         return s;
     }
 
@@ -551,11 +551,13 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-slot-1", slots[1]);
         telem.log("spindexer-slot-2", slots[2]);
         telem.log("spindexer-spin", spin);
-        telem.logBoth("spindexer-beam-intake", lastIntakeVoltage);
+        //telem.logBoth("spindexer-beam-intake", lastIntakeVoltage);
         telem.logBoth("spindexer-beam-front", lastFrontVoltage);
         telem.logBoth("spindexer-beam-back", lastBackVoltage);
-        telem.logBoth("spindexer-ballcount", ballCounter);
+        //telem.logBoth("spindexer-ballcount", ballCounter);
+        telem.logBoth("spindexer-artifacts", artifactCount());
 	telem.logBoth("spindexer-recent-front", recentFront);
+	telem.logBoth("spindexer-recent-back", recentBack);
         telem.log("spindexer-color-back", hsvBack[0]);
         telem.log("spindexer-color-front", hsvFront[0]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));

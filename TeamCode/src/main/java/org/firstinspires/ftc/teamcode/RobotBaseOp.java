@@ -148,15 +148,17 @@ public abstract class RobotBaseOp extends OpMode {
     // (note: we no longer sort here, that's a special mode, since
     // it's kind of jam-prone currently and we don't need to during
     // most teleop)
-    public enum InState {FIRST_TWO, SPIN, THIRD, DONE};
+    public enum InState {FIRST_TWO, SPIN, THIRD, WAIT_PIN, DONE};
     public class AutoIntake extends CommandBase {
         private InState state;
+	private double startPinWait = 0.0;
 
         public AutoIntake() {
             addRequirements(spindexer);
             addRequirements(intake);
         }
         public void initialize() {
+	    startPinWait = time;  // redundant
             // if we're already full, do not intake
             if (spindexer.isFull()) {
                 state = InState.DONE;
@@ -201,8 +203,8 @@ public abstract class RobotBaseOp extends OpMode {
                 }
             } else if (state == InState.THIRD) {
                 if (spindexer.atTarget() && spindexer.haveArtifactFront()) {
-                    state = InState.DONE;
-                    spindexer.pinBalls();
+		    startPinWait = time;
+                    state = InState.WAIT_PIN;
                     // todo: probably want two more states, to do this:
                     // - pause X milliseconds
                     // - run intake backwards (in case we have too many balls)
@@ -210,28 +212,12 @@ public abstract class RobotBaseOp extends OpMode {
                     // - maybe: "kink" spindexer one or the other way
                     //   a few degrees to lock balls in?
                 }
-            }
-                /*
-                // old "SORT" logic, should go elsewhere when we're in "sort before shoot" mode
-                if (spindexer.atTarget()) {
-                    int s = spindexer.currentShootSlot();
-                    // if we have no green, or we're currently going
-                    // to shoot a green next, we're done.
-                    if (turret.pattern != -1){
-                        s = s - turret.pattern;
-                        s = s - operatorPattern;
-                        while (s < 0){
-                            s = s + 3;
-                        }
-                    }
-                    if (!spindexer.haveOneGreen() || spindexer.slots[s] == Spindexer.SlotContent.Green) {
-                        state = InState.DONE;
-                        spindexer.spinModeIndex();
-                    } else {
-                        spindexer.spinIndex();
-                    }
-                }
-                */
+            } else if (state == InState.WAIT_PIN) {
+		double elapsed = time - startPinWait;
+		if (elapsed > 0.500) {
+		    state = InState.DONE;
+		}
+	    }
 
             // don't keep slamming balls into a stuck spindexer
          //   if (!spindexer.atTarget() && spindexer.isStuck()) {
@@ -302,6 +288,7 @@ public abstract class RobotBaseOp extends OpMode {
                     shotSlot = spindexer.currentSlot();
                     spindexer.spinShoot();
 
+		    /*
                     // try to rapid-shoot if we're close enough
                     if (geometricDistance < shooter.FAR_DISTANCE) {
                         for (int x=0; x < spindexer.artifactCount() - 1; x++) {
@@ -312,6 +299,7 @@ public abstract class RobotBaseOp extends OpMode {
                             spindexer.spinShoot();
                         }
                     }
+		    */
                 }
             } else if (state == OutState.SHOOT) {
                 // try just not caring about "did a shot really go up"
