@@ -270,27 +270,22 @@ public class Shooter extends SubsystemBase {
             }
         }
         //tbh controller
-       double error = targetRpm - currentRpm;
+        double error = targetRpm - currentRpm;
         tbhOutput += TBH_GAIN * error;
-       tbhOutput = Math.max(0, Math.min(1,tbhOutput)); //Maintain a value between 0 and 1
+        tbhOutput = Math.max(0, Math.min(1,tbhOutput)); //Maintain a value between 0 and 1
         if (Math.signum(error) != Math.signum(tbhLastError) && tbhLastError != 0.0){
             tbhOutput = 0.5 * (tbhOutput + tbhLastCrossedOutput);
             tbhLastCrossedOutput = tbhOutput;
         }
         tbhLastError = error;
-        power = tbhOutput;
+        appliedVoltage = tbhOutput;
+        power = appliedVoltage/voltage;
 
         if (currentRpm < (targetRpm - BAND)) {
             power = BANG_POWER;
         }
 
-
-
-      /*  power = appliedVoltage / voltage;
-
-
-
-*/
+        // Above here can be messed with
         if (POWER_OVERRIDE > 0.0) {
             power = POWER_OVERRIDE;
         }
