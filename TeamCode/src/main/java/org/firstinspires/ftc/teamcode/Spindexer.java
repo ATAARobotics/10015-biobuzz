@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class Spindexer extends SubsystemBase {
     public static double BOOST_AMOUNT = 0.25;
     public static double PIN_ANGLE = -50.0;
-    public static double PIN_WAIT_MS = 250;
+    public static double PIN_WAIT_MS = 0.250;
     // if we want this lower, have to re-tune the PIDs (jan 22)
     public static double TOLERENCE_DEG = 10.0;
     public static double MANUAL_DIVISOR = 10;
@@ -141,6 +141,7 @@ public class Spindexer extends SubsystemBase {
         currentAngle = 0;
         targetAngle = 0;
         spindexerMotor.set(0);
+	control.setSetPoint(0);
         // drive-team needs to orient Spindexer with one segment forward
         //spindexerMotor.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //spindexerMotor.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -159,6 +160,10 @@ public class Spindexer extends SubsystemBase {
         return (slots[currentSlot()] != SlotContent.Nothing);
     }
 
+    public void assumeFrontArtifact() {
+        slots[currentSlot()] = SlotContent.Unknown;
+    }
+
     public int artifactCount() {
         int count = 0;
         for (SlotContent s : slots) {
@@ -174,12 +179,8 @@ public class Spindexer extends SubsystemBase {
         recentFront.add(false);
         recentFront.add(false);
         recentFront.add(false);
-        recentFront.add(false);
-        recentFront.add(false);
 
         recentBack.clear();
-        recentBack.add(false);
-        recentBack.add(false);
         recentBack.add(false);
         recentBack.add(false);
         recentBack.add(false);
@@ -217,8 +218,9 @@ public class Spindexer extends SubsystemBase {
         }
 
         spin = SpinDirection.Shoot;
-        //control.reset();
+        control.reset();
         targetAngle += STEP_DEG;
+	control.setSetPoint(targetAngle);
         boostF = true;
         stuckTime.start();
     }
@@ -226,8 +228,9 @@ public class Spindexer extends SubsystemBase {
     public void spinIndex(){
         spin = SpinDirection.Index;
         pinBalls = false;
-        //control.reset();
+        control.reset();
         targetAngle -= STEP_DEG;
+	control.setSetPoint(targetAngle);
     }
 
     // "pin" the balls against the finger when we're full
@@ -296,6 +299,22 @@ public class Spindexer extends SubsystemBase {
             }
         }
         return false;
+    }
+
+    public void unStick() {
+	// go to the 'nearest' 120 increment
+	// (could / should we use 'spin' mode for which way?)
+	if (targetAngle > currentAngle) {
+	    // bring target angle LESS than current angle
+	    int where = (int)currentAngle;
+	    int extra = where % 120;
+	    targetAngle = where - extra;
+	} else {
+	    // make targetAngle MORE than current angle
+	    int where = (int)currentAngle;
+	    int extra = where % 120;
+	    targetAngle = where + (120 - extra);
+	}
     }
 
     public boolean isFull() {
@@ -424,7 +443,7 @@ public class Spindexer extends SubsystemBase {
 	    if (pinBalls) {
 		moreAngle = PIN_ANGLE;
 	    }
-            spindexerPower = control.calculate(currentAngle - targetAngle);///// + moreAngle);
+            spindexerPower = control.calculate(currentAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
             // note: it's important to call .calculate() on our controller
@@ -583,7 +602,7 @@ public class Spindexer extends SubsystemBase {
         }
         @Override
         public void execute() {
-            manualPower = operator.getLeftX() / MANUAL_DIVISOR;
+            manualPower = -(operator.getLeftX() / MANUAL_DIVISOR);
             mode = Mode.Manual;
         }
         public void end(boolean inturupted){

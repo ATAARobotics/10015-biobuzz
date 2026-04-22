@@ -176,7 +176,11 @@ public abstract class RobotBaseOp extends OpMode {
                 // we can know this if the "front" slot is empty (or
                 // maybe similarly if the other two slots are full)
                 if (spindexer.artifactCount() == 2/* && !spindexer.artifactInSlot()*/) {
-                    state = InState.THIRD;
+		    if (spindexer.artifactInSlot()) {
+			state = InState.SPIN;
+		    } else {
+			state = InState.THIRD;
+		    }
                 } else {
                     state = InState.FIRST_TWO;
                 }
@@ -188,6 +192,7 @@ public abstract class RobotBaseOp extends OpMode {
 	    intake.fullPower();
 	    spindexer.spinModeIndex();
         }
+
         public void execute() {
             if (state == InState.FIRST_TWO) {
 		// waiting for the first TWO slots to be full (the
@@ -207,11 +212,12 @@ public abstract class RobotBaseOp extends OpMode {
                     intake.grab();
                     intake.fullPower();
                     // why do we need to set the mode?
-                    ///spindexer.spinModeIndex();
+                    spindexer.spinModeIndex();
                 }
             } else if (state == InState.THIRD) {
 		// awaiting our third ball
                 if (spindexer.atTarget() && spindexer.haveArtifactFront()) {
+		    spindexer.assumeFrontArtifact();
 		    startPinWait = time;
                     state = InState.WAIT_PIN;
                 }
@@ -274,7 +280,6 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void initialize() {
             state = OutState.WAIT_SHOOT;
-            intake.grab();
         }
         public void execute() {
             if (state == OutState.WAIT_SHOOT) {
@@ -309,9 +314,7 @@ public abstract class RobotBaseOp extends OpMode {
                 }
             } else if (state == OutState.SHOOT) {
 		if (spindexer.isStuck()) {
-		    // go 'back' to the nearest 120-degree increment
-		    double angle = spindexer.currentAngle % 120;
-		    spindexer.targetAngle = (int)(spindexer.targetAngle - angle);
+		    spindexer.unStick();
 		    state = OutState.DONE;
 		}
 		
@@ -506,41 +509,6 @@ public abstract class RobotBaseOp extends OpMode {
         public void initialize() {
                 shooter.autoShootRpm();
                 turret.autoLock();
-             /*   if (spindexer.isFull() || spindexer.isEmpty()){
-                    //do nothing
-                }
-                if (spindexer.countArtifacts() == 1){
-                    if (spindexer.firstFullSlot() == spindexer.currentSlot()){
-                        spindexer.spinIndex();
-                        spindexer.spinIndex();
-                    }
-                    int previous = spindexer.currentSlot() - 1;
-                    if (previous < 0 ){
-                        previous = 2;
-                    }
-                    if (spindexer.firstFullSlot() == previous){
-                        spindexer.spinIndex();
-                    }
-                    else{
-                        //do nothing
-                    }
-                }
-                if (spindexer.countArtifacts() == 2){
-                    if (spindexer.firstEmptySlot() == spindexer.currentSlot()){
-                        spindexer.spinIndex();
-                    }
-                    int prev = spindexer.currentSlot() +1;
-                    if (prev < 0){
-                        prev = 2;
-                    }
-                    if (spindexer.firstEmptySlot() == prev){
-                        spindexer.spinIndex();
-                        spindexer.spinIndex();
-                    }
-                    else{
-                        //do nothing
-                    }
-                } */
         }
         public void execute(){
 
