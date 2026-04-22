@@ -175,6 +175,12 @@ public class Shooter extends SubsystemBase {
       //  return -9e8 * (rpm * rpm) + 0.001 * rpm - 2.03;
     }
 
+    public double hoodAngleLinear(double rpm) {
+	double slope = (HOOD_MAX - HOOD_MIN) / (RPM_HIGH - RPM_LOW);
+	double hood = (slope * rpm) + HOOD_MIN;
+	return hood;
+    }
+
     public double degreeToServo(double degrees){
         // 0.20 == 30.75 degrees
         // 0.85 == 50.75 degrees
