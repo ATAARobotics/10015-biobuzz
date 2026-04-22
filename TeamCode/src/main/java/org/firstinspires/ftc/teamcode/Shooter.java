@@ -49,8 +49,8 @@ public class Shooter extends SubsystemBase {
     // during shots (normal spin-down is slower so the 200ms window can't see it)
 
     double hoodSlope;
-    public static double RPM_LOW = 2500;
-    public static double RPM_HIGH = 3500;
+    public static double RPM_LOW = 2600;
+    public static double RPM_HIGH = 3900;
     public static double RPM_PERCENT = 1;
     public static double HOOD_MAX = 0.90;
     public static double HOOD_MIN = 0.1;
@@ -97,7 +97,8 @@ public class Shooter extends SubsystemBase {
     // tuned kv and ks on April 20
     public static double kv = 0.0023;
     public static double ks = 2.3245;
-    MovingAverage rpmFilter = new MovingAverage(4);
+    MovingAverage rpmFilter;
+    public static int RPM_FILTER_SIZE = 8;
     double smoothRpm;
 
 
@@ -122,6 +123,7 @@ public class Shooter extends SubsystemBase {
 
         hood = hardwareMap.get(Servo.class, "hood");
         recentRpms = new LinkedList<RpmData>();
+	rpmFilter = new MovingAverage(RPM_FILTER_SIZE);
     }
 
     public void reset() {
@@ -297,7 +299,7 @@ public class Shooter extends SubsystemBase {
 
 	if (targetRpm > 0) {
 	    control.setSetPoint(targetRpm);
-	    power = control.calculate(currentRpm);
+	    power = control.calculate(smoothRpm);//currentRpm);
 	    if (power > 0.1) {
 		power += F;
 	    }
@@ -315,7 +317,8 @@ public class Shooter extends SubsystemBase {
         }
 
         if (power < 0) power = 0;
-        targetHood = degreeToServo(targetHoodAngle);
+	targetHood = degreeToServo(hoodAngle(smoothRpm));
+	//targetHood = degreeToServo(targetHoodAngle);
 
         if (targetHood < HOOD_MIN){
             targetHood = HOOD_MIN;
@@ -324,7 +327,7 @@ public class Shooter extends SubsystemBase {
             targetHood = HOOD_MAX;
         }
 
-        hood.setPosition(degreeToServo(hoodAngle(currentRpm)));
+        hood.setPosition(targetHood);
         shooterMotor.set(power);
 
         // count shots

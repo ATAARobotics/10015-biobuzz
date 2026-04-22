@@ -57,7 +57,7 @@ public abstract class RobotBaseOp extends OpMode {
     public static double FAR_TARGET_X_RED =  3.5;
     public static double SHOOT_PREDICT = 0.570;
 
-    public static double SHOOT_PAUSE_WAIT = 0.120;
+    public static double SHOOT_PAUSE_WAIT = 0.250;
 
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
@@ -220,6 +220,8 @@ public abstract class RobotBaseOp extends OpMode {
 		    spindexer.assumeFrontArtifact();
 		    startPinWait = time;
                     state = InState.WAIT_PIN;
+		    intake.lowPower();
+		    intake.spit();
                 }
             } else if (state == InState.WAIT_PIN) {
 		// wait some time before pinning, so we don't
@@ -229,6 +231,8 @@ public abstract class RobotBaseOp extends OpMode {
 		if (elapsed > spindexer.PIN_WAIT_MS) {
 		    spindexer.pinBalls();
 		    state = InState.DONE;
+		    intake.stop();
+		    intake.fullPower();
 		}
 	    }
 

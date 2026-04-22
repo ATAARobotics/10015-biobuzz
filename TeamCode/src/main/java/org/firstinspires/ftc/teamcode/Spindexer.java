@@ -309,6 +309,7 @@ public class Spindexer extends SubsystemBase {
 	    int where = (int)currentAngle;
 	    int extra = where % 120;
 	    targetAngle = where - extra;
+	    spinModeIndex();
 	} else {
 	    // make targetAngle MORE than current angle
 	    int where = (int)currentAngle;
@@ -443,7 +444,7 @@ public class Spindexer extends SubsystemBase {
 	    if (pinBalls) {
 		moreAngle = PIN_ANGLE;
 	    }
-            spindexerPower = control.calculate(currentAngle);
+            spindexerPower = control.calculate(currentAngle + moreAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
             // note: it's important to call .calculate() on our controller

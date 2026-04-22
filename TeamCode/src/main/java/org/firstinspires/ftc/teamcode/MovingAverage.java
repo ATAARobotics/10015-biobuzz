@@ -7,7 +7,7 @@ public class MovingAverage {
     private final double[] values;
     int index = 0;
     int count = 0;
-    int sum = 0;
+    double sum = 0;
     private final int windowSize;
 
     public MovingAverage(int windowSize){
@@ -23,7 +23,7 @@ public class MovingAverage {
         if (count < values.length){
             count ++;
         }
-        return sum/count;
+        return sum / count;
     }
 
 }

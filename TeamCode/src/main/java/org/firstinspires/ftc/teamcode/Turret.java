@@ -73,6 +73,7 @@ public class Turret extends SubsystemBase {
     public static double turretP = 0.004, turretI = 0.04, turretD = 0.0003, turretF = 0.065;
     public static double TURRET_TOLERANCE = 4; // in degrees
     public static double TURRET_TWEAK = 3;
+    public static boolean ALWAYS_LOCK = false;
     public double targetHeading;  // from geometry via RobotBaseOp
     public double robotHeading;
 
@@ -337,7 +338,9 @@ public class Turret extends SubsystemBase {
             }
         }
         // TEMP: always face our april-tag
-        faceFieldAngle(targetHeading);
+	if (ALWAYS_LOCK) {
+	    faceFieldAngle(targetHeading);
+	}
 
        // maybe only in auto?
         if (isAuto) {
