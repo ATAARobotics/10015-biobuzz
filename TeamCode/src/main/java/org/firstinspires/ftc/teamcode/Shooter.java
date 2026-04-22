@@ -97,6 +97,8 @@ public class Shooter extends SubsystemBase {
     // tuned kv and ks on April 20
     public static double kv = 0.0023;
     public static double ks = 2.3245;
+    MovingAverage rpmFilter = new MovingAverage(4);
+    double smoothRpm;
 
 
     public Shooter(HardwareMap hardwareMap) {
@@ -141,6 +143,7 @@ public class Shooter extends SubsystemBase {
 
         // recent RPM data for shot-counter.
         recentRpms.addLast(new RpmData(time, currentRpm));
+        smoothRpm = rpmFilter.add(currentRpm);
         // ensure we only have 200ms or less worth of data
         while (time - recentRpms.getFirst().time > RPM_WINDOW_LENGTH) {
             recentRpms.removeFirst();
@@ -359,6 +362,7 @@ public class Shooter extends SubsystemBase {
         telem.log("shooter-distance", aprilDistance);
         telem.log("shooter-voltage", voltage);
         telem.log("shooter-ticks", ticks);
+        telem.log("shooter-smooth-rpm", smoothRpm);
     }
 
     public class HumanInputs extends CommandBase {
