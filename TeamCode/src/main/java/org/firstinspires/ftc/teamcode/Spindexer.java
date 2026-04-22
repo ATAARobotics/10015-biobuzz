@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import android.graphics.Color;
 
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class Spindexer extends SubsystemBase {
     public static double BOOST_AMOUNT = 0.25;
     public static double PIN_ANGLE = -50.0;
+    public static double PIN_WAIT_MS = 250;
     // if we want this lower, have to re-tune the PIDs (jan 22)
     public static double TOLERENCE_DEG = 10.0;
     public static double MANUAL_DIVISOR = 10;
@@ -140,6 +142,8 @@ public class Spindexer extends SubsystemBase {
         targetAngle = 0;
         spindexerMotor.set(0);
         // drive-team needs to orient Spindexer with one segment forward
+        //spindexerMotor.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //spindexerMotor.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         spindexerMotor.resetEncoder();
     }
 
@@ -229,6 +233,10 @@ public class Spindexer extends SubsystemBase {
     // "pin" the balls against the finger when we're full
     public void pinBalls(){
         pinBalls = true;
+    }
+
+    public void unPinBalls(){
+        pinBalls = false;
     }
 
     public void spinModeIndex() {
@@ -416,13 +424,22 @@ public class Spindexer extends SubsystemBase {
 	    if (pinBalls) {
 		moreAngle = PIN_ANGLE;
 	    }
-            spindexerPower = control.calculate(currentAngle - targetAngle + moreAngle);
+            spindexerPower = control.calculate(currentAngle - targetAngle);///// + moreAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));
 
             // note: it's important to call .calculate() on our controller
             // _before_ we ask "atTarget()" so we have current information
             // from _this_ loop
+	    boolean lastAtTarget = _atTarget;
 	    _atTarget = atTarget();
+	    if (!lastAtTarget && _atTarget) {
+		// we _just_ arrived at our target .. reset the
+		// beam-break arrays so we need all cycles of 'real'
+		// beak-breaking before we consider a ball there
+		// (since they'll be broken the whole time we're
+		// rotating, mostly)
+		resetBeamBreaks();
+	    }
 
             // when the spindexer thinks it's settled, we look at BOTH beambrakes and fill those two slots
             // if they're broken.
@@ -566,12 +583,6 @@ public class Spindexer extends SubsystemBase {
         }
         @Override
         public void execute() {
-           /* if (operator.wasJustPressed(GamepadKeys.Button.A)) {
-                spinShoot();
-            }
-            if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
-                spinIndex();
-            }*/
             manualPower = operator.getLeftX() / MANUAL_DIVISOR;
             mode = Mode.Manual;
         }

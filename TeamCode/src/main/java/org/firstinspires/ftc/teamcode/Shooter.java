@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
@@ -72,7 +73,13 @@ public class Shooter extends SubsystemBase {
     public static double RPM_TOLERANCE_OVER = 250;
     public static double POWER_OVERRIDE = 0.0;
     private static final double TICKS_PER_REV = 28.0;  // fixme: get from motor
-    public static double P = 0.01;
+
+    public static double P = 0.05;
+    public static double I = 0.0;
+    public static double D = 0.001;
+    public static double F = 0.60;
+    public PIDController control;
+    
     VoltageSensor battery;
     double MAX_RPM = 5250;
     double targetRpm;
@@ -108,6 +115,8 @@ public class Shooter extends SubsystemBase {
         shooterMotor = new MotorGroup(motor0, motor1);
         targetRpm = 0;
         battery = hardwareMap.voltageSensor.get("Control Hub");  // FIXME: move to OpMode?
+
+	control = new PIDController(P, I, D);
 
         hood = hardwareMap.get(Servo.class, "hood");
         recentRpms = new LinkedList<RpmData>();
@@ -211,6 +220,7 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
+	control.setPID(P, I, D);
         // auto-computed RPM, optional
         if (autoRpm /*&& aprilDistance > 0.5*/) {
 
@@ -282,12 +292,15 @@ public class Shooter extends SubsystemBase {
         power = tbhOutput;*/
       //  power = appliedVoltage/voltage;
 
-        double error = targetRpm - currentRpm;
-        power = (error * P);
-        if (power > 0){
-            appliedVoltage = ((kv * targetRpm) + ks)/voltage;
-            power += appliedVoltage;
-        }
+	if (targetRpm > 0) {
+	    control.setSetPoint(targetRpm);
+	    power = control.calculate(currentRpm);
+	    if (power > 0.1) {
+		power += F;
+	    }
+	} else {
+	    power = 0.0;
+	}
 
      /*   if (currentRpm < (targetRpm - BAND)) {
             power = BANG_POWER;
