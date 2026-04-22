@@ -8,6 +8,7 @@ public class MovingAverage {
     int index = 0;
     int count = 0;
     int sum = 0;
+    private final int windowSize;
 
     public MovingAverage(int windowSize){
         this.values = new double[windowSize];
