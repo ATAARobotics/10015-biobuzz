@@ -25,7 +25,9 @@ import java.util.concurrent.TimeUnit;
 public class Spindexer extends SubsystemBase {
     public static double BOOST_AMOUNT = 0.25;
     public static double PIN_ANGLE = -50.0;
-    public static double PIN_WAIT_MS = 0.250;
+    public static double SHORT_ANGLE = 25.0;
+    public static double PIN_WAIT = 0.250;
+    public static double SPIT_WAIT = 0.750;
     // if we want this lower, have to re-tune the PIDs (jan 22)
     public static double TOLERENCE_DEG = 10.0;
     public static double MANUAL_DIVISOR = 10;
@@ -66,6 +68,7 @@ public class Spindexer extends SubsystemBase {
     float[] hsvBack = new float[3];
     float[] hsvFront = new float[3];
     boolean pinBalls = false;
+    boolean shortSpindex = false;
 
     // stuff we derive
     public enum IntakeState {Waiting, BallEntering}
@@ -207,6 +210,7 @@ public class Spindexer extends SubsystemBase {
 
     public void spinShoot(){
         pinBalls = false;
+	shortSpindex = false;
         // todo: we should use the Shooter's ability to detect shots
         // to tell us when a shot went up .. meantime, we'll be
         // optimistic that anything in the "shoot" slot right now will
@@ -233,9 +237,15 @@ public class Spindexer extends SubsystemBase {
 	control.setSetPoint(targetAngle);
     }
 
+    // rotate "less far" when we're still intaking
+    public void shortSpin() {
+	shortSpindex = true;
+    }
+
     // "pin" the balls against the finger when we're full
     public void pinBalls(){
         pinBalls = true;
+	shortSpindex = false;
     }
 
     public void unPinBalls(){
@@ -370,9 +380,6 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean atTarget() {
-	/*if (pinBalls){
-	    return false;
-	    }*/
         if (spin == SpinDirection.Shoot) {
             return control.atSetPoint() || control.getPositionError() < 0.0;
         }
@@ -395,7 +402,6 @@ public class Spindexer extends SubsystemBase {
                 break;
         }
     }
-
 
     // reading from I2C devices is slow, so we only do this sometimes
     public void readSlotColors() {
@@ -443,6 +449,8 @@ public class Spindexer extends SubsystemBase {
             double moreAngle = 0.0;
 	    if (pinBalls) {
 		moreAngle = PIN_ANGLE;
+	    } else if (shortSpindex) {
+		moreAngle = SHORT_ANGLE;
 	    }
             spindexerPower = control.calculate(currentAngle + moreAngle);
             spindexerPower += (pid_f * Math.signum(spindexerPower));

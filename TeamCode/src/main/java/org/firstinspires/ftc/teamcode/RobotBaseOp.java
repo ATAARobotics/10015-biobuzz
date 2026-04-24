@@ -150,10 +150,11 @@ public abstract class RobotBaseOp extends OpMode {
     // (note: we no longer sort here, that's a special mode, since
     // it's kind of jam-prone currently and we don't need to during
     // most teleop)
-    public enum InState {FIRST_TWO, SPIN, THIRD, WAIT_PIN, DONE};
+    public enum InState {FIRST_TWO, SPIN, THIRD, WAIT_PIN, WAIT_SPIT, DONE};
     public class AutoIntake extends CommandBase {
         private InState state;
 	private double startPinWait = 0.0;
+	private double startSpitWait = 0.0;
 
         public AutoIntake() {
             addRequirements(spindexer);
@@ -228,18 +229,21 @@ public abstract class RobotBaseOp extends OpMode {
 		// accidentally squirt ball out the second the
 		// beambreak is broken.
 		double elapsed = time - startPinWait;
-		if (elapsed > spindexer.PIN_WAIT_MS) {
+		if (elapsed > spindexer.PIN_WAIT) {
 		    spindexer.pinBalls();
+		    startSpitWait = time;
+		    state = InState.WAIT_SPIT;
+		}
+            } else if (state == InState.WAIT_SPIT) {
+		// run the intake out a little longer
+		double elapsed = time - startSpitWait;
+		if (elapsed > spindexer.SPIT_WAIT) {
+		    startSpitWait = time;
 		    state = InState.DONE;
 		    intake.stop();
 		    intake.fullPower();
 		}
 	    }
-
-            // don't keep slamming balls into a stuck spindexer
-         //   if (!spindexer.atTarget() && spindexer.isStuck()) {
-          //      intake.stop();
-         //   }
         }
         public boolean isFinished() {
             return state == InState.DONE;
@@ -307,6 +311,9 @@ public abstract class RobotBaseOp extends OpMode {
 
                     // try to rapid-shoot if we're close enough
                     if (true) { //geometricDistance < shooter.FAR_DISTANCE) {
+			spindexer.spinShoot();
+			spindexer.spinShoot();
+			/*
                         for (int x=0; x < spindexer.artifactCount(); x++) {
                             spindexer.spinShoot();
                         }
@@ -314,6 +321,7 @@ public abstract class RobotBaseOp extends OpMode {
 			// fully past at high power, but do we need it
 			// for v3?
 			///spindexer.spinShoot();
+			*/
                     }
                 }
             } else if (state == OutState.SHOOT) {
