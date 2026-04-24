@@ -182,7 +182,7 @@ public class Shooter extends SubsystemBase {
     public double hoodAngleLinear(double rpm) {
 	double percent =  rpm / (RPM_HIGH - RPM_LOW);
 	double range = (HOOD_MAX_DEGREES - HOOD_MIN_DEGREES);
-	double hood = (percent * range) + HOOD_MIN;
+	double hood = HOOD_MIN + (percent * range);
 	return hood;
     }
 
@@ -377,8 +377,8 @@ public class Shooter extends SubsystemBase {
         telem.log("shooter-rpm-target", targetRpm);
         telem.log("shooter-rpm-current", currentRpm);
         telem.log("shooter-power", power);
-        telem.log("shooter-hood-degrees", hoodAngle(currentRpm));
-        telem.log("shooter-hood-angle", degreeToServo(hoodAngle(currentRpm)));
+        telem.log("shooter-hood-degrees", hoodAngleLinear(smoothRpm));
+        telem.log("shooter-hood-angle", degreeToServo(hoodAngleLinear(smoothRpm)));
        // telem.log("shooter-hood-target-angle", targetHoodAngle);
         telem.log("shooter-auto-rpm", autoRpm);
         telem.log("shooter-distance", aprilDistance);

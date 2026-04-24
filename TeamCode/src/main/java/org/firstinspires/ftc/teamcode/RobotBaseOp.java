@@ -221,8 +221,6 @@ public abstract class RobotBaseOp extends OpMode {
 		    spindexer.assumeFrontArtifact();
 		    startPinWait = time;
                     state = InState.WAIT_PIN;
-		    intake.lowPower();
-		    intake.spit();
                 }
             } else if (state == InState.WAIT_PIN) {
 		// wait some time before pinning, so we don't
@@ -233,6 +231,8 @@ public abstract class RobotBaseOp extends OpMode {
 		    spindexer.pinBalls();
 		    startSpitWait = time;
 		    state = InState.WAIT_SPIT;
+		    intake.lowPower();
+		    intake.spit();
 		}
             } else if (state == InState.WAIT_SPIT) {
 		// run the intake out a little longer
