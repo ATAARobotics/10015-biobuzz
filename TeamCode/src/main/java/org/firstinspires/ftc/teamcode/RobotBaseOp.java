@@ -301,7 +301,7 @@ public abstract class RobotBaseOp extends OpMode {
                 // - the operator pressed A
                 if ((shooter.readyToShoot() &&
                    // turret.isLocked(time) &&
-                     inZone() &&
+		     // inZone() &&
                         turret.atTargetAngle()) || operator.wasJustPressed(GamepadKeys.Button.A)
                 ) {
                     state = OutState.SHOOT;
