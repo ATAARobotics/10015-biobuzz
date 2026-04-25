@@ -101,7 +101,8 @@ public class Shooter extends SubsystemBase {
     // tuned kv and ks on April 20
     public static double kv = 0.0023;
     public static double ks = 2.3245;
-    MovingAverage rpmFilter;
+    //MovingAverage rpmFilter;
+    ExponentialSmoother rpmFilter;
     public static int RPM_FILTER_SIZE = 8;
     double smoothRpm;
 
@@ -127,7 +128,8 @@ public class Shooter extends SubsystemBase {
 
         hood = hardwareMap.get(Servo.class, "hood");
         recentRpms = new LinkedList<RpmData>();
-	rpmFilter = new MovingAverage(RPM_FILTER_SIZE);
+	//rpmFilter = new MovingAverage(RPM_FILTER_SIZE);
+        rpmFilter = new ExponentialSmoother(0.2);
     }
 
     public void reset() {
@@ -149,7 +151,7 @@ public class Shooter extends SubsystemBase {
 
         // recent RPM data for shot-counter.
         recentRpms.addLast(new RpmData(time, currentRpm));
-        smoothRpm = rpmFilter.add(currentRpm);
+        smoothRpm = rpmFilter.addValue(currentRpm);
         // ensure we only have 200ms or less worth of data
         while (time - recentRpms.getFirst().time > RPM_WINDOW_LENGTH) {
             recentRpms.removeFirst();
