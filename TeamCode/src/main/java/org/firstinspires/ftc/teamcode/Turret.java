@@ -420,6 +420,7 @@ public class Turret extends SubsystemBase {
         } else if (pattern == 2) {
             logPattern = "P P G";
         }
+	/*
         telem.logDrivers("Heading Lock Mode", mode);
         telem.logDrivers("Obelisk", logPattern);
         telem.logDrivers("Turret Current Angle", currentTurretAngle);
@@ -430,6 +431,7 @@ public class Turret extends SubsystemBase {
         telem.logDrivers("Turret Angle Error", turretHeadingControl.getPositionError());
         telem.logDrivers("Joystick Angle", joystickAngle);
         telem.logDrivers("Turret Tweak", operatorOffset);
+	*/
     }
 
 

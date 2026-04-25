@@ -367,19 +367,16 @@ public class Shooter extends SubsystemBase {
     }
 
     public void addTelemetry(HyperTelemetry telem) {
-        telem.logBoth("motor0", power); //what you see on the screen
-        telem.logBoth("targetRpm", targetRpm);
-        telem.logBoth("Current RPM", currentRpm);
-        telem.logBoth("Applied Voltage", appliedVoltage);
-        telem.logBoth("Shots Fired" , shotsFired);
-        telem.logDrivers("Hood", targetHoodAngle);
-       // pack.put("ticksPerSecond", ticksPerSecond);
+        //telem.logBoth("motor0", power); //what you see on the screen
+        //telem.logBoth("targetRpm", targetRpm);
+        //telem.logBoth("Current RPM", currentRpm);
+        //telem.logBoth("Applied Voltage", appliedVoltage);
+        telem.log("shooter-shots-fired" , shotsFired);
         telem.log("shooter-rpm-target", targetRpm);
         telem.log("shooter-rpm-current", currentRpm);
         telem.log("shooter-power", power);
         telem.log("shooter-hood-degrees", hoodAngleLinear(smoothRpm));
         telem.log("shooter-hood-angle", degreeToServo(hoodAngleLinear(smoothRpm)));
-       // telem.log("shooter-hood-target-angle", targetHoodAngle);
         telem.log("shooter-auto-rpm", autoRpm);
         telem.log("shooter-distance", aprilDistance);
         telem.log("shooter-voltage", voltage);

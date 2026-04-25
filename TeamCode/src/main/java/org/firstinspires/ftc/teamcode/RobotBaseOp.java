@@ -181,6 +181,7 @@ public abstract class RobotBaseOp extends OpMode {
 			state = InState.SPIN;
 		    } else {
 			state = InState.THIRD;
+			spindexer.shortSpin();
 		    }
                 } else {
                     state = InState.FIRST_TWO;
@@ -195,12 +196,13 @@ public abstract class RobotBaseOp extends OpMode {
         }
 
         public void execute() {
+	    telemetry.addData("state", state);
             if (state == InState.FIRST_TWO) {
 		// waiting for the first TWO slots to be full (the
 		// front slot will be full briefly or longer as the
 		// first ball goes through (or settles there) but we
 		// need both to be there
-                if (spindexer.atTarget() && spindexer.haveFrontAndBack()) {
+                if (spindexer.atTarget() && spindexer.frontAndBackFilled()) { //haveFrontAndBack()) {
                     state = InState.SPIN;
                     intake.lowPower();
                     spindexer.spinIndex();
@@ -214,13 +216,15 @@ public abstract class RobotBaseOp extends OpMode {
                     intake.fullPower();
                     // why do we need to set the mode?
                     spindexer.spinModeIndex();
+		    spindexer.shortSpin();
                 }
             } else if (state == InState.THIRD) {
 		// awaiting our third ball
-                if (spindexer.atTarget() && spindexer.haveArtifactFront()) {
-		    spindexer.assumeFrontArtifact();
+		if (spindexer.atTarget() && spindexer.frontFilled()) { //haveArtifactFront()) {
+		    //spindexer.assumeFrontArtifact();
 		    startPinWait = time;
                     state = InState.WAIT_PIN;
+		    intake.stop();
                 }
             } else if (state == InState.WAIT_PIN) {
 		// wait some time before pinning, so we don't

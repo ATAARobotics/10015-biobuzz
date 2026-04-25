@@ -275,7 +275,7 @@ public abstract class Auto extends RobotBaseOp {
                         )
                 ),
                 new ParallelCommandGroup(
-                        new SortSpindex(),
+					 //                        new SortSpindex(),
                         pathBetween(slightlyBack, blueFarShoot, 1.0)
                 ),
                 new AutoOuttake()
@@ -294,7 +294,7 @@ public abstract class Auto extends RobotBaseOp {
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                new SortSpindex(),
+						   //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
                         pathBetween(spikeEnd1, blueFarShoot, 1.0)
@@ -347,7 +347,7 @@ public abstract class Auto extends RobotBaseOp {
                             new AutoIntake()
                     ),
                     new ParallelCommandGroup(
-                            new SortSpindex(),
+					     //                            new SortSpindex(),
                             pathBetween(secretTunnelIntake, blueFarShoot, 1.0)
                     ),
                     //new SoftIntake(),
@@ -365,7 +365,7 @@ public abstract class Auto extends RobotBaseOp {
                             new AutoIntake()
                     ),
                     new ParallelCommandGroup(
-                            new SortSpindex(),
+					     //                            new SortSpindex(),
                             pathBetween(secretTunnelIntake, blueFarShoot, 1.0)
                     ),
                     //new SoftIntake(),
@@ -383,7 +383,7 @@ public abstract class Auto extends RobotBaseOp {
                         ),
                         new SoftIntake(),
                         new ParallelCommandGroup(
-                                new SortSpindex(),
+						 //                                new SortSpindex(),
                                 pathBetween(humanPlayerIntake, blueFarShoot, 1.0)
                         ),
                         new AutoOuttake()
@@ -467,7 +467,7 @@ public abstract class Auto extends RobotBaseOp {
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                new SortSpindex(),
+						   //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
                         pathBetween(spikeEnd2, middleShoot, 1.0)
@@ -500,7 +500,7 @@ public abstract class Auto extends RobotBaseOp {
                         //  new PrepareToShoot(),
                         new ParallelCommandGroup(
                                 new SequentialCommandGroup(
-                                        new SortSpindex(),
+							   //                                        new SortSpindex(),
                                         new AutoOuttake()
                                 ),
 
@@ -534,7 +534,7 @@ public abstract class Auto extends RobotBaseOp {
                             //new PrepareToShoot(),
                             new ParallelCommandGroup(
                                     new SequentialCommandGroup(
-                                            new SortSpindex(),
+							       //                                            new SortSpindex(),
                                             new AutoOuttake()
                                     ),
                                     curveBetween(gateIntakeBack2, gatePoint, spikeStart3, 1.0, false, 0.6)
@@ -555,7 +555,7 @@ public abstract class Auto extends RobotBaseOp {
                 ),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                new SortSpindex(),
+						   //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
                         curveBetween(gateIntake, gatePoint, spikeStart3, 1.0, false, 0.6)
@@ -572,7 +572,7 @@ public abstract class Auto extends RobotBaseOp {
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                new SortSpindex(),
+						   //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
                         pathBetween(spikeEnd3, finalShootAndPark, 1.0)
@@ -637,7 +637,7 @@ public abstract class Auto extends RobotBaseOp {
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                new SortSpindex(),
+						   //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
                         pathBetween(spikeEnd3, thirdBlueNearShoot, 1.0)
@@ -655,7 +655,7 @@ public abstract class Auto extends RobotBaseOp {
                 pathBetween (gatePreIntake, gateIntake, 1.0),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                new SortSpindex(),
+						   //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
                         curveBetween(spikeEnd2, gatePoint, thirdBlueNearShoot, 1.0, false)
@@ -671,7 +671,7 @@ public abstract class Auto extends RobotBaseOp {
                 ),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                new SortSpindex(),
+						   //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
                         curveBetween(spikeEnd1, gatePoint, thirdBlueNearShoot, 1.0, false)
@@ -693,7 +693,7 @@ public abstract class Auto extends RobotBaseOp {
                         //  new PrepareToShoot(),
                         new ParallelCommandGroup(
                                 new SequentialCommandGroup(
-                                        new SortSpindex(),
+							   //                                        new SortSpindex(),
                                         new AutoOuttake()
                                 ),
                                 curveBetween(gateIntakeBack, gatePoint, finalShootAndPark, 1.0, false)

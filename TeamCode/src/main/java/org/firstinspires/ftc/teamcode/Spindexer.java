@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class Spindexer extends SubsystemBase {
     public static double BOOST_AMOUNT = 0.25;
     public static double PIN_ANGLE = -50.0;
-    public static double SHORT_ANGLE = 25.0;
+    public static double SHORT_ANGLE = 0.0; // (-10 or -15 is "good" but causes beam-break to be broken?)
     public static double PIN_WAIT = 0.250;
     public static double SPIT_WAIT = 0.750;
     // if we want this lower, have to re-tune the PIDs (jan 22)
@@ -182,8 +182,10 @@ public class Spindexer extends SubsystemBase {
         recentFront.add(false);
         recentFront.add(false);
         recentFront.add(false);
+        recentFront.add(false);
 
         recentBack.clear();
+        recentBack.add(false);
         recentBack.add(false);
         recentBack.add(false);
         recentBack.add(false);
@@ -206,6 +208,17 @@ public class Spindexer extends SubsystemBase {
             return true;
         }
         return false;
+    }
+    // the above is going by the sensors, these go by the "slots" array
+    public boolean frontAndBackFilled() {
+	return (
+		slots[currentSlot()] != SlotContent.Nothing && 
+		slots[currentBackSlot()] != SlotContent.Nothing &&
+		haveFrontAndBack()
+		);
+    }
+    public boolean frontFilled() {
+	return haveArtifactFront() && (slots[currentSlot()] != SlotContent.Nothing);
     }
 
     public void spinShoot(){
@@ -240,6 +253,7 @@ public class Spindexer extends SubsystemBase {
     // rotate "less far" when we're still intaking
     public void shortSpin() {
 	shortSpindex = true;
+	pinBalls = false;
     }
 
     // "pin" the balls against the finger when we're full
@@ -578,6 +592,7 @@ public class Spindexer extends SubsystemBase {
 
     public void addTelemetry(HyperTelemetry telem) {
         telem.log("spindexer-pin", pinBalls);
+        telem.log("spindexer-short", shortSpindex);
         telem.log("spindexer-ticks", spindexerMotor.getCurrentPosition());
         telem.log("spindexer-target-angle", targetAngle);
         telem.log("spindexer-current-angle", currentAngle);
@@ -594,9 +609,9 @@ public class Spindexer extends SubsystemBase {
         telem.logBoth("spindexer-beam-front", lastFrontVoltage);
         telem.logBoth("spindexer-beam-back", lastBackVoltage);
         //telem.logBoth("spindexer-ballcount", ballCounter);
-        telem.logBoth("spindexer-artifacts", artifactCount());
-	telem.logBoth("spindexer-recent-front", recentFront);
-	telem.logBoth("spindexer-recent-back", recentBack);
+        telem.log("spindexer-artifacts", artifactCount());
+	telem.log("spindexer-recent-front", recentFront);
+	telem.log("spindexer-recent-back", recentBack);
         telem.log("spindexer-color-back", hsvBack[0]);
         telem.log("spindexer-color-front", hsvFront[0]);
         telem.logDrivers("SPINDEX",renderSlot(0) + renderSlot(1) + renderSlot(2));
