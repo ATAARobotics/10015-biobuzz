@@ -49,16 +49,16 @@ public class Shooter extends SubsystemBase {
     // during shots (normal spin-down is slower so the 200ms window can't see it)
 
     double hoodSlope;
-    public static double RPM_LOW = 2800; //2600;
-    public static double RPM_HIGH = 3800;
+    public static double RPM_LOW = 2300;
+    public static double RPM_HIGH = 4000;
     public static double RPM_PERCENT = 1;
     public static double HOOD_MAX = 0.9;
     public static double HOOD_MIN = 0.2;
-    public static double HOOD_MAX_DEGREES = 45.0;
-    public static double HOOD_MIN_DEGREES = 30.0;
+    public static double HOOD_MAX_DEGREES = 55.0;
+    public static double HOOD_MIN_DEGREES = 36.0;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
-    public static double FAR_RPM = 1111; // FIXME TODO temp for testing
+    public static double FAR_RPM = 3500; // FIXME TODO temp for testing
     public static double FAR_HOOD = 0.50;
     //public static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
     //public static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
@@ -79,7 +79,7 @@ public class Shooter extends SubsystemBase {
     // tuned april 24, fresh battery and replaced shooter bearings
     public static double P = 0.001;
     public static double I = 0.0;
-    public static double D = 0.0;
+    public static double D = 0.00015;
     public static double F_LOW = 0.72; // at 2600rpm
     public static double F_HI = 1.0; // at 3800rpm
     public static double EXPONENTIAL_ALPHA = 0.2;
@@ -185,7 +185,7 @@ public class Shooter extends SubsystemBase {
     public double hoodAngleLinear(double rpm) {
 	double percent =  (rpm - RPM_LOW) / (RPM_HIGH - RPM_LOW);
 	double range = (HOOD_MAX_DEGREES - HOOD_MIN_DEGREES);
-	double hood = HOOD_MIN + (percent * range);
+	double hood = HOOD_MIN_DEGREES + (percent * range);
 	return hood;
     }
 
@@ -314,7 +314,7 @@ public class Shooter extends SubsystemBase {
 	if (targetRpm > 0) {
 	    control.setSetPoint(targetRpm);
 	    power = control.calculate(smoothRpm);//currentRpm);
-	    if (power > 0.00000001) {
+	  //  if (power > 0.00000001) {
 		// we find that varying F from 0.72 up to 0.9
 		// depending on the TARGET RPM seems to work well
 		// .. so we want f to be "0.72" at 2500 RPM and "0.9" at
@@ -324,7 +324,7 @@ public class Shooter extends SubsystemBase {
 		if (percent < 0.0) percent = 0.0;
 		double f = F_LOW + ((F_HI - F_LOW) * percent);
 		power += f;
-	    }
+	   // }
 	} else {
 	    power = 0.0;
 	}

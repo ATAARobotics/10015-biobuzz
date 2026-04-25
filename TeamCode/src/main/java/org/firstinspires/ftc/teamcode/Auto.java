@@ -34,8 +34,8 @@ import kotlinx.coroutines.Delay;
 
 public abstract class Auto extends RobotBaseOp {
     public Follower follower;
-    double xOffset = 8.124;
-    double yOffset = 8.0984;
+    double xOffset = 7.179;
+    double yOffset = 7.19;
     private boolean usePreloads = true;
     private boolean soloNear = false;
     private int whenOpenGate = 0;
@@ -73,8 +73,8 @@ public abstract class Auto extends RobotBaseOp {
 
     // these are red coords
     //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
-    private final Pose gatePreIntake = new Pose(13.0, 58.7, Math.toRadians(150));
-    private final Pose gateIntake = new Pose(12.1, 60, Math.toRadians(150));
+    private final Pose gatePreIntake = new Pose(13.0, 58.7, Math.toRadians(140));
+    private final Pose gateIntake = new Pose(12.1, 60, Math.toRadians(140));
     private final Pose gateCloser = new Pose(12.1, 60, Math.toRadians(150));
     private final Pose gateIntakeBack = new Pose(12, 52, Math.toRadians(140));
     private final Pose gateIntakeBack2 = new Pose(12, 54, Math.toRadians(140));
@@ -452,7 +452,7 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
                         new SequentialCommandGroup(
                                 new ParallelCommandGroup(
-                                        pathBetween(spikeStart2, spikeEnd2, 0.55),
+                                        pathBetween(spikeStart2, spikeEnd2, 0.85),
                                         new LookAtObelisk()
                                 ),
                                 new Delay(0.2)
@@ -544,7 +544,7 @@ public abstract class Auto extends RobotBaseOp {
         }
 
         auto.addCommands(
-                curveBetween(spikeStart3, gatePoint, gateIntake, 1.0, true, 0.6),
+                curveBetween(spikeStart3, gatePoint, gateIntake, 1.0, false, 0.6),
                 new Delay (0.5),
                 new ParallelRaceGroup(
                         new AutoIntake(),
@@ -558,7 +558,7 @@ public abstract class Auto extends RobotBaseOp {
 						   //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
-                        curveBetween(gateIntake, gatePoint, spikeStart3, 1.0, true, 0.6)
+                        curveBetween(gateIntake, gatePoint, spikeStart3, 1.0, false, 0.6)
                 )
         );
 
@@ -566,7 +566,7 @@ public abstract class Auto extends RobotBaseOp {
         auto.addCommands(
                 new ParallelRaceGroup(
                         new AutoIntake(),
-                        pathBetween(spikeStart3, spikeEnd3, 0.55)
+                        pathBetween(spikeStart3, spikeEnd3, 0.85)
                 ),
                 //  new SoftIntake(),
                 new PrepareToShoot(),

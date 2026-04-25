@@ -49,8 +49,8 @@ public abstract class RobotBaseOp extends OpMode {
     double geometricDistance;
     // offset robot / turret centers is 66.70mm
     private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
-    public static double GEOM_TARGET_X = 5;
-    public static double GEOM_TARGET_Y = 138;
+    public static double GEOM_TARGET_X = 0;
+    public static double GEOM_TARGET_Y = 141;
     public int operatorPattern = 0;
 
     public static double FAR_TARGET_X_BLUE = 9.5;

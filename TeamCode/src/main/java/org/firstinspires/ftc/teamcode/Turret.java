@@ -70,7 +70,7 @@ public class Turret extends SubsystemBase {
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
     // april 13, both servos definitely working.
-    public static double turretP = 0.004, turretI = 0.04, turretD = 0.0003, turretF = 0.065;
+    public static double turretP = 0.005, turretI = 0.04, turretD = 0.0008, turretF = 0.06;
     public static double TURRET_TOLERANCE = 4; // in degrees
     public static double TURRET_TWEAK = 3;
     public static boolean ALWAYS_LOCK = false;
