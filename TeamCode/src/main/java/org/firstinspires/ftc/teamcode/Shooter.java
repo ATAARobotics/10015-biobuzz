@@ -49,7 +49,7 @@ public class Shooter extends SubsystemBase {
     // during shots (normal spin-down is slower so the 200ms window can't see it)
 
     double hoodSlope;
-    public static double RPM_LOW = 2600;
+    public static double RPM_LOW = 2800; //2600;
     public static double RPM_HIGH = 3800;
     public static double RPM_PERCENT = 1;
     public static double HOOD_MAX = 0.9;

@@ -85,6 +85,7 @@ public class Spindexer extends SubsystemBase {
     public PIDController control;
     public boolean boostF = false;
     private boolean _atTarget = false; // were we atTarget() last loop, after .calculate()?
+    private boolean spinLock = false;
 
     double spindexerPower;
     public int targetAngle;  // "no-reset" op-modes remember this targetAngle over auto->teleop transition
@@ -181,14 +182,14 @@ public class Spindexer extends SubsystemBase {
         recentFront.clear();
         recentFront.add(false);
         recentFront.add(false);
-        recentFront.add(false);
-        recentFront.add(false);
+        //recentFront.add(false);
+        //recentFront.add(false);
 
         recentBack.clear();
         recentBack.add(false);
         recentBack.add(false);
-        recentBack.add(false);
-        recentBack.add(false);
+        //recentBack.add(false);
+        //recentBack.add(false);
     }
 
     public boolean haveArtifactFront() {
@@ -224,6 +225,7 @@ public class Spindexer extends SubsystemBase {
     public void spinShoot(){
         pinBalls = false;
 	shortSpindex = false;
+	spinLock = false;
         // todo: we should use the Shooter's ability to detect shots
         // to tell us when a shot went up .. meantime, we'll be
         // optimistic that anything in the "shoot" slot right now will
@@ -242,6 +244,13 @@ public class Spindexer extends SubsystemBase {
         stuckTime.start();
     }
 
+    public void intakeSpin(){
+	if (!spinLock) {
+	    spinIndex();
+	    spinLock = true;
+	}
+    }
+    
     public void spinIndex(){
         spin = SpinDirection.Index;
         pinBalls = false;

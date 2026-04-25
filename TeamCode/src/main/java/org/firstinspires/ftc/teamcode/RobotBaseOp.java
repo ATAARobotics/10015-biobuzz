@@ -59,6 +59,12 @@ public abstract class RobotBaseOp extends OpMode {
 
     public static double SHOOT_PAUSE_WAIT = 0.250;
 
+    public enum InState {FIRST_TWO, SPIN, THIRD, WAIT_PIN, WAIT_SPIT, DONE};
+    public enum OutState {WAIT_SHOOT, SHOOT, PAUSE, DONE};
+
+    public InState lastInState = InState.DONE;
+    public OutState lastOutState = OutState.DONE;
+
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
@@ -150,7 +156,6 @@ public abstract class RobotBaseOp extends OpMode {
     // (note: we no longer sort here, that's a special mode, since
     // it's kind of jam-prone currently and we don't need to during
     // most teleop)
-    public enum InState {FIRST_TWO, SPIN, THIRD, WAIT_PIN, WAIT_SPIT, DONE};
     public class AutoIntake extends CommandBase {
         private InState state;
 	private double startPinWait = 0.0;
@@ -176,9 +181,11 @@ public abstract class RobotBaseOp extends OpMode {
                 //
                 // we can know this if the "front" slot is empty (or
                 // maybe similarly if the other two slots are full)
-                if (spindexer.artifactCount() == 2/* && !spindexer.artifactInSlot()*/) {
+                if (spindexer.artifactCount() == 2) {
 		    if (spindexer.artifactInSlot()) {
 			state = InState.SPIN;
+			intake.lowPower();
+			spindexer.spinIndex();
 		    } else {
 			state = InState.THIRD;
 			spindexer.shortSpin();
@@ -196,7 +203,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
 
         public void execute() {
-	    telemetry.addData("state", state);
+	    lastInState = state;
             if (state == InState.FIRST_TWO) {
 		// waiting for the first TWO slots to be full (the
 		// front slot will be full briefly or longer as the
@@ -205,7 +212,7 @@ public abstract class RobotBaseOp extends OpMode {
                 if (spindexer.atTarget() && spindexer.frontAndBackFilled()) { //haveFrontAndBack()) {
                     state = InState.SPIN;
                     intake.lowPower();
-                    spindexer.spinIndex();
+                    spindexer.intakeSpin();
                 }
             } else if (state == InState.SPIN) {
 		// we are spinning one time to put the two balls we
@@ -277,7 +284,6 @@ public abstract class RobotBaseOp extends OpMode {
     // state-machine to auto-fire balls
     // goal: empty the spindexer
     // but: might already be empty!
-    public enum OutState {WAIT_SHOOT, SHOOT, PAUSE, DONE};
     public class AutoOuttake extends CommandBase {
         private OutState state;
         private int shotSlot = -1;
@@ -294,6 +300,7 @@ public abstract class RobotBaseOp extends OpMode {
             state = OutState.WAIT_SHOOT;
         }
         public void execute() {
+	    lastOutState = state;
             if (state == OutState.WAIT_SHOOT) {
                 shooter.autoShootRpm();
                 turret.autoLock();
@@ -626,6 +633,7 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("predicted-y", predictedY);
         telem.log("in-zone", inZone());
         telem.log("loops", loops);
+	telem.log("in-state", lastInState);
 
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);
