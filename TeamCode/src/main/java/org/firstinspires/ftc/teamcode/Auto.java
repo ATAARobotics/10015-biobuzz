@@ -452,7 +452,7 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
                         new SequentialCommandGroup(
                                 new ParallelCommandGroup(
-                                        pathBetween(spikeStart2, spikeEnd2, 0.4),
+                                        pathBetween(spikeStart2, spikeEnd2, 0.55),
                                         new LookAtObelisk()
                                 ),
                                 new Delay(0.2)
@@ -566,7 +566,7 @@ public abstract class Auto extends RobotBaseOp {
         auto.addCommands(
                 new ParallelRaceGroup(
                         new AutoIntake(),
-                        pathBetween(spikeStart3, spikeEnd3, 0.45)
+                        pathBetween(spikeStart3, spikeEnd3, 0.55)
                 ),
                 //  new SoftIntake(),
                 new PrepareToShoot(),

@@ -183,7 +183,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public double hoodAngleLinear(double rpm) {
-	double percent =  rpm / (RPM_HIGH - RPM_LOW);
+	double percent =  (rpm - RPM_LOW) / (RPM_HIGH - RPM_LOW);
 	double range = (HOOD_MAX_DEGREES - HOOD_MIN_DEGREES);
 	double hood = HOOD_MIN + (percent * range);
 	return hood;
@@ -313,7 +313,7 @@ public class Shooter extends SubsystemBase {
 
 	if (targetRpm > 0) {
 	    control.setSetPoint(targetRpm);
-	    power = control.calculate(currentRpm);
+	    power = control.calculate(smoothRpm);//currentRpm);
 	    if (power > 0.00000001) {
 		// we find that varying F from 0.72 up to 0.9
 		// depending on the TARGET RPM seems to work well

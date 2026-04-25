@@ -209,7 +209,8 @@ public abstract class RobotBaseOp extends OpMode {
 		// front slot will be full briefly or longer as the
 		// first ball goes through (or settles there) but we
 		// need both to be there
-                if (spindexer.atTarget() && spindexer.frontAndBackFilled()) { //haveFrontAndBack()) {
+                if (spindexer.atTarget() && spindexer.haveFrontAndBack()) {
+		    spindexer.fillFrontAndBack();
                     state = InState.SPIN;
                     intake.lowPower();
                     spindexer.intakeSpin();
@@ -227,8 +228,8 @@ public abstract class RobotBaseOp extends OpMode {
                 }
             } else if (state == InState.THIRD) {
 		// awaiting our third ball
-		if (spindexer.atTarget() && spindexer.frontFilled()) { //haveArtifactFront()) {
-		    //spindexer.assumeFrontArtifact();
+		if (spindexer.atTarget() && spindexer.haveArtifactFront()) {
+		    spindexer.fillFront();
 		    startPinWait = time;
                     state = InState.WAIT_PIN;
 		    intake.stop();
@@ -319,21 +320,8 @@ public abstract class RobotBaseOp extends OpMode {
                     lastShots = shooter.getCurrentShots();
                     shotSlot = spindexer.currentSlot();
                     spindexer.spinShoot();
-
-                    // try to rapid-shoot if we're close enough
-                    if (true) { //geometricDistance < shooter.FAR_DISTANCE) {
-			spindexer.spinShoot();
-			spindexer.spinShoot();
-			/*
-                        for (int x=0; x < spindexer.artifactCount(); x++) {
-                            spindexer.spinShoot();
-                        }
-			// 'bonus' shot, required on old robot to get
-			// fully past at high power, but do we need it
-			// for v3?
-			///spindexer.spinShoot();
-			*/
-                    }
+		    spindexer.spinShoot();
+		    spindexer.spinShoot();
                 }
             } else if (state == OutState.SHOOT) {
 		if (spindexer.isStuck()) {
@@ -345,12 +333,15 @@ public abstract class RobotBaseOp extends OpMode {
                 // for this -- so we're just trusting the spindexer's
                 // notion of how many balls
                 if (spindexer.atTarget()) { //shooter.getCurrentShots() > lastShots) {
+		    state = OutState.PAUSE;
+		    /*
                     if (spindexer.isEmpty()) {
 			startPause = time;
                         state = OutState.PAUSE;
                     } else {
                         state = OutState.WAIT_SHOOT;
                     }
+		    */
                 }
             } else if (state == OutState.PAUSE) {
 		double elapsed = time - startPause;

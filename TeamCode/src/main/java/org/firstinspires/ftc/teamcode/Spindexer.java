@@ -113,7 +113,7 @@ public class Spindexer extends SubsystemBase {
         control.setTolerance(TOLERENCE_DEG);
 
         spindexerMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        stuckTime = new Timing.Timer(1000, TimeUnit.MILLISECONDS);
+        stuckTime = new Timing.Timer(2000, TimeUnit.MILLISECONDS);
 
         // we always have 3 slots in this array
         slots = new SlotContent[]{
@@ -164,8 +164,13 @@ public class Spindexer extends SubsystemBase {
         return (slots[currentSlot()] != SlotContent.Nothing);
     }
 
-    public void assumeFrontArtifact() {
+    public void fillFront() {
         slots[currentSlot()] = SlotContent.Unknown;
+    }
+
+    public void fillFrontAndBack() {
+	slots[currentSlot()] = SlotContent.Unknown;
+	slots[currentBackSlot()] = SlotContent.Unknown;
     }
 
     public int artifactCount() {
@@ -214,12 +219,12 @@ public class Spindexer extends SubsystemBase {
     public boolean frontAndBackFilled() {
 	return (
 		slots[currentSlot()] != SlotContent.Nothing && 
-		slots[currentBackSlot()] != SlotContent.Nothing &&
-		haveFrontAndBack()
+		slots[currentBackSlot()] != SlotContent.Nothing
+		//&&		haveFrontAndBack()
 		);
     }
     public boolean frontFilled() {
-	return haveArtifactFront() && (slots[currentSlot()] != SlotContent.Nothing);
+	return /* haveArtifactFront() && */ (slots[currentSlot()] != SlotContent.Nothing);
     }
 
     public void spinShoot(){
@@ -299,9 +304,9 @@ public class Spindexer extends SubsystemBase {
     }
     
     public int currentBackSlot(){
-        int slot = currentSlot() + 1;
-        if (slot > 2){
-            slot = 0;
+        int slot = currentSlot() - 1;
+        if (slot < 0){
+            slot = 2;
         }
         return slot;
     }
@@ -495,12 +500,14 @@ public class Spindexer extends SubsystemBase {
             // when the spindexer thinks it's settled, we look at BOTH beambrakes and fill those two slots
             // if they're broken.
             // we look at both so that a ball moving over them doesn't cause a miss-count
+	    /*
             if (spin == SpinDirection.Index && _atTarget) {
                 if (haveFrontAndBack()) {
                     slots[currentSlot()] = SlotContent.Unknown;
                     slots[currentBackSlot()] = SlotContent.Unknown;
                 }
             }
+	    */
 
             // indicator lights
             // kind-of traffic lights, by number of balls:
