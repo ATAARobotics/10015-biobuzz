@@ -82,6 +82,7 @@ public class Shooter extends SubsystemBase {
     public static double D = 0.0;
     public static double F_LOW = 0.72; // at 2600rpm
     public static double F_HI = 1.0; // at 3800rpm
+    public static double EXPONENTIAL_ALPHA = 0.2;
     public PIDController control;
     
     VoltageSensor battery;
@@ -129,7 +130,7 @@ public class Shooter extends SubsystemBase {
         hood = hardwareMap.get(Servo.class, "hood");
         recentRpms = new LinkedList<RpmData>();
 	//rpmFilter = new MovingAverage(RPM_FILTER_SIZE);
-        rpmFilter = new ExponentialSmoother(0.2);
+        rpmFilter = new ExponentialSmoother(EXPONENTIAL_ALPHA);
     }
 
     public void reset() {
