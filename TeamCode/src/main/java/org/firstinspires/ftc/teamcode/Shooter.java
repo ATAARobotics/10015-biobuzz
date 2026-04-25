@@ -54,7 +54,7 @@ public class Shooter extends SubsystemBase {
     public static double RPM_PERCENT = 1;
     public static double HOOD_MAX = 0.9;
     public static double HOOD_MIN = 0.2;
-    public static double HOOD_MAX_DEGREES = 50.0;
+    public static double HOOD_MAX_DEGREES = 45.0;
     public static double HOOD_MIN_DEGREES = 30.0;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
