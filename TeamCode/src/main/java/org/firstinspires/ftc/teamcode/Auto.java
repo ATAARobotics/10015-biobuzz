@@ -493,7 +493,8 @@ public abstract class Auto extends RobotBaseOp {
                                 //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
-                        curveBetween(gateIntake, gatePoint, middleShoot, 1.0, false, 0.6)
+                        curveBetween(gateIntake, gatePoint, middleShoot, 1.0, false, 0.6),
+                        new Delay(0.5)
                 )
         );
         /*
