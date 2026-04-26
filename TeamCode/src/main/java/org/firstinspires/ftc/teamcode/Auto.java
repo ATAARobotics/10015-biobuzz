@@ -45,9 +45,9 @@ public abstract class Auto extends RobotBaseOp {
     private boolean gatePickUp = true;
     private boolean gateIntake2 = true;
 
-    public static double GATE_X = 10.0;
+    public static double GATE_X = 11.5;
     public static double GATE_Y = 60.0;
-    public static double GATE_HEADING = 130.0;
+    public static double GATE_HEADING = 125.0;
 
     // feb 27 changed start to be 180 degrees and sideways so new
     private final Pose blueFarStart = new Pose(70 - yOffset, xOffset, Math.toRadians(180));
@@ -457,8 +457,8 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
                         new SequentialCommandGroup(
                                 new ParallelCommandGroup(
-                                        pathBetween(spikeStart2, spikeEnd2, 0.85)
-                                       // new LookAtObelisk()
+                                        pathBetween(spikeStart2, spikeEnd2, 0.85),
+                                        new LookAtObelisk()
                                 ),
                                 new Delay(0.2)
                                 // below was attempt to open gate quickly
@@ -483,7 +483,7 @@ public abstract class Auto extends RobotBaseOp {
                     new AutoIntake(),
                     new SequentialCommandGroup(
                         curveBetween(middleShoot, gatePoint, gateIntake, 1.0, false, 0.6),
-                        new Delay(0.5),
+                        new Delay(0.4),
                         pathBetween(gateIntake, gateIntakeBack, 0.35)
                     )
                 ),
@@ -530,7 +530,7 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
                         new SequentialCommandGroup(
                             curveBetween(spikeStart3, gatePoint, gateIntake, 1.0, false, 0.6),
-                            new Delay(0.4),
+                            new Delay(0.3),
                             pathBetween(gateIntake, gateIntakeBack, 0.35),
                             new Delay(0.5)
                         )
