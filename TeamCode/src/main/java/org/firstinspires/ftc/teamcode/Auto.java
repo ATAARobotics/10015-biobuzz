@@ -45,9 +45,9 @@ public abstract class Auto extends RobotBaseOp {
     private boolean gatePickUp = true;
     private boolean gateIntake2 = true;
 
-    public static double GATE_X = 11.5;
+    public static double GATE_X = 12.0;
     public static double GATE_Y = 60.0;
-    public static double GATE_HEADING = 150.0;
+    public static double GATE_HEADING = 140.0;
 
     // feb 27 changed start to be 180 degrees and sideways so new
     private final Pose blueFarStart = new Pose(70 - yOffset, xOffset, Math.toRadians(180));
@@ -484,7 +484,7 @@ public abstract class Auto extends RobotBaseOp {
                         new SequentialCommandGroup(
                                 curveBetween(middleShoot, gatePoint, gateIntake, 0.8, false, 0.6),
                                 // new Delay(0.3),
-                                pathBetween(gateIntake, gateIntakeBack, 0.35),
+                                pathBetween(gateIntake, gateIntakeBack, 0.5),
                                 new Delay(0.5)
                         )
                 ),
@@ -493,7 +493,7 @@ public abstract class Auto extends RobotBaseOp {
                                 //                                new SortSpindex(),
                                 new AutoOuttake()
                         ),
-                        curveBetween(gateIntake, gatePoint, middleShoot, 1.0, false, 0.6),
+                        curveBetween(gateIntakeBack, gatePoint, middleShoot, 1.0, false, 0.6),
                         new Delay(0.5)
                 )
         );
@@ -532,17 +532,15 @@ public abstract class Auto extends RobotBaseOp {
                             new AutoIntake(),
                             new SequentialCommandGroup(
                                     curveBetween(middleShoot, gatePoint, gateIntake, 0.8, false, 0.6),
-                                    //       new Delay(0.3),
-                                    pathBetween(gateIntake, gateIntakeBack, 0.35),
-                                    new Delay(0.5)
+                                    pathBetween(gateIntake, gateIntakeBack, 0.5),
+                                    new Delay(0.8)
                             )
                     ),
                     new ParallelCommandGroup(
                             new SequentialCommandGroup(
-                                    //                                new SortSpindex(),
                                     new AutoOuttake()
                             ),
-                            curveBetween(gateIntake, gatePoint, spikeStart3, 1.0, false, 0.6)
+                            curveBetween(gateIntakeBack, gatePoint, spikeStart3, 1.0, false, 0.6)
                     )
             );
             /*

@@ -55,7 +55,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     public static double FAR_TARGET_X_BLUE = 9.5;
     public static double FAR_TARGET_X_RED =  3.5;
-    public static double SHOOT_PREDICT = 0.570;
+    public static double SHOOT_PREDICT = 0.300;
 
     public static double SHOOT_PAUSE_WAIT = 0.250;
 
@@ -707,11 +707,13 @@ public abstract class RobotBaseOp extends OpMode {
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
         double robotY = drive.getPosition().getY(DistanceUnit.INCH);
 
-        double tof = SHOOT_PREDICT; // timeOfFlight(geometricDistance);
-        aimOffsetX = drive.x_velocity * tof;
-        aimOffsetY = drive.y_velocity * tof;
-        robotX += aimOffsetX;
-        robotY += aimOffsetY;
+	if (isAuto()) {
+	    double tof = SHOOT_PREDICT; // timeOfFlight(geometricDistance);
+	    aimOffsetX = drive.x_velocity * tof;
+	    aimOffsetY = drive.y_velocity * tof;
+	    robotX += aimOffsetX;
+	    robotY += aimOffsetY;
+	}
         predictedX = robotX;
         predictedY = robotY;
 
@@ -732,7 +734,7 @@ public abstract class RobotBaseOp extends OpMode {
         //double targetY = -turret.target.fieldPosition.get(0);
         // TODO: red vs blue targets
         double targetX = GEOM_TARGET_X;
-        double targetY =  GEOM_TARGET_Y;
+        double targetY = GEOM_TARGET_Y;
 
 
         if (getAlliance() == Alliance.RED){

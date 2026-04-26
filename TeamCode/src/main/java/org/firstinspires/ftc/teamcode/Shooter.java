@@ -28,6 +28,7 @@ public class Shooter extends SubsystemBase {
     double tbhLastCrossedOutput = 0.0;
     double tbhLastError = 0.0;
     public static double TBH_GAIN = 0.000007;
+    boolean alwaysSpin = false;
 
     // shot-counter
     int shotsFired = 0;
@@ -274,10 +275,10 @@ public class Shooter extends SubsystemBase {
             //targetHood = FAR_HOOD;
             targetRpm = FAR_RPM;
             HOOD_MAX_DEGREES = 50.0; // The hood regression changes slightly in far zone
-        }
-        else{
+        } else {
             HOOD_MAX_DEGREES = 55.0;
         }
+
         if (targetRpm > 5300){
             targetRpm = 5300;
         }
@@ -314,6 +315,11 @@ public class Shooter extends SubsystemBase {
         tbhLastError = error;
         power = tbhOutput;*/
       //  power = appliedVoltage/voltage;
+
+	if (alwaysSpin) {
+	    targetRpm = rpmMax();
+	}
+	
 
 	if (targetRpm > 0) {
 	    control.setSetPoint(targetRpm);
@@ -439,5 +445,19 @@ public class Shooter extends SubsystemBase {
             // clip our targetRpm .. do this LAST after all command processing
             if(targetRpm > MAX_RPM) targetRpm = MAX_RPM;
         }
+    }
+
+    public class AlwaysSpin extends CommandBase {
+        public AlwaysSpin() {
+            addRequirements(Shooter.this);
+        }
+        
+        @Override
+        public void execute() {
+	    alwaysSpin = !alwaysSpin;
+        }
+    }
+    public CommandBase alwaysSpin() {
+        return new AlwaysSpin();
     }
 }

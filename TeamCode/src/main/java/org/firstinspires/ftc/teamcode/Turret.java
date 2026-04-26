@@ -470,16 +470,16 @@ public class Turret extends SubsystemBase {
 		//joystickAngle += 180.0;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
-                //operatorOffset += TURRET_TWEAK;
-                joystickAngle = -90;
+                operatorOffset += TURRET_TWEAK;
+                //joystickAngle = -90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-                //operatorOffset -= TURRET_TWEAK;
-                joystickAngle = 90;
+                operatorOffset -= TURRET_TWEAK;
+                //joystickAngle = 90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
                 //operatorOffset = 0;
-		joystickAngle = 0;
+		//joystickAngle = 0;
             }
         }
     }
