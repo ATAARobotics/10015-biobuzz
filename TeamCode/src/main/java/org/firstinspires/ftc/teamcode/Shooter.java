@@ -58,7 +58,7 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MIN_DEGREES = 36.0;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
-    public static double FAR_RPM = 3500; // FIXME TODO temp for testing
+    public static double FAR_RPM = 3800; // FIXME TODO temp for testing
     public static double FAR_HOOD = 0.50;
     //public static double RPM_VS_DIST_SLOPE = 39.8; // old is 20.086
     //public static double RPM_VS_DIST_INTERCEPT = 1022; //Old is 2411.7
@@ -67,7 +67,7 @@ public class Shooter extends SubsystemBase {
     public double rpmSlope;
     public double rpmIntercept;
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
-    public static double FAR_DISTANCE = 125.0;
+    public static double FAR_DISTANCE = 120;
 
     public static double BAND = 500;
     public static double BANG_POWER = 1.0;
@@ -273,6 +273,10 @@ public class Shooter extends SubsystemBase {
         if (autoRpm && aprilDistance > FAR_DISTANCE) {
             //targetHood = FAR_HOOD;
             targetRpm = FAR_RPM;
+            HOOD_MAX_DEGREES = 50.0; // The hood regression changes slightly in far zone
+        }
+        else{
+            HOOD_MAX_DEGREES = 55.0;
         }
         if (targetRpm > 5300){
             targetRpm = 5300;
