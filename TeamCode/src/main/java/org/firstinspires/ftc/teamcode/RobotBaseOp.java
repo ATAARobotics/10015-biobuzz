@@ -195,7 +195,10 @@ public abstract class RobotBaseOp extends OpMode {
 		// first ball goes through (or settles there) but we
 		// need both to be there
                 if (!spindexer.isPinning() && spindexer.atTarget() &&
-		    (spindexer.haveFrontAndBack() || spindexer.haveArtifactIntakeLong())
+		    (
+		     spindexer.haveFrontAndBack() ||
+		     (spindexer.haveArtifactBack() && spindexer.haveArtifactIntakeLong())
+		     )
 		    ) {
 		    spindexer.fillFrontAndBack();
                     //intake.lowPower();
@@ -317,9 +320,9 @@ public abstract class RobotBaseOp extends OpMode {
                 // OR:
                 // - the operator pressed A
                 if ((shooter.readyToShoot() &&
-                   // turret.isLocked(time) &&
-		     // inZone() &&
-                        turret.atTargetAngle()) || operator.wasJustPressed(GamepadKeys.Button.A)
+		     // turret.isLocked(time) &&
+		     inZone() &&  // inZone is ALWAYS true in teleop
+		     turret.atTargetAngle()) || operator.wasJustPressed(GamepadKeys.Button.A)
                 ) {
                     state = OutState.SHOOT;
                     lastShots = shooter.getCurrentShots();
