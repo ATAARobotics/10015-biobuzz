@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierPoint;
 import com.seattlesolvers.solverslib.command.Command;
@@ -31,7 +32,7 @@ import java.util.function.Function;
 
 import kotlinx.coroutines.Delay;
 
-
+@Configurable
 public abstract class Auto extends RobotBaseOp {
     public Follower follower;
     double xOffset = 7.179;
@@ -43,6 +44,10 @@ public abstract class Auto extends RobotBaseOp {
     private boolean closeGateOpen = false;
     private boolean gatePickUp = true;
     private boolean gateIntake2 = true;
+
+    public static double GATE_X = 11.5;
+    public static double GATE_Y = 60.0;
+    public static double GATE_HEADING = 125.0;
 
     // feb 27 changed start to be 180 degrees and sideways so new
     private final Pose blueFarStart = new Pose(70 - yOffset, xOffset, Math.toRadians(180));
@@ -74,7 +79,7 @@ public abstract class Auto extends RobotBaseOp {
     // these are red coords
     //private final Pose gateIntake = new Pose(129.14, 58.7, Math.toRadians(30));
     private final Pose gatePreIntake = new Pose(13.0, 58.7, Math.toRadians(140));
-    private final Pose gateIntake = new Pose(12.1, 60, Math.toRadians(140));
+    private final Pose gateIntake = new Pose(GATE_X, GATE_Y, Math.toRadians(GATE_HEADING));
     private final Pose gateCloser = new Pose(12.1, 60, Math.toRadians(150));
     private final Pose gateIntakeBack = new Pose(12, 52, Math.toRadians(140));
     private final Pose gateIntakeBack2 = new Pose(12, 54, Math.toRadians(140));
@@ -505,7 +510,7 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
 			new SequentialCommandGroup(
 			    pathBetween(middleShoot, gateIntake, 1.0),
-			    new Delay (0.5),
+			    new Delay (0.6),
 			    curveBetween(gateIntake, gateCurve, gateIntakeBack2, 1.0, false),
 			    new Delay (0.5)
                         )
@@ -521,13 +526,13 @@ public abstract class Auto extends RobotBaseOp {
         }
 
         auto.addCommands(
-                curveBetween(spikeStart3, gatePoint, gateIntake, 1.0, false, 0.6),
-                new Delay (0.3),
                 new ParallelRaceGroup(
                         new AutoIntake(),
                         new SequentialCommandGroup(
-                                pathBetween(gateIntake, gateIntakeBack, 0.7),
-                                new Delay(0.5)
+                            curveBetween(spikeStart3, gatePoint, gateIntake, 1.0, false, 0.6),
+                            new Delay (0.3),
+                            pathBetween(gateIntake, gateIntakeBack, 0.7),
+                            new Delay(0.5)
                         )
                 ),
                 new ParallelCommandGroup(
@@ -548,7 +553,7 @@ public abstract class Auto extends RobotBaseOp {
                 //  new SoftIntake(),
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
-                        new AutoOuttake()
+                        new AutoOuttake(),
                         pathBetween(spikeEnd3, finalShootAndPark, 1.0)
                 )
         );
