@@ -503,12 +503,14 @@ public abstract class Auto extends RobotBaseOp {
             auto.addCommands(
                     new ParallelRaceGroup(
                         new AutoIntake(),
-                        pathBetween(middleShoot, gateIntake, 1.0),
-                        new Delay (0.5),
-                        curveBetween(gateIntake, gateCurve, gateIntakeBack2, 1.0, false),
-                        new Delay (1.0)
-                    ),
-                    new ParallelCommandGroup(
+			new SequentialCommandGroup(
+			    pathBetween(middleShoot, gateIntake, 1.0),
+			    new Delay (0.5),
+			    curveBetween(gateIntake, gateCurve, gateIntakeBack2, 1.0, false),
+			    new Delay (1.0)
+                        )
+		    ),
+                    new SequentialCommandGroup(
                             new PrepareToShoot(),
                             new ParallelCommandGroup(
                                 new AutoOuttake(),
