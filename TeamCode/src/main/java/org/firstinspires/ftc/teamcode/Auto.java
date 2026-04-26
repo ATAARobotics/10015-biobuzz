@@ -477,6 +477,26 @@ public abstract class Auto extends RobotBaseOp {
 
         );
 
+        auto.addCommands(
+                new ParallelRaceGroup(
+                        new AutoIntake(),
+                        new SequentialCommandGroup(
+                                curveBetween(middleShoot, gatePoint, gateIntake, 1.0, false, 0.6),
+                                new Delay(0.5),
+                                pathBetween(gateIntake, gateIntakeBack, 0.35),
+                                new Delay(0.5)
+                        )
+                ),
+                new ParallelCommandGroup(
+                        new SequentialCommandGroup(
+                                //                                new SortSpindex(),
+                                new AutoOuttake()
+                        ),
+                        curveBetween(gateIntake, gatePoint, middleShoot, 1.0, false, 0.6)
+                )
+        );
+
+        /*
         // open gate plus intake from ramp
         auto.addCommands(
                 new ParallelRaceGroup(
@@ -503,9 +523,31 @@ public abstract class Auto extends RobotBaseOp {
                         )
                 )
         );
+
+         */
         //gate intake 2
         if (gateIntake2) {
             auto.addCommands(
+                    new ParallelRaceGroup(
+                            new AutoIntake(),
+                            new SequentialCommandGroup(
+                                    curveBetween(middleShoot, gatePoint, gateIntake, 1.0, false, 0.6),
+                                    new Delay(0.5),
+                                    pathBetween(gateIntake, gateIntakeBack, 0.35),
+                                    new Delay(0.5)
+                            )
+                    ),
+                    new ParallelCommandGroup(
+                            new SequentialCommandGroup(
+                                    //                                new SortSpindex(),
+                                    new AutoOuttake()
+                            ),
+                            curveBetween(gateIntake, gatePoint, spikeStart3, 1.0, false, 0.6)
+                    )
+            );
+            /*
+            auto.addCommands(
+
                     new ParallelRaceGroup(
                         new AutoIntake(),
 			new SequentialCommandGroup(
@@ -523,14 +565,15 @@ public abstract class Auto extends RobotBaseOp {
                             )
                     )
             );
+            */
         }
-
+//last gate intake
         auto.addCommands(
                 new ParallelRaceGroup(
                         new AutoIntake(),
                         new SequentialCommandGroup(
                             curveBetween(spikeStart3, gatePoint, gateIntake, 1.0, false, 0.6),
-                            new Delay(0.3),
+                            new Delay(0.5),
                             pathBetween(gateIntake, gateIntakeBack, 0.35),
                             new Delay(0.5)
                         )
