@@ -478,8 +478,8 @@ public abstract class Auto extends RobotBaseOp {
                     new AutoIntake(),
                     new SequentialCommandGroup(
                         curveBetween(middleShoot, gatePoint, gateIntake, 1.0, false, 0.6),
-                        new Delay (0.8),
-                        pathBetween(gateIntake, gateIntakeBack, 0.5)
+                        new Delay (0.2),
+                        pathBetween(gateIntake, gateIntakeBack, 0.7)
                     )
                 ),
 
@@ -507,7 +507,7 @@ public abstract class Auto extends RobotBaseOp {
 			    pathBetween(middleShoot, gateIntake, 1.0),
 			    new Delay (0.5),
 			    curveBetween(gateIntake, gateCurve, gateIntakeBack2, 1.0, false),
-			    new Delay (1.0)
+			    new Delay (0.5)
                         )
 		    ),
                     new SequentialCommandGroup(
@@ -522,12 +522,12 @@ public abstract class Auto extends RobotBaseOp {
 
         auto.addCommands(
                 curveBetween(spikeStart3, gatePoint, gateIntake, 1.0, false, 0.6),
-                new Delay (0.5),
+                new Delay (0.3),
                 new ParallelRaceGroup(
                         new AutoIntake(),
                         new SequentialCommandGroup(
-                                pathBetween(gateIntake, gateIntakeBack, 0.45),
-                                new Delay(0.8)
+                                pathBetween(gateIntake, gateIntakeBack, 0.7),
+                                new Delay(0.5)
                         )
                 ),
                 new ParallelCommandGroup(
@@ -548,10 +548,7 @@ public abstract class Auto extends RobotBaseOp {
                 //  new SoftIntake(),
                 new PrepareToShoot(),
                 new ParallelCommandGroup(
-                        new SequentialCommandGroup(
-                                                   //                                new SortSpindex(),
-                                new AutoOuttake()
-                        ),
+                        new AutoOuttake()
                         pathBetween(spikeEnd3, finalShootAndPark, 1.0)
                 )
         );

@@ -194,11 +194,15 @@ public abstract class RobotBaseOp extends OpMode {
                 // front slot will be full briefly or longer as the
                 // first ball goes through (or settles there) but we
                 // need both to be there
-                if (!spindexer.isPinning() && spindexer.atTarget() &&
+                if (
+		    !spindexer.isPinning() &&
+		    spindexer.atTarget() &&
                     (
-                     spindexer.haveFrontAndBack() ||
-                     (spindexer.haveArtifactBack() && spindexer.haveArtifactIntakeLong())
-                     )
+		     // our beambreaks say we have both
+                         spindexer.haveFrontAndBack() ||
+                     // hack around the fact that 3 balls 'stuck' can make the front beambreak un-broken
+			 (spindexer.haveArtifactBack() && spindexer.haveArtifactIntakeLong())
+		    )
                     ) {
                     spindexer.fillFrontAndBack();
                     //intake.lowPower();
