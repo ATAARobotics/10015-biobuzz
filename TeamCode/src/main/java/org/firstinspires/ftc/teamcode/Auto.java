@@ -483,8 +483,8 @@ public abstract class Auto extends RobotBaseOp {
                     new AutoIntake(),
                     new SequentialCommandGroup(
                         curveBetween(middleShoot, gatePoint, gateIntake, 1.0, false, 0.6),
-                        new Delay (0.2),
-                        pathBetween(gateIntake, gateIntakeBack, 0.7)
+                        new Delay(0.4),
+                        pathBetween(gateIntake, gateIntakeBack, 0.35)
                     )
                 ),
 
@@ -510,9 +510,9 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
 			new SequentialCommandGroup(
 			    pathBetween(middleShoot, gateIntake, 1.0),
-			    new Delay (0.6),
-			    curveBetween(gateIntake, gateCurve, gateIntakeBack2, 1.0, false),
-			    new Delay (0.5)
+			    new Delay(0.4),
+			    curveBetween(gateIntake, gateCurve, gateIntakeBack2, 0.5, false),
+			    new Delay(0.3)
                         )
 		    ),
                     new SequentialCommandGroup(
@@ -530,8 +530,8 @@ public abstract class Auto extends RobotBaseOp {
                         new AutoIntake(),
                         new SequentialCommandGroup(
                             curveBetween(spikeStart3, gatePoint, gateIntake, 1.0, false, 0.6),
-                            new Delay (0.3),
-                            pathBetween(gateIntake, gateIntakeBack, 0.7),
+                            new Delay(0.3),
+                            pathBetween(gateIntake, gateIntakeBack, 0.35),
                             new Delay(0.5)
                         )
                 ),
