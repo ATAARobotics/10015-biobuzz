@@ -26,8 +26,9 @@ public class Spindexer extends SubsystemBase {
     public static double BOOST_AMOUNT = 0.25;
     public static double PIN_ANGLE = -50.0;
     public static double SHORT_ANGLE = 0.0; // (-10 or -15 is "good" but causes beam-break to be broken?)
-    public static double PIN_WAIT = 0.250;
-    public static double SPIT_WAIT = 0.750;
+    public static double PIN_WAIT_BEFORE_S = 0.250;
+    public static double PIN_WAIT_AFTER_S = 0.250;
+    public static double SPIT_WAIT_S = 0.750;
     // if we want this lower, have to re-tune the PIDs (jan 22)
     public static double TOLERENCE_DEG = 10.0;
     public static double MANUAL_DIVISOR = 10;
@@ -63,6 +64,7 @@ public class Spindexer extends SubsystemBase {
     // track beam-break status over several timesteps
     LinkedList<Boolean> recentFront;
     LinkedList<Boolean> recentBack;
+    LinkedList<Boolean> recentIntake;
     
     // color sensors
     float[] hsvBack = new float[3];
@@ -125,6 +127,7 @@ public class Spindexer extends SubsystemBase {
         // always have 5 items in these
         recentFront = new LinkedList<Boolean>();
         recentBack = new LinkedList<Boolean>();
+        recentIntake = new LinkedList<Boolean>();
         resetBeamBreaks();
 
         // the two brushland labs sensors (i2c mode because not enough analog ports) 
@@ -195,8 +198,25 @@ public class Spindexer extends SubsystemBase {
         recentBack.add(false);
         //recentBack.add(false);
         //recentBack.add(false);
+	
+        recentIntake.clear();
+        recentIntake.add(false);
+        recentIntake.add(false);
+        recentIntake.add(false);
+        recentIntake.add(false);
+        recentIntake.add(false);
     }
 
+    // "intake" beambreak is broken or not
+    public boolean haveArtifactIntake() {
+	return lastIntakeVoltage < 1.0;
+    }
+    public boolean haveArtifactIntakeLong() {
+        for (boolean b : recentIntake) {
+            if (!b) return false;
+        }
+        return true;
+    }
     public boolean haveArtifactFront() {
         for (boolean b : recentFront) {
             if (!b) return false;
@@ -278,6 +298,11 @@ public class Spindexer extends SubsystemBase {
 
     public void unPinBalls(){
         pinBalls = false;
+    }
+
+    public boolean isPinning() {
+	// do we want to also look at the "shortSpindex" bool here too?
+	return pinBalls;
     }
 
     public void spinModeIndex() {
@@ -457,6 +482,8 @@ public class Spindexer extends SubsystemBase {
 	    recentFront.removeFirst();
 	    recentBack.addLast(lastBackVoltage < 1.0);
 	    recentBack.removeFirst();
+	    recentIntake.removeFirst();
+	    recentIntake.addLast(lastIntakeVoltage < 1.0);
 	}
     }
 
@@ -621,7 +648,7 @@ public class Spindexer extends SubsystemBase {
         telem.log("spindexer-slot-1", slots[1]);
         telem.log("spindexer-slot-2", slots[2]);
         telem.log("spindexer-spin", spin);
-        //telem.logBoth("spindexer-beam-intake", lastIntakeVoltage);
+        telem.logBoth("spindexer-beam-intake", lastIntakeVoltage);
         telem.logBoth("spindexer-beam-front", lastFrontVoltage);
         telem.logBoth("spindexer-beam-back", lastBackVoltage);
         //telem.logBoth("spindexer-ballcount", ballCounter);

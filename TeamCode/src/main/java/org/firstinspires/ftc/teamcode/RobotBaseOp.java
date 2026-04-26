@@ -59,10 +59,13 @@ public abstract class RobotBaseOp extends OpMode {
 
     public static double SHOOT_PAUSE_WAIT = 0.250;
 
-    public enum InState {FIRST_TWO, SPIN, THIRD, WAIT_PIN, WAIT_SPIT, DONE};
+    public enum InState {FIRST_TWO, SPIN, THIRD, WAIT_BEFORE_PIN, WAIT_AFTER_PIN, WAIT_SPIT, DONE};
     public enum OutState {WAIT_SHOOT, SHOOT, PAUSE, DONE};
 
-    public InState lastInState = InState.DONE;
+    private InState inState = InState.DONE;
+    private double startPinWait = 0.0;
+    private double startSpitWait = 0.0;
+
     public OutState lastOutState = OutState.DONE;
 
     public enum StartZone {NEAR, FAR}
@@ -157,43 +160,26 @@ public abstract class RobotBaseOp extends OpMode {
     // it's kind of jam-prone currently and we don't need to during
     // most teleop)
     public class AutoIntake extends CommandBase {
-        private InState state;
-	private double startPinWait = 0.0;
-	private double startSpitWait = 0.0;
+	// all 'state' variables are contained in the outer class
+	// RobotBaseOp so that we don't have to figure out the correct
+	// next state if this command is ended and re-started
 
         public AutoIntake() {
             addRequirements(spindexer);
             addRequirements(intake);
         }
         public void initialize() {
-	    startPinWait = time;  // redundant
-            // if we're already full, do not intake
+	    // if we were idle, then we move to intaking the first two balls
+	    if (inState == InState.DONE) {
+		spindexer.unPinBalls(); // just in case
+		inState = InState.FIRST_TWO;
+	    }
             if (spindexer.isFull()) {
 		// note: theoretically we're "done" here, but if the
 		// driver is asking for intake we try regardless...
 		spindexer.unPinBalls();
-                state = InState.THIRD;
-            } else {
-                // driver often "pulses" the intake trigger .. so if
-                // we've just before this gotten to "SPIN" or past
-                // state, and the intake gets pulsed, we need to
-                // actually start in THIRD.
-                //
-                // we can know this if the "front" slot is empty (or
-                // maybe similarly if the other two slots are full)
-                if (spindexer.artifactCount() == 2) {
-		    if (spindexer.artifactInSlot()) {
-			state = InState.SPIN;
-			intake.lowPower();
-			spindexer.spinIndex();
-		    } else {
-			state = InState.THIRD;
-			spindexer.shortSpin();
-		    }
-                } else {
-                    state = InState.FIRST_TWO;
-                }
-	    }
+                inState = InState.THIRD;
+            }
 
 	    // no matter what, we DO want to run the inteake because
 	    // the driver said so
@@ -203,62 +189,76 @@ public abstract class RobotBaseOp extends OpMode {
         }
 
         public void execute() {
-	    lastInState = state;
-            if (state == InState.FIRST_TWO) {
+            if (inState == InState.FIRST_TWO) {
 		// waiting for the first TWO slots to be full (the
 		// front slot will be full briefly or longer as the
 		// first ball goes through (or settles there) but we
 		// need both to be there
-                if (spindexer.atTarget() && spindexer.haveFrontAndBack()) {
+                if (!spindexer.isPinning() && spindexer.atTarget() &&
+		    (spindexer.haveFrontAndBack() || spindexer.haveArtifactIntakeLong())
+		    ) {
 		    spindexer.fillFrontAndBack();
-                    state = InState.SPIN;
-                    intake.lowPower();
+                    //intake.lowPower();
+                    intake.stop();
                     spindexer.intakeSpin();
+                    inState = InState.SPIN;
                 }
-            } else if (state == InState.SPIN) {
+            } else if (inState == InState.SPIN) {
 		// we are spinning one time to put the two balls we
 		// have at the back
                 if (spindexer.atTarget()) {
-                    state = InState.THIRD;
                     intake.grab();
                     intake.fullPower();
                     // why do we need to set the mode?
                     spindexer.spinModeIndex();
 		    spindexer.shortSpin();
+                    inState = InState.THIRD;
                 }
-            } else if (state == InState.THIRD) {
+            } else if (inState == InState.THIRD) {
 		// awaiting our third ball
 		if (spindexer.atTarget() && spindexer.haveArtifactFront()) {
 		    spindexer.fillFront();
 		    startPinWait = time;
-                    state = InState.WAIT_PIN;
 		    intake.stop();
+                    inState = InState.WAIT_BEFORE_PIN;
                 }
-            } else if (state == InState.WAIT_PIN) {
+            } else if (inState == InState.WAIT_BEFORE_PIN) {
 		// wait some time before pinning, so we don't
 		// accidentally squirt ball out the second the
 		// beambreak is broken.
 		double elapsed = time - startPinWait;
-		if (elapsed > spindexer.PIN_WAIT) {
+		if (elapsed > spindexer.PIN_WAIT_BEFORE_S) {
 		    spindexer.pinBalls();
-		    startSpitWait = time;
-		    state = InState.WAIT_SPIT;
-		    intake.lowPower();
-		    intake.spit();
+		    inState = InState.WAIT_AFTER_PIN;
+		    startPinWait = time;
 		}
-            } else if (state == InState.WAIT_SPIT) {
+	    } else if (inState == InState.WAIT_AFTER_PIN) {
+		double elapsed = time - startPinWait;
+		if (elapsed > spindexer.PIN_WAIT_AFTER_S) {
+		    // only do "spit" if the front beam-break is
+		    // broken -- otherwise skip that and we're done
+		    if (spindexer.haveArtifactIntake()) {
+			startSpitWait = time;
+			intake.lowPower();
+			intake.spit();
+			inState = InState.WAIT_SPIT;
+		    } else {
+			inState = InState.DONE;
+		    }
+		}
+            } else if (inState == InState.WAIT_SPIT) {
 		// run the intake out a little longer
 		double elapsed = time - startSpitWait;
-		if (elapsed > spindexer.SPIT_WAIT) {
+		if (elapsed > spindexer.SPIT_WAIT_S) {
 		    startSpitWait = time;
-		    state = InState.DONE;
 		    intake.stop();
 		    intake.fullPower();
+		    inState = InState.DONE;
 		}
 	    }
         }
         public boolean isFinished() {
-            return state == InState.DONE;
+            return inState == InState.DONE;
         }
         public void end(boolean interrupted){
             if (spindexer.isFull()) {
@@ -295,9 +295,14 @@ public abstract class RobotBaseOp extends OpMode {
             addRequirements(spindexer);
             addRequirements(shooter);
             addRequirements(turret);
-            addRequirements(intake);
+	    // note we do NOT use the intake automatically anymore, so
+	    // the operator can determine if it's necessary to do that
+	    // (and then this command isn't using the intake, ever)
         }
         public void initialize() {
+	    // make sure to cancel any intake stuff going on
+	    inState = InState.DONE;
+	    // go to our initial state
             state = OutState.WAIT_SHOOT;
         }
         public void execute() {
@@ -359,7 +364,6 @@ public abstract class RobotBaseOp extends OpMode {
             return state == OutState.DONE;
         }
         public void end(boolean interrupted){
-            intake.stop();
             if (!interrupted) {
                 if (isAuto()){
                     turret.noLock();
@@ -381,15 +385,14 @@ public abstract class RobotBaseOp extends OpMode {
 
         public SortSpindex() {
             addRequirements(spindexer);
-            addRequirements(intake);
         }
         public void initialize() {
             state = SortState.SORT;
             spindexer.spinModeIndex();
         }
         public void execute() {
-            intake.lowPower();
-            intake.grab();
+            //intake.lowPower();
+            //intake.grab();
             if (state == SortState.SORT) {
                 if (spindexer.atTarget()) {
                     int s = spindexer.currentShootSlot();
@@ -404,7 +407,7 @@ public abstract class RobotBaseOp extends OpMode {
                     if (!spindexer.haveOneGreen() || spindexer.slots[s] == Spindexer.SlotContent.Green) {
                         state = SortState.DONE;
                         spindexer.spinModeIndex();
-                        intake.stop();
+                        //intake.stop();
                     } else {
                         spindexer.spinIndex();
                     }
@@ -412,7 +415,7 @@ public abstract class RobotBaseOp extends OpMode {
             }
         }
         public void end(boolean interrupted) {
-            intake.stop();
+            //intake.stop();
         }
         public boolean isFinished() {
             return state == SortState.DONE;
@@ -624,7 +627,7 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("predicted-y", predictedY);
         telem.log("in-zone", inZone());
         telem.log("loops", loops);
-	telem.log("in-state", lastInState);
+	telem.log("in-state", inState);
 
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);
