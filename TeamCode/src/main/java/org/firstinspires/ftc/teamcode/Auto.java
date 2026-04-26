@@ -466,8 +466,7 @@ public abstract class Auto extends RobotBaseOp {
 
         auto.addCommands(
                 new PrepareToShoot(),
-                new ParallelCommandGroup(
-                        new AutoOuttake(),
+                new ParallelCommandGroup(new AutoOuttake(),
                         pathBetween(spikeEnd2, middleShoot, 1.0)
                 )
 
