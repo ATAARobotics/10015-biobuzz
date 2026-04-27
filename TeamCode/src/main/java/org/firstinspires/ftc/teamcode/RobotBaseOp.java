@@ -223,7 +223,9 @@ public abstract class RobotBaseOp extends OpMode {
                 }
             } else if (inState == InState.THIRD) {
                 // awaiting our third ball
-                if (spindexer.atTarget() && spindexer.haveArtifactFront()) {
+                if (spindexer.atTarget() &&
+		    (spindexer.haveArtifactFront() || spindexer.haveArtifactIntakeLong())
+		    ) {
                     spindexer.fillFront();
                     startPinWait = time;
                     intake.stop();
@@ -338,6 +340,7 @@ public abstract class RobotBaseOp extends OpMode {
             } else if (state == OutState.SHOOT) {
                 if (spindexer.isStuck()) {
                     spindexer.unStick();
+		    intake.spit();
                     state = OutState.DONE;
                 }
                 
@@ -345,15 +348,8 @@ public abstract class RobotBaseOp extends OpMode {
                 // for this -- so we're just trusting the spindexer's
                 // notion of how many balls
                 if (spindexer.atTarget()) { //shooter.getCurrentShots() > lastShots) {
+		    startPause = time;
                     state = OutState.PAUSE;
-                    /*
-                    if (spindexer.isEmpty()) {
-                        startPause = time;
-                        state = OutState.PAUSE;
-                    } else {
-                        state = OutState.WAIT_SHOOT;
-                    }
-                    */
                 }
             } else if (state == OutState.PAUSE) {
                 double elapsed = time - startPause;
@@ -656,7 +652,7 @@ public abstract class RobotBaseOp extends OpMode {
         turret.reset();
         spindexer.reset();
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
-        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 94 - 7.4 : 47.5 + 7.4, 8.0984, AngleUnit.DEGREES, 90));
+        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 94 - 7.179 : 47.25 + 7.179, 7.19, AngleUnit.DEGREES, 90));
         loops = 0;
     }
 

@@ -198,10 +198,15 @@ public class Spindexer extends SubsystemBase {
         recentBack.add(false);
         //recentBack.add(false);
         //recentBack.add(false);
-	
+
+	// 8 slices for "we've had an intake ball for a while"
         recentIntake.clear();
         recentIntake.add(false);
         recentIntake.add(false);
+        recentIntake.add(false);
+        recentIntake.add(false);
+        recentIntake.add(false);
+	
         recentIntake.add(false);
         recentIntake.add(false);
         recentIntake.add(false);
