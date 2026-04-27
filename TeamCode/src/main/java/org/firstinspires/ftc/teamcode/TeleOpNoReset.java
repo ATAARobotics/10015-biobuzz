@@ -28,7 +28,7 @@ public abstract class TeleOpNoReset extends TeleOp {
         // teleop? So we just reset and hope it was in a correct
         // position (otherwise, operator has to fix it)
         ////spindexer.targetAngle = spinTarget;
-        spindexer.reset();
+        /////spindexer.reset();
     }
 
 }
