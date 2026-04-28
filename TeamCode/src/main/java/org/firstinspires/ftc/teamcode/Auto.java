@@ -685,6 +685,7 @@ public abstract class Auto extends RobotBaseOp {
                 else{
                     cmds = nearPathing();
                 }
+                turret.operatorOffset = -3.0;
                 break;
             case FAR:
                 cmds = farPathing();
