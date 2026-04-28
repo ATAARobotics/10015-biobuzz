@@ -50,7 +50,8 @@ public class Turret extends SubsystemBase {
     private final double CAMERA_TO_TURRET_CENTER_INCHES = 3.491;
 
     double obeliskHeading;
-
+    boolean waitForReset = false;
+    double resetStart = 0;
     public boolean haveAprilLock;
     public double lastAprilLock;
     public double aprilBearing;
@@ -219,9 +220,11 @@ public class Turret extends SubsystemBase {
         revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-	servoReset = getServoAngle();
+	    servoReset = getServoAngle();
         faceRobotAngle(0);
         mode = HeadingLockMode.Off;
+        waitForReset = true;
+        resetStart = time;
     }
 
     public void autoLock() {
@@ -313,6 +316,12 @@ public class Turret extends SubsystemBase {
         voltage0 = encoder0.getVoltage();
         voltage1 = encoder1.getVoltage();
         currentTurretAngle = getTurretAngle();
+        if (waitForReset){
+            if (time - resetStart > 0.5){
+                servoReset = getServoAngle();
+                waitForReset = false;
+            }
+        }
     }
 
     @Override
