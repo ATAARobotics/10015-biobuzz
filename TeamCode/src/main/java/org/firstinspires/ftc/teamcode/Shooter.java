@@ -45,7 +45,7 @@ public class Shooter extends SubsystemBase {
     // during shots (normal spin-down is slower so the 200ms window can't see it)
 
     double hoodSlope;
-    public static double RPM_LOW = 2550;//2450;
+    public static double RPM_LOW = 2650;  //2550;//2450;
     public static double RPM_HIGH = 2900;
     public static double RPM_LOW_DIST = 73.2;
     public static double RPM_HIGH_DIST = 104.19;
@@ -55,8 +55,8 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MIN_DEGREES = 30;//36.0;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
-    public static double FAR_RPM = 3950;
-    public static double FAR_HOOD = 0.40;
+    public static double FAR_RPM = 4000;
+    public static double FAR_HOOD = 0.45;
     public double rpmSlope;
     public double rpmIntercept;
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted

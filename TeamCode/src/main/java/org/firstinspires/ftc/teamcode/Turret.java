@@ -70,8 +70,8 @@ public class Turret extends SubsystemBase {
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
     // april 13, both servos definitely working.
-    public static double turretP = 0.005, turretI = 0.04, turretD = 0.0008, turretF = 0.06;
-    public static double TURRET_TOLERANCE = 4; // in degrees
+    public static double turretP = 0.005, turretI = 0.0, turretD = 0.00045, turretF = 0.06;
+    public static double TURRET_TOLERANCE = 5; // in degrees
     public static double TURRET_TWEAK = 3;
     public static boolean ALWAYS_LOCK = false;
     public double targetHeading;  // from geometry via RobotBaseOp
@@ -353,6 +353,7 @@ public class Turret extends SubsystemBase {
             }
         }
 
+        turretHeadingControl.setSetPoint(0.0);
         turretHeadingControl.setPID(turretP, turretI, turretD);
 
 	double error = wrapAngle(currentTurretAngle) - targetTurretAngle;
@@ -412,6 +413,8 @@ public class Turret extends SubsystemBase {
         telem.log("turret-obelisk", pattern);
         telem.log("turret-operator-offset", operatorOffset);
 
+        telem.logDrivers("Turret Tweak", operatorOffset);
+
         String logPattern = "unknown";
         if (pattern == 0) {
             logPattern = "G P P";
@@ -470,11 +473,11 @@ public class Turret extends SubsystemBase {
 		//joystickAngle += 180.0;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
-                operatorOffset -= TURRET_TWEAK;
+                operatorOffset += TURRET_TWEAK;
                 //joystickAngle = -90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-                operatorOffset += TURRET_TWEAK;
+                operatorOffset -= TURRET_TWEAK;
                 //joystickAngle = 90;
             }
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {

@@ -55,7 +55,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     public static double FAR_TARGET_X_BLUE = 9.5;
     public static double FAR_TARGET_X_RED =  3.5;
-    public static double SHOOT_PREDICT = 0.300;
+    public static double SHOOT_PREDICT = 0.450;
 
     public static double SHOOT_PAUSE_WAIT = 0.250;
 
@@ -565,6 +565,9 @@ public abstract class RobotBaseOp extends OpMode {
 
     public boolean inZone(){
         if (isAuto()) {
+	    if (getStartZone() == StartZone.FAR) {
+		return true;
+	    }
             double x  = drive.getPosition().getX(DistanceUnit.INCH);
             double y  = drive.getPosition().getY(DistanceUnit.INCH);
             if (getAlliance() == Alliance.BLUE) {
@@ -610,6 +613,7 @@ public abstract class RobotBaseOp extends OpMode {
     }
 
     protected void addTelemetry(HyperTelemetry telem) {
+	telem.log("in-state", inState);
     }
 
     protected void logTelemetry() {

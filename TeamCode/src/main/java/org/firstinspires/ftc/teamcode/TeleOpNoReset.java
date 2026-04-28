@@ -20,7 +20,7 @@ public abstract class TeleOpNoReset extends TeleOp {
         int spinTarget = prefs.getInt("spindex-target", 0);
         float turretServoReset = prefs.getFloat("turret", 0.0f);
         turret.servoReset = turretServoReset;
-        int pattern = prefs.getInt("oblelisk", -1);
+        int pattern = prefs.getInt("obelisk", -1);
         turret.pattern = pattern;
 
         // TODO: this isn't working, it seems like the encoder isn't
