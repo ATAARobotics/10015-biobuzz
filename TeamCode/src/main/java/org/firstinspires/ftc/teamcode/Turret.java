@@ -318,7 +318,7 @@ public class Turret extends SubsystemBase {
         currentTurretAngle = getTurretAngle();
         if (waitForReset){
             if (time - resetStart > 0.5){
-                servoReset = getServoAngle();
+                //servoReset = getServoAngle();
                 waitForReset = false;
             }
         }

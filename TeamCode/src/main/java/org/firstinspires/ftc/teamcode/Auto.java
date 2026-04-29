@@ -443,7 +443,7 @@ public abstract class Auto extends RobotBaseOp {
                     new PrepareToShoot(),
                     new ParallelCommandGroup(
                             //pathBetween(blueNearStart, thirdBlueNearShoot, 1.0),
-                            curveBetween(blueNearStart,firstPoint,spikeStart2, 1.0, false, 0.6),
+                            curveBetween(blueNearStart,firstPoint,spikeStart2, 0.8, false, 0.6),
                             new AutoOuttake()
 
                     ),
