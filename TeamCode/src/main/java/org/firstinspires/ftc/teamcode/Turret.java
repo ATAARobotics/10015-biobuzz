@@ -55,7 +55,7 @@ public class Turret extends SubsystemBase {
     public boolean haveAprilLock;
     public double lastAprilLock;
     public double aprilBearing;
-    public double angleAdjust;
+    public double angleAdjust = 0.0;
     public double aprilDistance;
     public double aprilFloorDistance;
 
@@ -75,6 +75,8 @@ public class Turret extends SubsystemBase {
     public static double TURRET_TOLERANCE = 5; // in degrees
     public static double TURRET_TWEAK = 3;
     public static boolean ALWAYS_LOCK = false;
+    public static double TURRET_TARGET = 0.0;
+
     public double targetHeading;  // from geometry via RobotBaseOp
     public double robotHeading;
 
@@ -94,7 +96,7 @@ public class Turret extends SubsystemBase {
     public double servoAngle;
     public double servoReset;
     double joystickAngle;
-    double operatorOffset = 0;
+    double operatorOffset = 0.0;
 
     public enum MovementMode {Left, Middle, Right};
     private MovementMode movement = MovementMode.Middle;
@@ -215,12 +217,12 @@ public class Turret extends SubsystemBase {
         currentTurretAngle = 0;
 	targetTurretAngle = 0;
 	movement = MovementMode.Middle;
-	
+
         joystickAngle = 0;
         revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-	    servoReset = getServoAngle();
+        servoReset = getServoAngle();
         faceRobotAngle(0);
         mode = HeadingLockMode.Off;
         waitForReset = true;
@@ -348,6 +350,9 @@ public class Turret extends SubsystemBase {
         }
         // TEMP: always face our april-tag
 	if (ALWAYS_LOCK) {
+            if (TURRET_TARGET != 0.0) {
+                targetHeading = TURRET_TARGET;
+            }
 	    faceFieldAngle(targetHeading);
 	}
 
