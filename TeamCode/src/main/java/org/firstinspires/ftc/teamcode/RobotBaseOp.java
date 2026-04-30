@@ -537,6 +537,29 @@ public abstract class RobotBaseOp extends OpMode {
             return true;
         }
     }
+    public class ToggleShoot extends CommandBase{
+        public ToggleShoot() {
+            addRequirements(shooter);
+            addRequirements(turret);
+        }
+
+        public void initialize() {
+            if (shooter.isAutoShoot()){
+                shooter.manualShootRpm();
+                turret.noLock();
+            }
+            else {
+                shooter.autoShootRpm();
+                turret.autoLock();
+            }
+        }
+        public void execute(){
+
+        }
+        public boolean isFinished(){
+            return true;
+        }
+    }
 
     public class UnShoot extends CommandBase{
         public UnShoot(){

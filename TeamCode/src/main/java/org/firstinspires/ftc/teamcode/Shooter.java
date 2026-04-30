@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
@@ -81,6 +82,7 @@ public class Shooter extends SubsystemBase {
     VoltageSensor battery;
     double MAX_RPM = 5250;
     double targetRpm;
+    double operatorRpm = 0;
     double targetHoodAngle = 30.75;
     double targetHood = HOOD_MIN;
     double currentRpm;
@@ -207,10 +209,49 @@ public class Shooter extends SubsystemBase {
     public void autoShootRpm() {
         autoRpm = true;
     }
+    public boolean isAutoShoot(){
+        return autoRpm;
+    }
 
     public void manualShootRpm() {
         autoRpm = false;
         targetRpm = 0;
+    }
+    public class RpmUp extends CommandBase{
+        public RpmUp() {
+            addRequirements(Shooter.this);
+        }
+
+        public void initialize() {
+           operatorRpm += 100;
+        }
+        public void execute(){
+
+        }
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public class RpmDown extends CommandBase{
+        public RpmDown() {
+            addRequirements(Shooter.this);
+        }
+
+        public void initialize() {
+            operatorRpm -= 100;
+        }
+        public void execute(){
+
+        }
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command rpmDown(){
+        return new RpmDown();
+    }
+    public Command rpmUp(){
+        return new RpmUp();
     }
 
     @Override
@@ -246,13 +287,14 @@ public class Shooter extends SubsystemBase {
         }
 
         if (targetRpm > 0) {
-            control.setSetPoint(targetRpm);
+            double target = targetRpm + operatorRpm;
+            control.setSetPoint(target);
             power = control.calculate(smoothRpm);//currentRpm);
             // we find that varying F from 0.72 up to 0.9
             // depending on the TARGET RPM seems to work well
             // .. so we want f to be "0.72" at 2500 RPM and "0.9" at
             // 3500 RPM.
-            double percent = (targetRpm - RPM_LOW) / (RPM_HIGH - RPM_LOW);
+            double percent = (target - RPM_LOW) / (RPM_HIGH - RPM_LOW);
             if (percent > 1.0) percent = 1.0;
             if (percent < 0.0) percent = 0.0;
             double f = F_LOW + ((F_HI - F_LOW) * percent);
@@ -312,6 +354,7 @@ public class Shooter extends SubsystemBase {
         telem.log("shooter-ticks", ticks);
         telem.log("shooter-smooth-rpm", smoothRpm);
         telem.log("shooter-rpm-max", rpmMax());
+        telem.logBoth("shooter-operator-rpm", operatorRpm);
     }
 
     public class HumanInputs extends CommandBase {

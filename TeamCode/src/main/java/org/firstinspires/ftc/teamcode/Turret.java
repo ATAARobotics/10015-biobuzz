@@ -387,7 +387,7 @@ public class Turret extends SubsystemBase {
         smolHeadingControl.setPID(smolP, smolI, smolD);
 
 	double error = wrapAngle(currentTurretAngle) - targetTurretAngle;
-        if (error > TURRET_TOLERANCE) {
+        if (Math.abs(error) > TURRET_TOLERANCE) {
             servoPower = -(bigHeadingControl.calculate(error) + bigF * Math.signum(bigHeadingControl.getPositionError()));
         } else {
             servoPower = -(smolHeadingControl.calculate(error) + smolF * Math.signum(smolHeadingControl.getPositionError()));

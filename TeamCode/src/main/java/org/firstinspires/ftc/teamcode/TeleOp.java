@@ -44,17 +44,18 @@ public abstract class TeleOp extends RobotBaseOp {
             spindexer.new IndexOnce()
         );
         operator.getGamepadButton(GamepadKeys.Button.B).whenPressed(
-                new OperatorPattern()
+                 shooter.rpmDown()
         );
         operator.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
-                new PrepareToShoot()
+                new ToggleShoot()
+               // new PrepareToShoot()
         );
         operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
-                new UnShoot()
+                shooter.rpmUp()
         );
 
         operator.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON).whileHeld(spindexer.manualAdjust(operator));
         operator.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(spindexer.resetContents());
-        operator.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(shooter.alwaysSpin());
+      //  operator.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(shooter.alwaysSpin());
     }
 }

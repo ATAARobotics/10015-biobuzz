@@ -62,6 +62,10 @@ public class Drive extends SubsystemBase {
     double desired_heading;
     double ff_forward;
     double ff_strafe;
+    double resetStart = 0;
+    public enum ResetState {Off, Player, NearZone}
+    ResetState reseting = ResetState.Off;
+
     Command parking; //Null if we're not parking
 
     private final PIDController heading_control;
@@ -287,13 +291,32 @@ public class Drive extends SubsystemBase {
             // if we're holding left trigger _currently_, we go to
             // Turbo -- otherwise to non-Turbo
             turbo(driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5);
-            if (driver.isDown(GamepadKeys.Button.B) && isRedAlliance && parking == null){
-                parking = parkAt(driver, -0.835, -0.95, -180);
-                CommandScheduler.getInstance().schedule(parking);
+            if (driver.isDown(GamepadKeys.Button.A)){
+                if (reseting == ResetState.Off){
+                    resetStart = current_time;
+                    reseting = ResetState.Player;
+                }
+                else {
+                    if (current_time - resetStart > 1.0){
+                        setPosition(new Pose2D(DistanceUnit.INCH, 7.179, 7.19, AngleUnit.DEGREES, 90));
+                        reseting = ResetState.Off;
+                    }
+                }
             }
-            if (driver.isDown(GamepadKeys.Button.B) && !isRedAlliance && parking == null) {
-                parking = parkAt(driver, 0.835, -0.95, -180);
-                CommandScheduler.getInstance().schedule(parking);
+            else if (driver.isDown(GamepadKeys.Button.Y)){
+                if (reseting == ResetState.Off){
+                    resetStart = current_time;
+                    reseting = ResetState.NearZone;
+                }
+                else {
+                    if (current_time - resetStart > 1.0){
+                        setPosition(new Pose2D(DistanceUnit.INCH, 70.5, 141 - 7.19, AngleUnit.DEGREES, 270));
+                        reseting = ResetState.Off;
+                    }
+                }
+            }
+            else {
+                reseting = ResetState.Off;
             }
         }
 
