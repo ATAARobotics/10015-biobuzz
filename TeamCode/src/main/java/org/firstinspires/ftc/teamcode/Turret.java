@@ -154,6 +154,13 @@ public class Turret extends SubsystemBase {
         double robotRelative = fieldAngleDeg + operatorOffset - robotHeading;
 	robotRelative = wrapAngle(robotRelative);
 
+        if (robotRelative == 0.0) {
+            // way too late to figure this massive weirdness out -- if
+            // we call faceRobotAngle() with EXACTLY 0.0 then it wants
+            // to go to 21.something degress (!!!??? what)
+            robotRelative = 0.000001;
+        }
+
         // Reuse existing robot-relative method
         faceRobotAngle(robotRelative);
     }
