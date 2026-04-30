@@ -207,7 +207,7 @@ public abstract class Auto extends RobotBaseOp {
         }
         public boolean isFinished() {
             double elapsed = time - startTime;
-            return !follower.isBusy() || elapsed > 3;
+            return !follower.isBusy() || elapsed > 2.5;
         }
     }
 
@@ -293,10 +293,10 @@ public abstract class Auto extends RobotBaseOp {
             ),
             new PrepareToShoot(),
             new ParallelCommandGroup(
-                new AutoOuttake(),
                 pathBetween(spikeEnd1, blueFarShoot, 1.0)
-            )
-        );
+            ),
+                new AutoOuttake()
+                );
 
         /* Old routing
         auto.addCommands(
@@ -418,9 +418,10 @@ public abstract class Auto extends RobotBaseOp {
                 )
             ),
             new SequentialCommandGroup(
-                new AutoOuttake(),
+                    new PrepareToShoot(),
                 curveBetween(gateIntakeBack, gatePoint, toWhere, 1.0, false, 0.6)
-            )
+            ),
+        new AutoOuttake()
         );
     }
 
