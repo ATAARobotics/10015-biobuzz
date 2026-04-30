@@ -55,8 +55,8 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MIN_DEGREES = 30;//36.0;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
-    public static double FAR_RPM = 4100;
-    public static double FAR_HOOD = 0.45;
+    public static double FAR_RPM = 3600;
+    public static double FAR_HOOD = 0.4;
     public double rpmSlope;
     public double rpmIntercept;
     public static int RPM_DROP_FOR_SHOT = 200;  // how many RPMs must drop for "a shot" to be counted
