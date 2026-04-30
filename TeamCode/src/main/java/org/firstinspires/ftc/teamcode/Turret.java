@@ -71,8 +71,10 @@ public class Turret extends SubsystemBase {
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
     // april 13, both servos definitely working.
-    public static double turretP = 0.005, turretI = 0.0, turretD = 0.00045, turretF = 0.06;
-    public static double TURRET_TOLERANCE = 5; // in degrees
+    public static double bigP = 0.006, bigI = 0.0, bigD = 0.001, bigF = 0.05;
+    public static double smolP = 0.006, smolI = 0.001, smolD = 0.0004, smolF = 0.07;
+    public static double BIG_TURRET_TOLERANCE = 20; // in degrees
+    public static double TURRET_TOLERANCE = 2; // in degrees
     public static double TURRET_TWEAK = 3;
     public static boolean ALWAYS_LOCK = false;
     public static double TURRET_TARGET = 0.0;
@@ -89,7 +91,8 @@ public class Turret extends SubsystemBase {
 
     // servo -> turret angle and wrapping issues and PID control of
     // turret heading (controlled by targetTurretAngle)
-    public PIDController turretHeadingControl;
+    public PIDController bigHeadingControl;
+    public PIDController smolHeadingControl;
     public double servoPower;
     public double currentTurretAngle;
     public double targetTurretAngle;
@@ -124,8 +127,11 @@ public class Turret extends SubsystemBase {
         revEncoder = rev;
         motifLight = hardwareMap.get(Servo.class, "light");
 
-        turretHeadingControl = new PIDController(turretP, turretI, turretD);
-        turretHeadingControl.setTolerance(TURRET_TOLERANCE);
+        bigHeadingControl = new PIDController(bigP, bigI, bigD);
+        bigHeadingControl.setTolerance(BIG_TURRET_TOLERANCE);
+
+        smolHeadingControl = new PIDController(smolP, smolI, smolD);
+        smolHeadingControl.setTolerance(TURRET_TOLERANCE);
 //        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
         reset();
 
@@ -171,7 +177,8 @@ public class Turret extends SubsystemBase {
 	if (angle > maxAngle) angle = maxAngle;
 	targetTurretAngle = angle;
 	// "set point" is always zero and we compute the error ourselves
-        turretHeadingControl.setSetPoint(0.0);
+        bigHeadingControl.setSetPoint(0.0);
+        smolHeadingControl.setSetPoint(0.0);
     }
 
     // convert a 0->360 angle to range -180 -> +180 where 0 is robot-forward
@@ -202,7 +209,7 @@ public class Turret extends SubsystemBase {
 
     public boolean atTargetAngle() {
         if (modeJustChanged) return false;
-        return turretHeadingControl.atSetPoint();
+        return bigHeadingControl.atSetPoint() && smolHeadingControl.atSetPoint();
     }
 
     /// trying to re-tun december 22
@@ -374,11 +381,17 @@ public class Turret extends SubsystemBase {
             }
         }
 
-        turretHeadingControl.setSetPoint(0.0);
-        turretHeadingControl.setPID(turretP, turretI, turretD);
+        bigHeadingControl.setSetPoint(0.0);
+        bigHeadingControl.setPID(bigP, bigI, bigD);
+        smolHeadingControl.setSetPoint(0.0);
+        smolHeadingControl.setPID(smolP, smolI, smolD);
 
 	double error = wrapAngle(currentTurretAngle) - targetTurretAngle;
-        servoPower = -(turretHeadingControl.calculate(error) + turretF * Math.signum(turretHeadingControl.getPositionError()));
+        if (error > TURRET_TOLERANCE) {
+            servoPower = -(bigHeadingControl.calculate(error) + bigF * Math.signum(bigHeadingControl.getPositionError()));
+        } else {
+            servoPower = -(smolHeadingControl.calculate(error) + smolF * Math.signum(smolHeadingControl.getPositionError()));
+        }
 	if (currentTurretAngle < -90) movement = MovementMode.Left;
 	else if (currentTurretAngle > 90) movement = MovementMode.Right;
 	else movement = MovementMode.Middle;
@@ -419,7 +432,9 @@ public class Turret extends SubsystemBase {
         telem.log("turret-voltage1", voltage1);
         telem.log("turret-target-angle", targetTurretAngle);
         telem.log("turret-power", servoPower);
-        telem.log("turret-error", turretHeadingControl.getPositionError());
+        telem.log("turret-big-error", bigHeadingControl.getPositionError());
+        telem.log("turret-error", smolHeadingControl.getPositionError());
+        telem.log("turret-at-target", atTargetAngle());
         telem.log("turret-joystick", joystickAngle);
         telem.log("turret-servo-angle0", getServoAngle());
         telem.log("turret-servo-angle1", getOtherServoAngle());
@@ -452,7 +467,8 @@ public class Turret extends SubsystemBase {
 	telem.logDrivers("Servo Reset", servoReset);
 	telem.logDrivers("Servo Angle", getServoAngle());
         telem.logDrivers("Turret Power", servoPower);
-        telem.logDrivers("Turret Angle Error", turretHeadingControl.getPositionError());
+        telem.logDrivers("Turret Angle Error (big)", bigHeadingControl.getPositionError());
+        telem.logDrivers("Turret Angle Error (smol)", smolHeadingControl.getPositionError());
         telem.logDrivers("Joystick Angle", joystickAngle);
         telem.logDrivers("Turret Tweak", operatorOffset);
 	*/
