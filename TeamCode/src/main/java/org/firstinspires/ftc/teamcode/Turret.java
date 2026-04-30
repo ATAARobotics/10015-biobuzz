@@ -4,6 +4,7 @@ import android.util.Size;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
@@ -473,6 +474,42 @@ public class Turret extends SubsystemBase {
         telem.logDrivers("Turret Tweak", operatorOffset);
 	*/
     }
+    public class TweakLeft extends CommandBase{
+        public TweakLeft() {
+            addRequirements(Turret.this);
+        }
+
+        public void initialize() {
+            operatorOffset += TURRET_TWEAK;
+        }
+        public void execute(){
+
+        }
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command tweakLeft(){
+        return new Turret.TweakLeft();
+    }
+    public class TweakRight extends CommandBase{
+        public TweakRight() {
+            addRequirements(Turret.this);
+        }
+
+        public void initialize() {
+            operatorOffset -= TURRET_TWEAK;
+        }
+        public void execute(){
+
+        }
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command tweakRight(){
+        return new Turret.TweakRight();
+    }
 
 
     public class HumanInputs extends CommandBase {
@@ -509,7 +546,7 @@ public class Turret extends SubsystemBase {
 		// (if needed, can convert it to 0 .. 360)
 		//joystickAngle += 180.0;
             }
-            if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
+           /* if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
                 operatorOffset += TURRET_TWEAK;
                 //joystickAngle = -90;
             }
@@ -520,7 +557,7 @@ public class Turret extends SubsystemBase {
             if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
                 //operatorOffset = 0;
                 //joystickAngle = 0;
-            }
+            }*/
         }
     }
 
