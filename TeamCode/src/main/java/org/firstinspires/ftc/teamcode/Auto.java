@@ -279,7 +279,9 @@ public abstract class Auto extends RobotBaseOp {
             new ParallelCommandGroup(
                 pathBetween(slightlyBack, blueFarShoot, 1.0)
             ),
-            new AutoOuttake()
+            new Delay(0.5),
+            new AutoOuttake(),
+                new Delay(1.0)
         );
 
         // collect and shoot audience spike mark
@@ -349,7 +351,6 @@ public abstract class Auto extends RobotBaseOp {
             
             //2nd gate scoop
             auto.addCommands(
-                new PrepareToShoot(),
                 new ParallelRaceGroup(
                     new SequentialCommandGroup(
                         curveBetween(blueFarShoot, theCorner, secretTunnelIntake, 0.7, false),
@@ -357,6 +358,7 @@ public abstract class Auto extends RobotBaseOp {
                     ),
                     new AutoIntake()
                 ),
+                new PrepareToShoot(),
                 new ParallelCommandGroup(
                     pathBetween(secretTunnelIntake, blueFarShoot, 1.0)
                 ),
@@ -415,7 +417,7 @@ public abstract class Auto extends RobotBaseOp {
                     new Delay(0.67)
                 )
             ),
-            new ParallelCommandGroup(
+            new SequentialCommandGroup(
                 new AutoOuttake(),
                 curveBetween(gateIntakeBack, gatePoint, toWhere, 1.0, false, 0.6)
             )
@@ -474,6 +476,7 @@ public abstract class Auto extends RobotBaseOp {
                          );
 
         doGateIntake(auto, middleShoot, middleShoot);
+
 
         //gate intake 2
         if (gateIntake2) {
