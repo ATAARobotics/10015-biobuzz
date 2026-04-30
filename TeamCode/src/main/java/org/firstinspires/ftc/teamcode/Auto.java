@@ -44,6 +44,7 @@ public abstract class Auto extends RobotBaseOp {
     private boolean closeGateOpen = false;
     private boolean gatePickUp = true;
     private boolean gateIntake2 = true;
+    private double aimOffset = 0;
 
     public static double GATE_X = 11.67;
     public static double GATE_Y = 60.0;
@@ -642,13 +643,15 @@ public abstract class Auto extends RobotBaseOp {
             audienceSpike = !audienceSpike;
         }*/
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
-            closeGateOpen = !closeGateOpen;
+            //closeGateOpen = !closeGateOpen;
+            aimOffset -= 3;
+        }
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
+            //gatePickUp = true;
+            aimOffset += 3;
         }
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
             gateIntake2 = true;
-        }
-        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
-            gatePickUp = true;
         }
         if (operator.wasJustPressed(GamepadKeys.Button.A)){
             soloNear = true;
@@ -656,7 +659,13 @@ public abstract class Auto extends RobotBaseOp {
         // if (whenOpenGate == 0) openDescription = "Never";
         // if (whenOpenGate == 1) openDescription = "After Spike3 pickup";
 
-
+        String niceOffset;
+        if (aimOffset < 0){
+            niceOffset = (-aimOffset) + " right";
+        }
+        else{
+            niceOffset = aimOffset + " left";
+        }
         telemetry.addData("Preloads (Dpad Up to toggle)", usePreloads);
         //  telemetry.addData("Open Gate (Dpad Down to toggle)", openDescription);
         // telemetry.addData("Pick up third spike (Dpad Left to toggle", audienceSpike);
@@ -664,6 +673,7 @@ public abstract class Auto extends RobotBaseOp {
         telemetry.addData("Near zone open gate (Dpad Right to toggle)", closeGateOpen);
         telemetry.addData("Near zone 2nd gate intake (Dpad Down to toggle)", gateIntake2);
         telemetry.addData("Solo auto for near (A to toggle)", soloNear);
+        telemetry.addData("Aim Offset", niceOffset);
         telemetry.update();
     }
 
@@ -685,7 +695,6 @@ public abstract class Auto extends RobotBaseOp {
                 else{
                     cmds = nearPathing();
                 }
-                turret.operatorOffset = -3.0;
                 break;
             case FAR:
                 cmds = farPathing();
@@ -700,6 +709,7 @@ public abstract class Auto extends RobotBaseOp {
             spindexer.slots[1] = Spindexer.SlotContent.Purple;
             spindexer.slots[2] = Spindexer.SlotContent.Purple;
         }
+        turret.operatorOffset = aimOffset;
     }
 
     @Override
