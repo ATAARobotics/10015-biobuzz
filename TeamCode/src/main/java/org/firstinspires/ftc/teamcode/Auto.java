@@ -440,7 +440,7 @@ public abstract class Auto extends RobotBaseOp {
         follower.setStartingPose(start);
 
         SequentialCommandGroup auto = new SequentialCommandGroup();
-        if (onlyPreloads){
+      /*  if (onlyPreloads){
             auto.addCommands(
                     new SequentialCommandGroup(
                             new Delay(15.0),
@@ -449,7 +449,7 @@ public abstract class Auto extends RobotBaseOp {
                     )
             );
             return auto;
-        }
+        }*/
 
         // shoot preloads
         Pose spikeStart = secondBlueNearShoot;
@@ -671,9 +671,9 @@ public abstract class Auto extends RobotBaseOp {
         if (operator.wasJustPressed(GamepadKeys.Button.A)){
             soloNear = true;
         }
-        if (operator.wasJustPressed(GamepadKeys.Button.B)){
+      /*  if (operator.wasJustPressed(GamepadKeys.Button.B)){
             onlyPreloads = true;
-        }
+        }*/
         // if (whenOpenGate == 0) openDescription = "Never";
         // if (whenOpenGate == 1) openDescription = "After Spike3 pickup";
 
@@ -692,7 +692,7 @@ public abstract class Auto extends RobotBaseOp {
         telemetry.addData("Near zone 2nd gate intake (Dpad Down to toggle)", gateIntake2);
         telemetry.addData("Solo auto for near (A to toggle)", soloNear);
         telemetry.addData("Aim Offset", niceOffset);
-        telemetry.addData("only preloads, B to toggle:", onlyPreloads);
+     //   telemetry.addData("only preloads, B to toggle:", onlyPreloads);
         telemetry.update();
     }
 

@@ -197,7 +197,7 @@ public class Turret extends SubsystemBase {
 
     public boolean atTargetAngle() {
         if (modeJustChanged) return false;
-        return bigHeadingControl.atSetPoint() && smolHeadingControl.atSetPoint();
+        return smolHeadingControl.atSetPoint();
     }
 
     /// trying to re-tun december 22
