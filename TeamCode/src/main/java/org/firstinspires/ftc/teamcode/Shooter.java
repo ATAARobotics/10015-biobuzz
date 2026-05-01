@@ -56,7 +56,7 @@ public class Shooter extends SubsystemBase {
     public static double HOOD_MIN_DEGREES = 30;//36.0;
     public static double MANUAL_RPM = 0;
     public static double MANUAL_HOOD = 0.00;
-    public static double FAR_RPM = 3600;
+    public static double FAR_RPM = 3900;
     public static double FAR_HOOD = 0.4;
     public double rpmSlope;
     public double rpmIntercept;

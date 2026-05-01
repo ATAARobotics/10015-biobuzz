@@ -39,7 +39,7 @@ public abstract class Auto extends RobotBaseOp {
     double yOffset = 7.19;
     private boolean onlyPreloads = true;
     private boolean soloNear = false;
-    private boolean usePreloads = false;
+    private boolean usePreloads = true;
     private int whenOpenGate = 0;
     private boolean audienceSpike = false;
     private boolean closeGateOpen = false;
@@ -456,12 +456,15 @@ public abstract class Auto extends RobotBaseOp {
         if (usePreloads) {
             auto.addCommands(
                     new PrepareToShoot(),
-                    new ParallelCommandGroup(
+                    pathBetween(blueNearStart,blueNearShoot,1.0),
+                    new AutoOuttake(),
+                    pathBetween(blueNearShoot,spikeStart2, 1.0),
+                  /*  new ParallelCommandGroup(
                             //pathBetween(blueNearStart, thirdBlueNearShoot, 1.0),
                             curveBetween(blueNearStart,firstPoint,spikeStart2, 0.8, false, 0.6),
                             new AutoOuttake()
 
-                    ),
+                    ),*/
                     new Delay(0.100)
             );
             spikeStart = spikeStart2;
