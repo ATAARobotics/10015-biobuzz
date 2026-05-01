@@ -45,7 +45,6 @@ public class Turret extends SubsystemBase {
     double voltage0;
     double voltage1;
     double time;
-    public double ticks;
 
     // 88.67mm
     private final double CAMERA_TO_TURRET_CENTER_INCHES = 3.491;
@@ -65,14 +64,14 @@ public class Turret extends SubsystemBase {
     private static final double SERVO_BELT_RATIO = 0.9153;  // 54 / 59
 
     // 3:1 then 90:295
-    
+
     // tuned december 11, bare servos for PID, attach turret for F
     //public static double turretP = 0.004, turretI = 0.06, turretD = 0.0005, turretF = 0.015;
     // tuned dec 22 from first principals
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
     // april 13, both servos definitely working.
-    public static double bigP = 0.006, bigI = 0.0, bigD = 0.001, bigF = 0.05;
+    public static double bigP = 0.004, bigI = 0.0, bigD = 0.0001, bigF = 0.05;
     public static double smolP = 0.006, smolI = 0.001, smolD = 0.0004, smolF = 0.07;
     public static double BIG_TURRET_TOLERANCE = 20; // in degrees
     public static double TURRET_TOLERANCE = 2; // in degrees
@@ -115,7 +114,7 @@ public class Turret extends SubsystemBase {
 
 //    private static FileWriter writer;
 
-    public Turret(HardwareMap hardwareMap, boolean isRedAlliance, boolean isAuto, DcMotor rev) {
+    public Turret(HardwareMap hardwareMap, boolean isRedAlliance, boolean isAuto) {
         target = AprilTagGameDatabase.getDecodeTagLibrary().lookupTag(isRedAlliance ? 24 : 20);
         this.isAuto = isAuto;
         // both servos must always run in the same direction
@@ -123,9 +122,6 @@ public class Turret extends SubsystemBase {
         servo2 = new CRServo(hardwareMap, "right_turret");
         encoder0 = hardwareMap.get(AnalogInput.class, "left_encoder");
         encoder1 = hardwareMap.get(AnalogInput.class, "right_encoder");
-        // the turret encoder is plugged into drivebase port 0, the front-right motor
-        //revEncoder = hardwareMap.dcMotor.get("fr");
-        revEncoder = rev;
         motifLight = hardwareMap.get(Servo.class, "light");
 
         bigHeadingControl = new PIDController(bigP, bigI, bigD);
@@ -134,25 +130,16 @@ public class Turret extends SubsystemBase {
         smolHeadingControl = new PIDController(smolP, smolI, smolD);
         smolHeadingControl.setTolerance(TURRET_TOLERANCE);
 //        try { writer = new FileWriter("/sdcard/FIRST/axon_debug.txt"); } catch (IOException e) { e.printStackTrace(); }
-        reset();
 
-        //AprilTagLibrary decode_tags = ;
-        // game manual says april tag family is 36h11
-      /*  april_tags = new AprilTagProcessor.Builder()
-                //.setTagLibrary(decode_tags)
-                .setDrawTagID(true)
-                .setDrawTagOutline(false)//true)
-                .setDrawAxes(false)//true)
-                .setDrawCubeProjection(false)//true)
-                .build();
+        // RobotBaseOp will call this at the right moment, DO NOT call
+        // reset here -- we don't want the turret to move yet
 
-        portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "elp"))
-                .addProcessor(april_tags)
-                .setCameraResolution(new Size(1024, 768))
-                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .setAutoStopLiveView(true)
-                .build();*/
+        ///reset();
+
+        // attempt to let the Axons 'boot up' well before we ask them
+        // for their reset angles
+        servo1.stop();
+        servo2.stop();
     }
 
     public void faceFieldAngle(double fieldAngleDeg) {
@@ -227,15 +214,14 @@ public class Turret extends SubsystemBase {
     // f "just below moving" = 0.11
     // pidf = 0.003, 0, 0.07, 0.0   <-- seems pretty good?
     public void reset() {
-        servo1.stop();
-        servo2.stop();
+        //moved to constructor .. could perhaps also be useful here?
+        //servo1.stop();
+        //servo2.stop();
         currentTurretAngle = 0;
 	targetTurretAngle = 0;
 	movement = MovementMode.Middle;
 
         joystickAngle = 0;
-        revEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        revEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         servoReset = getServoAngle();
         faceRobotAngle(0);
@@ -329,7 +315,6 @@ public class Turret extends SubsystemBase {
 
     public void read_sensors(double time) {
         this.time = time;
-        this.ticks = revEncoder.getCurrentPosition();
         voltage0 = encoder0.getVoltage();
         voltage1 = encoder1.getVoltage();
         currentTurretAngle = getTurretAngle();
