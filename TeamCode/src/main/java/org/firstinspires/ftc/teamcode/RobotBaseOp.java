@@ -55,7 +55,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     public static double FAR_TARGET_X_BLUE = 9.5;
     public static double FAR_TARGET_X_RED =  3.5;
-    public static double SHOOT_PREDICT = 0.450;
+    public static double SHOOT_PREDICT = 0.250;//0.450;
 
     public static double SHOOT_PAUSE_WAIT = 0.250;
 
@@ -93,7 +93,7 @@ public abstract class RobotBaseOp extends OpMode {
         operator = new GamepadEx(gamepad2);
 
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
-        turret = new Turret(hardwareMap, isRedAlliance(), isAuto(), drive.turretEncoder);
+        turret = new Turret(hardwareMap, isRedAlliance(), isAuto());
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         spindexer = new Spindexer(hardwareMap);
@@ -689,7 +689,6 @@ public abstract class RobotBaseOp extends OpMode {
 
         // runs while the robot is "on" but we haven't pressed "play" yet
         turret.read_sensors(0.0);
-        telemetry.addData("turret-ticks", turret.revEncoder.getCurrentPosition());
         telemetry.addData("turret-servo", turret.getServoAngle());
         telemetry.addData("turret-angle", turret.getTurretAngle());
         telemetry.addData("spindexer-ticks", spindexer.spindexerMotor.getCurrentPosition());
@@ -703,17 +702,6 @@ public abstract class RobotBaseOp extends OpMode {
         clearCache();
         readControls();
         readSensors();
-        if (!isAuto()){
-            if (operatorPattern == 0){
-                turret.motifLight.setPosition(0);
-            }
-            if (operatorPattern == 1){
-                turret.motifLight.setPosition(0.71);
-            }
-            if (operatorPattern == 2){
-                turret.motifLight.setPosition(0.61);
-            }
-        }
 
         if (!minuteWarning && runtime.seconds() > 60){
             minuteWarning = true;
@@ -724,12 +712,13 @@ public abstract class RobotBaseOp extends OpMode {
             operator.gamepad.rumble(600);
         }
         // We need to rotate the FTC coordinate system 90 degrees to
-        // get the pedro pathing system, and Offset by 72 inches (70.5)
+        // get the pedro pathing system, and Offset by 70.5 inches
 
         double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
         double robotY = drive.getPosition().getY(DistanceUnit.INCH);
 
+        // CONSIDER (for Friday): take this out too???
 	if (isAuto()) {
 	    double tof = SHOOT_PREDICT; // timeOfFlight(geometricDistance);
 	    aimOffsetX = drive.x_velocity * tof;
@@ -740,55 +729,25 @@ public abstract class RobotBaseOp extends OpMode {
         predictedX = robotX;
         predictedY = robotY;
 
-        // We prefer angels from 0-360, but atan2 likes 180 to -180
-      //  if (robotHeading < 0) robotHeading = robotHeading + 360;
-
-        // we need to offset the robot x and y values to be at the
-        // center of the turret.
-        double turretX = robotX - (Math.cos(Math.toRadians(robotHeading)) * ROBOT_CENTER_TO_TURRET_INCHES);
-        double turretY = robotY - (Math.sin(Math.toRadians(robotHeading)) * ROBOT_CENTER_TO_TURRET_INCHES);
-
-        // AAAAAAaaaaaa! okay, so FTC co-ordinate system says the
-        // field is 144x144 inches. This is not true, it is actually
-        // 141.5 inches. The field-center is (70.5, 70.5) NOT (72, 72)
-        // if we measure from tile-edges.
-
-        //double targetX = turret.target.fieldPosition.get(1);
-        //double targetY = -turret.target.fieldPosition.get(0);
-        // TODO: red vs blue targets
         double targetX = GEOM_TARGET_X;
         double targetY = GEOM_TARGET_Y;
-
 
         if (getAlliance() == Alliance.RED){
             targetX = 141 - GEOM_TARGET_X;
         }
 
-        double distanceA = targetX - turretX;
-        double distanceB = targetY - turretY;
+        double distanceA = targetX - predictedX;
+        double distanceB = targetY - predictedY;
         geometricDistance = Math.sqrt((distanceA * distanceA) + (distanceB * distanceB));
 
-        if (shooter.autoRpm && geometricDistance > shooter.FAR_DISTANCE){
-            if (getAlliance() == Alliance.BLUE) {
-                targetX = FAR_TARGET_X_BLUE;
-            }
-            else {
-                targetX = 141 - FAR_TARGET_X_RED;
-            }
-        }
         geometricTargetHeading = Math.toDegrees(
-            Math.atan2(targetY - turretY,
-                       targetX - turretX)
+            Math.atan2(targetY - predictedY,
+                       targetX - predictedX)
         );
 
         turret.robotHeading = robotHeading;
-        if (false && turret.isLocked(time)) {
-            shooter.aprilDistance = turret.aprilDistance;
-        }
-        else{
-            shooter.aprilDistance = geometricDistance;
-            turret.targetHeading = geometricTargetHeading;
-        }
+        shooter.aprilDistance = geometricDistance;
+        turret.targetHeading = geometricTargetHeading;
 
         // Run the CommandScheduler instance (note: this will call
         // ".periodic()" on all registered subsystems, which is the
