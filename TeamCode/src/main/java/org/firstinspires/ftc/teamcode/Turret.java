@@ -72,7 +72,7 @@ public class Turret extends SubsystemBase {
     // (and again)
     // april 13, both servos definitely working.
     public static double bigP = 0.004, bigI = 0.0, bigD = 0.0001, bigF = 0.05;
-    public static double smolP = 0.006, smolI = 0.001, smolD = 0.0004, smolF = 0.07;
+    public static double smolP = 0.0065, smolI = 0.001, smolD = 0.0005, smolF = 0.075;
     public static double BIG_TURRET_TOLERANCE = 20; // in degrees
     public static double TURRET_TOLERANCE = 2; // in degrees
     public static double TURRET_TWEAK = 3;
@@ -373,7 +373,7 @@ public class Turret extends SubsystemBase {
         smolHeadingControl.setPID(smolP, smolI, smolD);
 
 	double error = wrapAngle(currentTurretAngle) - targetTurretAngle;
-        if (Math.abs(error) > TURRET_TOLERANCE) {
+        if (Math.abs(error) > BIG_TURRET_TOLERANCE) {
             servoPower = -(bigHeadingControl.calculate(error) + bigF * Math.signum(bigHeadingControl.getPositionError()));
         } else {
             servoPower = -(smolHeadingControl.calculate(error) + smolF * Math.signum(smolHeadingControl.getPositionError()));
