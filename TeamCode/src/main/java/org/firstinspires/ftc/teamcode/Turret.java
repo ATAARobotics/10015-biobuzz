@@ -74,7 +74,7 @@ public class Turret extends SubsystemBase {
     public static double bigP = 0.004, bigI = 0.0, bigD = 0.0001, bigF = 0.05;
     public static double smolP = 0.0065, smolI = 0.001, smolD = 0.0005, smolF = 0.075;
     public static double BIG_TURRET_TOLERANCE = 20; // in degrees
-    public static double TURRET_TOLERANCE = 2; // in degrees
+    public static double TURRET_TOLERANCE = 3; // in degrees
     public static double TURRET_TWEAK = 3;
     public static boolean ALWAYS_LOCK = false;
     public static double TURRET_TARGET = 0.0;

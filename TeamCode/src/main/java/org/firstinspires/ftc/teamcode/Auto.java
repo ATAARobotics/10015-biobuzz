@@ -456,15 +456,15 @@ public abstract class Auto extends RobotBaseOp {
         if (usePreloads) {
             auto.addCommands(
                     new PrepareToShoot(),
-                    pathBetween(blueNearStart,blueNearShoot,1.0),
-                    new AutoOuttake(),
-                    pathBetween(blueNearShoot,spikeStart2, 1.0),
-                  /*  new ParallelCommandGroup(
+                   // pathBetween(blueNearStart,blueNearShoot,1.0),
+                   // new AutoOuttake(),
+                    //pathBetween(blueNearShoot,spikeStart2, 1.0),
+                    new ParallelCommandGroup(
                             //pathBetween(blueNearStart, thirdBlueNearShoot, 1.0),
                             curveBetween(blueNearStart,firstPoint,spikeStart2, 0.8, false, 0.6),
                             new AutoOuttake()
 
-                    ),*/
+                    ),
                     new Delay(0.100)
             );
             spikeStart = spikeStart2;
