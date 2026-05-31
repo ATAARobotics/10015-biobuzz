@@ -71,8 +71,8 @@ public class Turret extends SubsystemBase {
     /// ///public static double turretP = 0.003, turretI = 0.00, turretD = 0.0, turretF = 0.07;
     // (and again)
     // april 13, both servos definitely working.
-    public static double bigP = 0.004, bigI = 0.0, bigD = 0.0001, bigF = 0.05;
-    public static double smolP = 0.0065, smolI = 0.001, smolD = 0.0005, smolF = 0.075;
+    public static double bigP = 0.004, bigI = 0.0, bigD = 0.0001, bigF = 0.025;
+    public static double smolP = 0.0065, smolI = 0.001, smolD = 0.0005, smolF = 0.0375;
     public static double BIG_TURRET_TOLERANCE = 20; // in degrees
     public static double TURRET_TOLERANCE = 3; // in degrees
     public static double TURRET_TWEAK = 3;
