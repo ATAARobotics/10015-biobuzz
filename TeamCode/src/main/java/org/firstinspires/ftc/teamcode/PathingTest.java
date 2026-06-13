@@ -29,15 +29,19 @@ public class PathingTest extends RobotBaseOp {
     }
     protected void bindDriverControls(){
     }
-
     public Follower follower;
-    double xOffset = 8.124;
-    double yOffset = 8.0984;
+    double elapsed;
+    double driveTimeStart;
+    double driveTimeEnd;
+    double driveTime;
+    boolean timing = false;
+    double xOffset = 7.179;
+    double yOffset = 7.19;
     double pathingHeading = Math.toRadians(180);
-    private final Pose blueFarStart = new Pose(70 - yOffset, xOffset, Math.toRadians(180));
+    private final Pose blueFarStart = new Pose(70 - xOffset, yOffset, Math.toRadians(90));
     private Pose positionOne = new Pose(24 + yOffset,45, pathingHeading);
     private Pose positionTwo = new Pose (120 - yOffset, 45, pathingHeading );
-    private Pose positionThree = new Pose (70.5,70.5 + 48, pathingHeading);
+    private Pose positionThree = new Pose (70.5,70.5 + 48, 90);
     Pose lastPose = blueFarStart;
     public static double brakingStrength = 1.0;
     public static double brakingStart = 0.25;
@@ -75,7 +79,7 @@ public class PathingTest extends RobotBaseOp {
             startTime = time;
         }
         public boolean isFinished() {
-            double elapsed = time - startTime;
+            elapsed = time - startTime;
             return !follower.isBusy() || elapsed > 3;
         }
     }
@@ -139,6 +143,7 @@ public class PathingTest extends RobotBaseOp {
         super.addTelemetry(telem);
         telem.logBoth("Pinpoint-status", drive.pinpoint.getDeviceStatus());
         telem.logBoth("pathing-heading", Math.toDegrees(pathingHeading));
+        telem.logBoth("drive-time", driveTime);
     }
 
     @Override
@@ -159,6 +164,8 @@ public class PathingTest extends RobotBaseOp {
         }
         if (driver.wasJustPressed(GamepadKeys.Button.A)){
             Command c = pathBetween(lastPose, positionThree, 1.0);
+            driveTimeStart = elapsed;
+            timing = true;
             CommandScheduler.getInstance().schedule(c);
             lastPose = positionThree;
         }
@@ -173,6 +180,13 @@ public class PathingTest extends RobotBaseOp {
             positionTwo = new Pose (120 - yOffset, 45, pathingHeading );
         }
         CommandScheduler.getInstance().run();
+        if (timing){
+            if (!follower.isBusy()){
+                timing = false;
+                driveTimeEnd = elapsed;
+                driveTime = driveTimeEnd - driveTimeStart;
+            }
+        }
 
     }
 
