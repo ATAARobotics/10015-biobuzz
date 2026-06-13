@@ -37,6 +37,7 @@ public class PathingTest extends RobotBaseOp {
     private final Pose blueFarStart = new Pose(70 - yOffset, xOffset, Math.toRadians(180));
     private Pose positionOne = new Pose(24 + yOffset,45, pathingHeading);
     private Pose positionTwo = new Pose (120 - yOffset, 45, pathingHeading );
+    private Pose positionThree = new Pose (70.5,70.5 + 48, pathingHeading);
     Pose lastPose = blueFarStart;
     public static double brakingStrength = 1.0;
     public static double brakingStart = 0.25;
@@ -155,6 +156,11 @@ public class PathingTest extends RobotBaseOp {
             Command c = pathBetween(lastPose, positionTwo, 1.0);
             CommandScheduler.getInstance().schedule(c);
             lastPose = positionTwo;
+        }
+        if (driver.wasJustPressed(GamepadKeys.Button.A)){
+            Command c = pathBetween(lastPose, positionThree, 1.0);
+            CommandScheduler.getInstance().schedule(c);
+            lastPose = positionThree;
         }
         if (driver.wasJustPressed(GamepadKeys.Button.Y)){
               if (pathingHeading == Math.toRadians(180)){
