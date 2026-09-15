@@ -1,290 +1,110 @@
 package org.firstinspires.ftc.teamcode.vision;
-
-import org.openftc.easyopencv.OpenCvPipeline;
-
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
-import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Rect;
 import org.opencv.core.Size;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class ColorDetector extends OpenCvPipeline
-{
-    /*
-     * Working image buffers
-     */
-    Mat ycrcbMat = new Mat();
-    Mat crMat = new Mat();
-    Mat cbMat = new Mat();
-
-    Mat blueThresholdMat = new Mat();
-    Mat redThresholdMat = new Mat();
-    Mat yellowThresholdMat = new Mat();
-
-    Mat morphedBlueThreshold = new Mat();
-    Mat morphedRedThreshold = new Mat();
-    Mat morphedYellowThreshold = new Mat();
-
-    Mat contoursOnPlainImageMat = new Mat();
-
-    /*
-     * Threshold values
-     */
-    static final int YELLOW_MASK_THRESHOLD = 57;
-    static final int BLUE_MASK_THRESHOLD = 150;
-    static final int RED_MASK_THRESHOLD = 198;
-
-    /*
-     * Elements for noise reduction
-     */
-    Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3.5, 3.5));
-    Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3.5, 3.5));
-
-    /*
-     * Colors
-     */
-    static final Scalar RED = new Scalar(255, 0, 0);
-    static final Scalar BLUE = new Scalar(0, 0, 255);
-    static final Scalar YELLOW = new Scalar(255, 255, 0);
-
-    static final int CONTOUR_LINE_THICKNESS = 2;
-
-    static class AnalyzedStone
-    {
-        double angle;
-        String color;
+public class ColorDetector extends OpenCvPipeline {
+    public String result = "unknown";
+    public Scalar min;
+    public Scalar max;
+    
+    public ColorDetector() {
+        min = new Scalar(70, 112, 139);
+        max = new Scalar(88, 255, 255);
     }
-
-    ArrayList<AnalyzedStone> internalStoneList = new ArrayList<>();
-    volatile ArrayList<AnalyzedStone> clientStoneList = new ArrayList<>();
-
-    /*
-     * Viewport stages
-     */
-    enum Stage
-    {
-        FINAL,
-        YCrCb,
-        MASKS,
-        MASKS_NR,
-        CONTOURS;
+    public ColorDetector(boolean red) {
+        if (red) {
+            min = new Scalar(100, 100, 100);
+            max = new Scalar(160, 255, 255);
+        } else {
+            // blue
+            min = new Scalar(22, 31, 69);
+            max = new Scalar(69, 255, 255);
+        }
     }
-
-    Stage[] stages = Stage.values();
-    int stageNum = 0;
-
-
     @Override
-    public void onViewportTapped()
-    {
-        int nextStageNum = stageNum + 1;
+    public Mat processFrame(Mat input) {
+        // don't create new Mat's in this method? apparently ... Mat processed = new Mat();
+        Imgproc.cvtColor(input, input, Imgproc.COLOR_BGR2HSV);
 
-        if(nextStageNum >= stages.length)
-        {
-            nextStageNum = 0;
-        }
+        // filter for one colour
+        Core.inRange(input, min, max, input);
 
-        stageNum = nextStageNum;
-    }
+        Imgproc.dilate(input, input, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3)));
+        Imgproc.dilate(input, input, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3)));
+        Imgproc.dilate(input, input, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3)));
 
-    @Override
-    public Mat processFrame(Mat input)
-    {
-        internalStoneList.clear();
+        int width = 50;
+        int height = 55;
 
-        /*
-         * Run the image processing
-         */
-        findContours(input);
+        int x0 = 100;
+        int y0 = 236;
+        int x1 = 330;
+        int y1 = 214;
+        int x2 = 560;
+        int y2 = 247;
 
-        clientStoneList = new ArrayList<>(internalStoneList);
+        // count how many pixels are "on" in each region of interest
 
-        /*
-         * Decide which buffer to send to the viewport
-         */
-        switch (stages[stageNum])
-        {
-            case YCrCb:
-            {
-                return ycrcbMat;
-            }
-
-            case FINAL:
-            {
-                return input;
-            }
-
-            case MASKS:
-            {
-                Mat masks = new Mat();
-                Core.addWeighted(yellowThresholdMat, 1.0, redThresholdMat, 1.0, 0.0, masks);
-                Core.addWeighted(masks, 1.0, blueThresholdMat, 1.0, 0.0, masks);
-                return masks;
-            }
-
-            case MASKS_NR:
-            {
-                Mat masksNR = new Mat();
-                Core.addWeighted(morphedYellowThreshold, 1.0, morphedRedThreshold, 1.0, 0.0, masksNR);
-                Core.addWeighted(masksNR, 1.0, morphedBlueThreshold, 1.0, 0.0, masksNR);
-                return masksNR;
-            }
-
-            case CONTOURS:
-            {
-                return contoursOnPlainImageMat;
-            }
-
-            default:
-            {
-                return input;
+        int left = 0;
+        for (int x=x0; x < x0 + width; x++) {
+            for (int y=y0; y < y0 + height; y++) {
+                double[] px = input.get(y, x);
+                if (px != null && (int)px[0] > 128) {
+                    left++;
+                }
             }
         }
-    }
 
-    public ArrayList<AnalyzedStone> getDetectedStones()
-    {
-        return clientStoneList;
-    }
-
-    void findContours(Mat input)
-    {
-        // Convert the input image to YCrCb color space
-        Imgproc.cvtColor(input, ycrcbMat, Imgproc.COLOR_RGB2YCrCb);
-
-        // Extract the Cb and Cr channels
-        Core.extractChannel(ycrcbMat, cbMat, 2); // Cb channel index is 2
-        Core.extractChannel(ycrcbMat, crMat, 1); // Cr channel index is 1
-
-        // Threshold the channels to form masks
-        Imgproc.threshold(cbMat, blueThresholdMat, BLUE_MASK_THRESHOLD, 255, Imgproc.THRESH_BINARY);
-        Imgproc.threshold(crMat, redThresholdMat, RED_MASK_THRESHOLD, 255, Imgproc.THRESH_BINARY);
-        Imgproc.threshold(cbMat, yellowThresholdMat, YELLOW_MASK_THRESHOLD, 255, Imgproc.THRESH_BINARY_INV);
-
-        // Apply morphology to the masks
-        morphMask(blueThresholdMat, morphedBlueThreshold);
-        morphMask(redThresholdMat, morphedRedThreshold);
-        morphMask(yellowThresholdMat, morphedYellowThreshold);
-
-        // Find contours in the masks
-        ArrayList<MatOfPoint> blueContoursList = new ArrayList<>();
-        Imgproc.findContours(morphedBlueThreshold, blueContoursList, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
-
-        ArrayList<MatOfPoint> redContoursList = new ArrayList<>();
-        Imgproc.findContours(morphedRedThreshold, redContoursList, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
-
-        ArrayList<MatOfPoint> yellowContoursList = new ArrayList<>();
-        Imgproc.findContours(morphedYellowThreshold, yellowContoursList, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
-
-        // Create a plain image for drawing contours
-        contoursOnPlainImageMat = Mat.zeros(input.size(), input.type());
-
-        // Analyze and draw contours
-        for(MatOfPoint contour : blueContoursList)
-        {
-            analyzeContour(contour, input, "Blue");
+        int mid = 0;
+        for (int x=x1; x < x1 + width; x++) {
+            for (int y=y1; y < y1 + height; y++) {
+                double[] px = input.get(y, x);
+                if (px != null && (int)px[0] > 128){
+                    mid++;
+                }
+            }
         }
 
-        for(MatOfPoint contour : redContoursList)
-        {
-            analyzeContour(contour, input, "Red");
+        double right = 0;
+        for (int x=x2; x < x2 + width; x++) {
+            for (int y=y2; y < y2 + height; y++) {
+                double[] px = input.get(y, x);
+                if (px != null && (int)px[0] > 128) {
+                    right++;
+                }
+            }
         }
 
-        for(MatOfPoint contour : yellowContoursList)
-        {
-            analyzeContour(contour, input, "Yellow");
-        }
-    }
 
-    void morphMask(Mat input, Mat output)
-    {
-        /*
-         * Apply erosion and dilation for noise reduction
-         */
-        Imgproc.erode(input, output, erodeElement);
-        Imgproc.erode(output, output, erodeElement);
-
-        Imgproc.dilate(output, output, dilateElement);
-        Imgproc.dilate(output, output, dilateElement);
-    }
-
-    void analyzeContour(MatOfPoint contour, Mat input, String color)
-    {
-        // Transform the contour to a different format
-        Point[] points = contour.toArray();
-        MatOfPoint2f contour2f = new MatOfPoint2f(points);
-
-        // Fit a rotated rectangle to the contour and draw it
-        RotatedRect rotatedRectFitToContour = Imgproc.minAreaRect(contour2f);
-        drawRotatedRect(rotatedRectFitToContour, input, color);
-        drawRotatedRect(rotatedRectFitToContour, contoursOnPlainImageMat, color);
-
-        // Adjust the angle based on rectangle dimensions
-        double rotRectAngle = rotatedRectFitToContour.angle;
-        if (rotatedRectFitToContour.size.width < rotatedRectFitToContour.size.height)
-        {
-            rotRectAngle += 90;
+        Scalar red = new Scalar(255, 0, 0);
+        Scalar green = new Scalar(0, 255, 0);
+        double biggest = Math.max(left, Math.max(mid, right));
+        if (biggest > 100) {
+            if (left == biggest) { result = "left";  }
+            if (mid == biggest) { result = "middle"; }
+            if (right == biggest) { result = "right"; }
         }
 
-        // Compute the angle and store it
-        double angle = -(rotRectAngle - 180);
-        drawTagText(rotatedRectFitToContour, Integer.toString((int) Math.round(angle)) + " deg", input, color);
 
-        // Store the detected stone information
-        AnalyzedStone analyzedStone = new AnalyzedStone();
-        analyzedStone.angle = rotRectAngle;
-        analyzedStone.color = color;
-        internalStoneList.add(analyzedStone);
-    }
+        Imgproc.putText(input, "L:" + left, new Point(x0, y0), Imgproc.FONT_HERSHEY_PLAIN, 1, red);
+        Imgproc.putText(input, "M:" + mid, new Point(x1, y1), Imgproc.FONT_HERSHEY_PLAIN, 1, red);
+        Imgproc.putText(input, "R:" + right, new Point(x2, y2), Imgproc.FONT_HERSHEY_PLAIN, 1, red);
 
-    static void drawTagText(RotatedRect rect, String text, Mat mat, String color)
-    {
-        Scalar colorScalar = getColorScalar(color);
+        Imgproc.rectangle(input, new Point(x0, y0), new Point(x0 + width, y0 + width), biggest == left ? green : red, 2);
+        Imgproc.rectangle(input, new Point(x1, y1), new Point(x1 + width, y1 + width), biggest == mid ? green : red, 2);
+        Imgproc.rectangle(input, new Point(x2, y2), new Point(x2 + width, y2 + width), biggest == right ? green : red, 2);
 
-        Imgproc.putText(
-                mat, // The buffer we're drawing on
-                text, // The text we're drawing
-                new Point( // The anchor point for the text
-                        rect.center.x - 50,  // x anchor point
-                        rect.center.y + 25), // y anchor point
-                Imgproc.FONT_HERSHEY_PLAIN, // Font
-                1, // Font size
-                colorScalar, // Font color
-                1); // Font thickness
-    }
-
-    static void drawRotatedRect(RotatedRect rect, Mat drawOn, String color)
-    {
-        /*
-         * Draws a rotated rectangle by drawing each of the 4 lines individually
-         */
-        Point[] points = new Point[4];
-        rect.points(points);
-
-        Scalar colorScalar = getColorScalar(color);
-
-        for (int i = 0; i < 4; ++i)
-        {
-            Imgproc.line(drawOn, points[i], points[(i + 1) % 4], colorScalar, 2);
-        }
-    }
-
-    static Scalar getColorScalar(String color)
-    {
-        switch (color)
-        {
-            case "Blue":
-                return BLUE;
-            case "Yellow":
-                return YELLOW;
-            default:
-                return RED;
-        }
+        return input;
     }
 }
