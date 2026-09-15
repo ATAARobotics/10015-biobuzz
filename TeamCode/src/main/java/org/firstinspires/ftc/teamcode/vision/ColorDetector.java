@@ -18,8 +18,10 @@ public class ColorDetector extends OpenCvPipeline {
     public Scalar max;
     
     public ColorDetector() {
-        min = new Scalar(70, 112, 139);
-        max = new Scalar(88, 255, 255);
+        min = new Scalar(68,101,119);
+        max = new Scalar(94.5,255,255);
+        //min = new Scalar(70, 112, 139);
+        //max = new Scalar(88, 255, 255);
     }
 
     @Override
