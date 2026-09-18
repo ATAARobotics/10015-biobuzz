@@ -19,7 +19,7 @@ import java.util.regex.Pattern
 
 android {
 
-    compileSdkVersion 30
+    compileSdkVersion 36
 
     signingConfigs {
         release {
@@ -104,12 +104,13 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    packagingOptions {
-        pickFirst '**/*.so'
-    }
     ndkVersion '21.3.6528147'
 }
 
 repositories {
+    maven {
+        url "https://repo.dairy.foundation/releases"
+    }
+    maven { url = "https://mymaven.bylazar.com/releases" }
 }
 

@@ -20,10 +20,17 @@ android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
     packagingOptions {
+        jniLibs {
+            pickFirsts += ['**/*.so']
+        }
         jniLibs.useLegacyPackaging true
     }
 }
 
 dependencies {
     implementation project(':FtcRobotController')
+    implementation "org.solverslib:core:0.3.6" // add SolversLib core
+    implementation "com.bylazar:panels:1.0.5"
+    implementation "com.bylazar:configurables:1.0.5"
+    implementation "com.bylazar:telemetry:1.0.5"
 }
