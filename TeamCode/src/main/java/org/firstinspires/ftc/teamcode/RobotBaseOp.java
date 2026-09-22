@@ -28,6 +28,9 @@ public abstract class RobotBaseOp extends OpMode {
     List<LynxModule> allHubs;
 
     Drive drive;
+    double strafe;
+    double forward;
+    double turn;
 
     ElapsedTime  runtime = new ElapsedTime();
     LinkedList<Pose2D> recentPositions;
@@ -103,7 +106,7 @@ public abstract class RobotBaseOp extends OpMode {
         // laser-sensor seemed to fix our previous problem anyway
 
         // Register Subsystem objects to the scheduler
-        CommandScheduler.getInstance().registerSubsystem(drive);
+      //  CommandScheduler.getInstance().registerSubsystem(drive);
 
         // set up controls
         bindOperatorControls();
@@ -223,7 +226,12 @@ public abstract class RobotBaseOp extends OpMode {
         // Run the CommandScheduler instance (note: this will call
         // ".periodic()" on all registered subsystems, which is the
         // correct place to do "per-loop" things)
-        CommandScheduler.getInstance().run();
+        //CommandScheduler.getInstance().run();
+        strafe = driver.getRightX();
+        forward = -driver.getRightY();
+        turn = 0;
+        drive.drivebase.driveRobotCentric(strafe, forward, turn);
+
 
         logTelemetry();
     }
