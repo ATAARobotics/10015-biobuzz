@@ -33,7 +33,9 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.Circle;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.vision.opencv.ColorSpace;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
+import org.opencv.core.Scalar;
 
 import java.util.List;
 
@@ -128,7 +130,11 @@ public class PollenDetector extends LinearOpMode {
          *        CLOSING:    Will Dilate and then Erode which will tend to fill in any small holes in blob edges.
          */
         ColorBlobLocatorProcessor colorLocator = new ColorBlobLocatorProcessor.Builder()
-                .setTargetColorRange(ColorRange.YELLOW)   // Use a predefined color match
+                .setTargetColorRange(
+                        new ColorRange(
+                                ColorSpace.HSV,
+                                new Scalar(15, 100, 100),
+                                new Scalar(35, 255, 255)))   // Use a predefined color match
                 .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)
                 .setRoi(ImageRegion.entireFrame())
                 .setDrawContours(true)   // Show contours on the Stream Preview
@@ -138,7 +144,7 @@ public class PollenDetector extends LinearOpMode {
 
                 // the following options have been added to fill in perimeter holes.
                 .setDilateSize(3)       // Expand blobs to fill any divots on the edges
-                .setErodeSize(3)        // Shrink blobs back to original size
+                .setErodeSize(7)        // Shrink blobs back to original size
                 .setMorphOperationType(ColorBlobLocatorProcessor.MorphOperationType.CLOSING)
 
                 .build();
@@ -171,7 +177,7 @@ public class PollenDetector extends LinearOpMode {
             // Read the current list
             List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs();
             ColorBlobLocatorProcessor.Util.filterByCriteria(ColorBlobLocatorProcessor.BlobCriteria.BY_CONTOUR_AREA, 50, 20000, blobs);
-            telemetry.addData("Number of blobs:", blobs);
+            //           telemetry.addData("Number of blobs:", blobs.size);
 
             /*
              * The list of Blobs can be filtered to remove unwanted Blobs.
@@ -207,8 +213,9 @@ public class PollenDetector extends LinearOpMode {
              *   A perfect circle has a circularity of 1.  All others are < 1
              */
             ColorBlobLocatorProcessor.Util.filterByCriteria(
-                    ColorBlobLocatorProcessor.BlobCriteria.BY_CONTOUR_AREA,
-                    50, 20000, blobs);  // filter out very small blobs.
+//                    ColorBlobLocatorProcessor.BlobCriteria.BY_CONTOUR_AREA,
+                    ColorBlobLocatorProcessor.BlobCriteria.BY_CIRCULARITY,
+                    0.7, 1, blobs);  // filter out non-circles.
 
          /*   ColorBlobLocatorProcessor.Util.filterByCriteria(
                     ColorBlobLocatorProcessor.BlobCriteria.BY_CIRCULARITY,
@@ -229,11 +236,11 @@ public class PollenDetector extends LinearOpMode {
              */
 
             telemetry.addData("Pollen Count", blobs.size());
-                for (ColorBlobLocatorProcessor.Blob b: blobs) {
-                    Circle circleFit = b.getCircle();
+            for (ColorBlobLocatorProcessor.Blob b: blobs) {
+                Circle circleFit = b.getCircle();
 
-                    telemetry.addData("Pollen","x=%d  y=%d", (int) circleFit.getX(), (int) circleFit.getY());
-                }
+                telemetry.addData("Pollen","x=%d  y=%d", (int) circleFit.getX(), (int) circleFit.getY());
+            }
          /*   telemetry.addLine("Circularity Radius Center");
 
             // Display the Blob's circularity, and the size (radius) and center location of its circleFit.
