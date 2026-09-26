@@ -202,11 +202,21 @@ public abstract class RobotBaseOp extends OpMode {
 	ColorBlobLocatorProcessor.Util.filterByCriteria(ColorBlobLocatorProcessor.BlobCriteria.BY_CIRCULARITY, 0.7, 1, blobs);  // filter out non-circles.
 
 	telemetry.addData("Pollen Count", blobs.size());
+    double bestSize = 0;
+    ColorBlobLocatorProcessor.Blob bestBlob = null;
 	for (ColorBlobLocatorProcessor.Blob b: blobs) {
 	    Circle circleFit = b.getCircle();
-
-	    telemetry.addData("Pollen","x=%d  y=%d", (int) circleFit.getX(), (int) circleFit.getY());
+        if (bestBlob == null || b.getContourArea() > bestSize){
+            bestSize = b.getContourArea();
+            bestBlob = b;
+        }
 	}
+    if (bestBlob != null){
+        double x = bestBlob.getCircle().getX();
+        x -= 320;
+        x /= 320;
+        turn = x;
+    }
 
 
 	// actually do the drive command for this loop
