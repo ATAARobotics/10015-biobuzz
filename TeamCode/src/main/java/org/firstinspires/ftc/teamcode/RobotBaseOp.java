@@ -185,6 +185,12 @@ public abstract class RobotBaseOp extends OpMode {
         clearCache();
     }
 
+    // this is called once per loop for subclasses that want to keep
+    // the rest of this class' "loop()" but also want to do their own
+    // thing
+    protected void loopExtra() {
+    }
+
     @Override
     public void loop() {
         clearCache();
@@ -221,6 +227,8 @@ public abstract class RobotBaseOp extends OpMode {
 
 	// actually do the drive command for this loop
         drive.drivebase.driveRobotCentric(strafe, forward, turn);
+
+	loopExtra();
 	
         logTelemetry();
     }

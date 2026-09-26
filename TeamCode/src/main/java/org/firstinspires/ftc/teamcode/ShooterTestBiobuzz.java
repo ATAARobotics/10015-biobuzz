@@ -16,13 +16,12 @@ import java.util.LinkedList;
 @TeleOp(name = "Motor Test")
 public class ShooterTestBiobuzz extends OpMode {
 
-
-    class RpmData{
+    class RpmData {
         public double time;
-        public double rpm;
-        public RpmData(double t,double r){
-            time=t;
-            rpm=r;
+        public double ticks;
+        public RpmData(double t, double r) {
+            time = t;
+            ticks = r;
         }
     }
     LinkedList<RpmData> recentRpm;
@@ -34,67 +33,49 @@ public class ShooterTestBiobuzz extends OpMode {
     double lastTime;
     boolean lastDpadUp = false;
     boolean lastDpadDown = false;
-
+    HyperTelemetry telem;
 
     @Override
     public void init() {
         motor = new MotorEx(hardwareMap,"shooterL");
+	telem = new HyperTelemetry(telemetry);
     }
+    
     @Override
     public void loop() {
         ticks = motor.getCurrentPosition();
-        double deltaTime = time - lastTime;
-        double deltaTicks = ticks - lastTicks;
-        if (lastTicks != 0){
-            // There's 28 ticks per revolution on our motor
-            // so rps is revs per second
-            double rps = (deltaTicks/28.0)/deltaTime;
-            rpm = rps*60.0;
+	recentRpm.addLast(new RpmData(time, ticks));
+	while(recentRpm.size() > 5){
+	    recentRpm.removeFirst();
+	}
 
-
-            recentRpm.addLast(new RpmData(time,rpm));
-            while(recentRpm.size()>5){
-                recentRpm.removeFirst();
-            }
-        }
-
-
+	telem.log("time", time);
+	telem.log("ticks", ticks);
+	
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
             motorPower += 0.1;
         }
-
 
         // Decrease power by 0.1 on each new D-pad down press
         if (gamepad1.dpad_down && !lastDpadDown) {
             motorPower -= 0.1;
         }
 
-
         // Clamp power between 0.0 and 1.0
         motorPower = Math.max(0.0, Math.min(1.0, motorPower));
 
-
         motor.set(motorPower);
 
-
-        logTelemetry();
         // Remember current button states for next loop
         lastDpadUp = gamepad1.dpad_up;
         lastDpadDown = gamepad1.dpad_down;
         lastTicks = ticks;
         lastTime = time;
+
+	// update panels etc
+	telem.update();
     }
-    protected void logTelemetry() {
-        //TelemetryPacket pack = new TelemetryPacket();
-        HyperTelemetry telem = new HyperTelemetry(telemetry);
-        telem.logBoth("rpm", rpm);
-        telem.logBoth("power", motorPower);
-        telem.update();
-    }
-    @Override
-    public void stop() {
-        motor.set(0);
-    }
+
 }
 
