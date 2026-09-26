@@ -14,12 +14,8 @@ public abstract class TeleOp extends RobotBaseOp {
     }
 
     protected void bindDriverControls() {
-
-        // "mostly" we want to run the HumanInputs commands during teleop
-        CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
     }
 
     protected void bindOperatorControls() {
-      //  operator.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(shooter.alwaysSpin());
     }
 }

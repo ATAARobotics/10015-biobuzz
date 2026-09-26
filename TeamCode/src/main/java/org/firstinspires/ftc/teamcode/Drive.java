@@ -341,7 +341,7 @@ public class Drive extends SubsystemBase {
     }
 
     // called ONCE, before any driver or robot inputs
-    public void read_sensors(double time) {
+    public void readSensors(double time) {
         // Get the latest pose, which includes the x and y coordinates, plus the heading angle
         previous_time = current_time;
         current_time = time;
@@ -373,20 +373,5 @@ public class Drive extends SubsystemBase {
         telem.logBoth("position-x", current_position.getX(DISTANCE_UNIT));
         telem.logBoth("position-y", current_position.getY(DISTANCE_UNIT));
         telem.logBoth("position-heading", current_position.getHeading(AngleUnit.DEGREES));
-
-        double targetX = target.distanceUnit.toInches(target.fieldPosition.get(1)) + 70.5;
-        double targetY = target.distanceUnit.toInches(target.fieldPosition.get(0)) + 70.5;
-        telem.log("target-x", targetX);
-        telem.log("target-y", targetY);
-        telem.log("current-heading", current_position.getHeading(ANGLE_UNIT));
-        telem.log("desired-heading", desired_heading);
-        telem.log("velocity-x", x_velocity);
-        telem.log("velocity-y", y_velocity);
-
-       // telem.log("strafe", strafe);
-       // telem.log("forward", forward);
-       // telem.log("strafe_ff", ff_strafe);
-       // telem.log("forward_ff", ff_forward);
-        //telem.log("turn", turn);
     }
 }

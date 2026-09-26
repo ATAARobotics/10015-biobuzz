@@ -26,46 +26,12 @@ public abstract class RobotBaseOp extends OpMode {
 
     VoltageSensor battery;
     List<LynxModule> allHubs;
+    int loops;
 
     Drive drive;
     double strafe;
     double forward;
     double turn;
-
-    ElapsedTime  runtime = new ElapsedTime();
-    LinkedList<Pose2D> recentPositions;
-
-    boolean minuteWarning = false;
-    boolean endgameWarning = false;
-    int loops;
-
-    // targeting based on odometry
-    double geometricTargetHeading;
-    double aimOffsetX;
-    double aimOffsetY;
-    double predictedX;
-    double predictedY;
-    double geometricDistance;
-    // offset robot / turret centers is 66.70mm
-    private static double ROBOT_CENTER_TO_TURRET_INCHES = 2.626;
-    public static double GEOM_TARGET_X = 0;
-    public static double GEOM_TARGET_Y = 141;
-    public int operatorPattern = 0;
-
-    public static double FAR_TARGET_X_BLUE = 9.5;
-    public static double FAR_TARGET_X_RED =  3.5;
-    public static double SHOOT_PREDICT = 0.250;//0.450;
-
-    public static double SHOOT_PAUSE_WAIT = 0.250;
-
-    public enum InState {FIRST_TWO, SPIN, THIRD, WAIT_BEFORE_PIN, WAIT_AFTER_PIN, WAIT_SPIT, DONE};
-    public enum OutState {WAIT_SHOOT, SHOOT, PAUSE, DONE};
-
-    private InState inState = InState.DONE;
-    private double startPinWait = 0.0;
-    private double startSpitWait = 0.0;
-
-    public OutState lastOutState = OutState.DONE;
 
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
@@ -95,18 +61,11 @@ public abstract class RobotBaseOp extends OpMode {
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
 
-        recentPositions = new LinkedList<Pose2D>();
-
         // (Do not remove this, we absolutely have problems without cancelling this)
         // Cancel all previous commands
         CommandScheduler.getInstance().reset();
 
-        // FIXME TODO we had a "CommandScheduler.getInstance().reset()"
-        // here at some point, but: do we need that? Also deleting
-        // laser-sensor seemed to fix our previous problem anyway
-
-        // Register Subsystem objects to the scheduler
-      //  CommandScheduler.getInstance().registerSubsystem(drive);
+	//CommandScheduler.getInstance().registerSubsystem(drive);
 
         // set up controls
         bindOperatorControls();
@@ -119,21 +78,11 @@ public abstract class RobotBaseOp extends OpMode {
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
+	loops = 0;
     }
 
     protected void readSensors() {
-        drive.read_sensors(time);
-
-        recentPositions.addLast(drive.getPosition());
-        while (recentPositions.size() > 5) {
-            recentPositions.removeFirst();
-        }
-    }
-
-    // based on recentPositions, predict our Post2D in "t" seconds
-    // from now (just x, y works velocity)
-    protected Pose2D predictPose(double t) {
-        return drive.getPosition();
+        drive.readSensors(time);
     }
 
     protected void readControls() {
@@ -148,38 +97,18 @@ public abstract class RobotBaseOp extends OpMode {
         }
         loops++;
     }
-    private double timeOfFlight(double distance){
-        double t = 0.00008 * distance * distance - 0.0093 * distance + 0.8551;
-        return t;
-    }
-
-    protected void addTelemetry(HyperTelemetry telem) {
-	telem.log("in-state", inState);
-    }
 
     protected void logTelemetry() {
-        //TelemetryPacket pack = new TelemetryPacket();
-        HyperTelemetry telem = new HyperTelemetry(telemetry); //, pack);
+        HyperTelemetry telem = new HyperTelemetry(telemetry);
         telem.log("elapsed", runtime.seconds());
         telem.log("time", time);
         telem.log("battery", battery.getVoltage());
-        telem.log("geometric-target", geometricTargetHeading);
-        telem.log("geometric-distance", geometricDistance);
         telem.log("alliance", getAlliance());
-        telem.log("zone", getStartZone());
-        telem.log("time-of-flight", timeOfFlight(geometricDistance));
-        telem.log("aim-offset-x", aimOffsetX);
-        telem.log("aim-offset-y", aimOffsetY);
-        telem.log("predicted-x", predictedX);
-        telem.log("predicted-y", predictedY);
-        telem.log("loops", loops);
-        telem.log("in-state", inState);
 
         double fps = loops / runtime.seconds();
         telem.logDrivers("average fps", fps);
 
         drive.addTelemetry(telem);
-        addTelemetry(telem);
 
         telem.update();
     }
@@ -195,11 +124,6 @@ public abstract class RobotBaseOp extends OpMode {
     @Override
     public void init_loop() {
         clearCache();
-
-        // runs while the robot is "on" but we haven't pressed "play" yet
-      /*  telemetry.addData("Turret Servo Right", turret.getServoAngle());
-        telemetry.addData("Turret Servo Left", turret.getOtherServoAngle());
-        telemetry.update(); */
     }
 
     @Override
@@ -208,30 +132,11 @@ public abstract class RobotBaseOp extends OpMode {
         readControls();
         readSensors();
 
-        if (!minuteWarning && runtime.seconds() > 60){
-            minuteWarning = true;
-            operator.gamepad.rumble(300);
-        }
-        if (!endgameWarning && runtime.seconds() > 90){
-            endgameWarning = true;
-            operator.gamepad.rumble(600);
-        }
-        // We need to rotate the FTC coordinate system 90 degrees to
-        // get the pedro pathing system, and Offset by 70.5 inches
-
-        double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
-        double robotX = drive.getPosition().getX(DistanceUnit.INCH);
-        double robotY = drive.getPosition().getY(DistanceUnit.INCH);
-
-        // Run the CommandScheduler instance (note: this will call
-        // ".periodic()" on all registered subsystems, which is the
-        // correct place to do "per-loop" things)
-        //CommandScheduler.getInstance().run();
+	// testing driver controls
         strafe = driver.getRightX();
         forward = -driver.getRightY();
         turn = 0;
         drive.drivebase.driveRobotCentric(strafe, forward, turn);
-
 
         logTelemetry();
     }
