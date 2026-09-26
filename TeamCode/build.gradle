@@ -33,4 +33,5 @@ dependencies {
     implementation "com.bylazar:panels:1.0.5"
     implementation "com.bylazar:configurables:1.0.5"
     implementation "com.bylazar:telemetry:1.0.5"
+    implementation 'com.bylazar:fullpanels:1.0.5'
 }
