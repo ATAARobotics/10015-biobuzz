@@ -133,7 +133,7 @@ public class PollenDetector extends LinearOpMode {
                 .setTargetColorRange(
                         new ColorRange(
                                 ColorSpace.HSV,
-                                new Scalar(15, 100, 100),
+                                new Scalar(15, 150, 100),
                                 new Scalar(35, 255, 255)))   // Use a predefined color match
                 .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)
                 .setRoi(ImageRegion.entireFrame())
