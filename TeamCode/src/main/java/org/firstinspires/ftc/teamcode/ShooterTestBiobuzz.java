@@ -33,10 +33,12 @@ public class ShooterTestBiobuzz extends OpMode {
     double lastTime;
     boolean lastDpadUp = false;
     boolean lastDpadDown = false;
+    HyperTelemetry telem;
 
     @Override
     public void init() {
         motor = new MotorEx(hardwareMap,"shooterL");
+	telem = new HyperTelemetry(telemetry);
     }
     
     @Override
@@ -47,6 +49,9 @@ public class ShooterTestBiobuzz extends OpMode {
 	    recentRpm.removeFirst();
 	}
 
+	telem.log("time", time);
+	telem.log("ticks", ticks);
+	
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
             motorPower += 0.1;
@@ -67,6 +72,9 @@ public class ShooterTestBiobuzz extends OpMode {
         lastDpadDown = gamepad1.dpad_down;
         lastTicks = ticks;
         lastTime = time;
+
+	// update panels etc
+	telem.update();
     }
 
 }
