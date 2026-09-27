@@ -264,25 +264,16 @@ public class PollenDetector implements VisionProcessor {
                 (List<PollenBlob>) userContext;
 
 
-        for (PollenBlob blob : found) {
-
-            canvas.drawCircle(
-                    (float) blob.x
-                            * scaleBmpPxToCanvasPx,
-
-                    (float) blob.y
-                            * scaleBmpPxToCanvasPx,
-
-                    (float) blob.radius
-                            * scaleBmpPxToCanvasPx,
-
-                    paint);
-        }
+for (PollenBlob blob : found) {
+    canvas.drawCircle(
+            (float) blob.x * scaleBmpPxToCanvasPx,
+            (float) blob.y * scaleBmpPxToCanvasPx,
+            (float) blob.radius * scaleBmpPxToCanvasPx,
+            paint);
     }
 
 
     public List<PollenBlob> getBlobs() {
-
         return blobs;
     }
 
