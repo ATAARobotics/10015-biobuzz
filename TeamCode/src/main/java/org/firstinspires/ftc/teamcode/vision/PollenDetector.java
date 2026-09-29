@@ -31,8 +31,8 @@ import java.util.List;
 
 @Configurable
 public class PollenDetector implements VisionProcessor {
-    public static double H_MIN = 15;
-    public static double H_MAX = 35;
+    public static double H_MIN = 20;
+    public static double H_MAX = 40;
 
     public static double S_MIN = 150;
     public static double S_MAX = 255;
@@ -264,14 +264,14 @@ public class PollenDetector implements VisionProcessor {
                 (List<PollenBlob>) userContext;
 
 
-for (PollenBlob blob : found) {
-    canvas.drawCircle(
-            (float) blob.x * scaleBmpPxToCanvasPx,
-            (float) blob.y * scaleBmpPxToCanvasPx,
-            (float) blob.radius * scaleBmpPxToCanvasPx,
-            paint);
+        for (PollenBlob blob : found) {
+            canvas.drawCircle(
+                    (float) blob.x * scaleBmpPxToCanvasPx,
+                    (float) blob.y * scaleBmpPxToCanvasPx,
+                    (float) blob.radius * scaleBmpPxToCanvasPx,
+                    paint);
+        }
     }
-
 
     public List<PollenBlob> getBlobs() {
         return blobs;
