@@ -40,7 +40,7 @@ public class PollenDetector implements VisionProcessor {
     public static double V_MIN = 100;
     public static double V_MAX = 255;
 
-    public static double MIN_CIRCULARITY = 0.0;
+    public static double MIN_CIRCULARITY = 0.7;
     public static double MIN_AREA = 24;
 
 

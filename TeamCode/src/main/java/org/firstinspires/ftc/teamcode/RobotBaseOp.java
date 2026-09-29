@@ -6,6 +6,7 @@ import android.util.Size;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.button.Trigger;
+import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
@@ -48,14 +49,18 @@ public abstract class RobotBaseOp extends OpMode {
     double strafe;
     double forward;
     double turn;
+    double frameCenter;
 
     PollenDetector pollenDetector;
     VisionPortal portal;
 
-
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
+    public static double POLLEN_P = 1;
+    public static double POLLEN_I = 0;
+    public static double POLLEN_D = 0;
+    private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
 
     // we don't actually "know" in teleop, and also shouldn't care, so
     // we provide a default implementation
@@ -211,10 +216,11 @@ public abstract class RobotBaseOp extends OpMode {
             double halfWidth =
                     pollenDetector.getFrameWidth()
                             / 2.0;
-
-            turn =
-                    (bestBlob.x - halfWidth)
-                            / halfWidth;
+            frameCenter = pollenDetector.getFrameWidth() / 2.0;
+        turn =
+                   /* (bestBlob.x - halfWidth)
+                            / halfWidth;*/
+                    pollenTurnPID.calculate(bestBlob.x, frameCenter);
 
 
             telemetry.addData(
