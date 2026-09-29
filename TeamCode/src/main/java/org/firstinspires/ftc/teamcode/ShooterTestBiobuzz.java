@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
 
@@ -24,10 +25,15 @@ public class ShooterTestBiobuzz extends OpMode {
             ticks = r;
         }
     }
-    LinkedList<RpmData> recentRpm;
+
+    public static double kP = 20;
+    public static double kV = 0.7;
+    LinkedList<RpmData> recentRpm = null;
     MotorEx motor;
+    MotorEx motor2;
     double motorPower = 0.0;
     double rpm;
+    double rps;
     int ticks;
     int lastTicks;
     double lastTime;
@@ -38,19 +44,49 @@ public class ShooterTestBiobuzz extends OpMode {
     @Override
     public void init() {
         motor = new MotorEx(hardwareMap,"shooterL");
+        motor2 = new MotorEx(hardwareMap, "encoder");
 	telem = new HyperTelemetry(telemetry);
+    recentRpm = new LinkedList<RpmData>();
+  //  motor.setRunMode(Motor.RunMode.VelocityControl);
+      //  motor.setVeloCoefficients(kP, 0, 0);
+       // motor.setFeedforwardCoefficients(0, kV);
+
+
     }
     
     @Override
     public void loop() {
         ticks = motor.getCurrentPosition();
-	recentRpm.addLast(new RpmData(time, ticks));
+	    recentRpm.addLast(new RpmData(time, ticks)); //add a new data point (recent)
 	while(recentRpm.size() > 5){
 	    recentRpm.removeFirst();
 	}
 
+        if(recentRpm.size() >= 2) { // 2 or more data points
+            // recentRpm.removeFirst();
+            double previousTime = recentRpm.get(recentRpm.size() - 2).time; //ex. 3 data points.
+            // when we use index, it counts the size as 0, 1, 2. 3-1 is giving current data.
+            //3-2 is previous data.
+            double previousTicks = recentRpm.get(recentRpm.size() - 2).ticks;
+            double rps = ((ticks-previousTicks)/28.0)/(time-previousTime);
+            double rpm = rps * 60.0;
+            telem.log("rpm-0", rpm);
+        }
+
+        if(recentRpm.size() >= 2) { // 2 or more data points
+            // recentRpm.removeFirst();
+            double previousTime = recentRpm.get(0).time; //'get' uses an index,
+            // so it counts the data points starting from 0. 0 would be the
+            //first data point
+            double previousTicks = recentRpm.get(0).ticks;
+            double rps = ((ticks-previousTicks)/28.0)/(time-previousTime);
+            double rpm = rps * 60.0;
+            telem.log("rpm-1", rpm);
+        }
+
 	telem.log("time", time);
 	telem.log("ticks", ticks);
+    telem.log("velocity", motor.getVelocity()/28*60);
 	
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
