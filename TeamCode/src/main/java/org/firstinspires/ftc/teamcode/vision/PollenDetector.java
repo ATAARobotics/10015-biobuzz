@@ -34,14 +34,14 @@ public class PollenDetector implements VisionProcessor {
     public static double H_MIN = 20;
     public static double H_MAX = 40;
 
-    public static double S_MIN = 150;
+    public static double S_MIN = 230;
     public static double S_MAX = 255;
 
     public static double V_MIN = 100;
     public static double V_MAX = 255;
 
-    public static double MIN_CIRCULARITY = 0.7;
-    public static double MIN_AREA = 24;
+    public static double MIN_CIRCULARITY = 0.5;
+    public static double MIN_AREA = 500;
 
 
     // OpenCV uses Mat objects to hold images.
@@ -53,7 +53,7 @@ public class PollenDetector implements VisionProcessor {
     private final Mat dilateKernel =
             Imgproc.getStructuringElement(
                     Imgproc.MORPH_RECT,
-                    new Size(3, 3));
+                    new Size(7, 7));
 
     private final Mat erodeKernel =
             Imgproc.getStructuringElement(
