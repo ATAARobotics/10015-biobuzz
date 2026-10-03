@@ -29,6 +29,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 import org.firstinspires.ftc.teamcode.vision.PollenDetector;
+import org.opencv.imgproc.Imgproc;
 
 //import org.opencv.core.Scalar;
 
@@ -209,18 +210,18 @@ public abstract class RobotBaseOp extends OpMode {
 
         /*
          * Turn toward the largest pollen.
-         */
+ Imgproc.erode(mask, mask, erodeKernel);Imgproc.erode(mask, mask, erodeKernel);        */
 
         if (bestBlob != null) {
 
             double halfWidth =
                     pollenDetector.getFrameWidth()
                             / 2.0;
-            frameCenter = pollenDetector.getFrameWidth() / 2.0;
+            Imgproc.erode(mask, mask, erodeKernel);            frameCenter = pollenDetector.getFrameWidth() / 2.0;
         turn =
                    /* (bestBlob.x - halfWidth)
                             / halfWidth;*/
-                    pollenTurnPID.calculate(bestBlob.x, frameCenter);
+                    -pollenTurnPID.calculate(bestBlob.x, frameCenter);
 
 
             telemetry.addData(

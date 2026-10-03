@@ -53,7 +53,7 @@ public class PollenDetector implements VisionProcessor {
     private final Mat dilateKernel =
             Imgproc.getStructuringElement(
                     Imgproc.MORPH_RECT,
-                    new Size(3, 3));
+                    new Size(7, 7));
 
     private final Mat erodeKernel =
             Imgproc.getStructuringElement(
@@ -141,8 +141,8 @@ public class PollenDetector implements VisionProcessor {
                 mask);
     // Dilation grows the white areas and erosion shrinks them.
 
-        Imgproc.dilate(mask, mask, dilateKernel);
         Imgproc.erode(mask, mask, erodeKernel);
+        Imgproc.dilate(mask, mask, dilateKernel);
 
         /*
          * Find the outlines of the white areas.
