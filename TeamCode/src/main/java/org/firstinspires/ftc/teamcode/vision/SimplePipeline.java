@@ -34,7 +34,7 @@ public class SimplePipeline extends OpenCvPipeline
     Mat processed = new Mat();
     Mat out = new Mat();
 
-    Mat dilate_rect = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5.5, 5.5));
+    Mat dilate_rect = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(7.5, 7.5));
 
     // in each "Scalar" are "H, S and V" values -- only because we're
     // using the "HSV" colour-space below when using "min" and "max";
@@ -72,7 +72,7 @@ public class SimplePipeline extends OpenCvPipeline
         // do; playing with this in EasyOpenCV-Sim shows that a couple
         // erodes and then "several" dilates work well
 	Imgproc.erode(processed, processed, dilate_rect);
-	Imgproc.erode(processed, processed, dilate_rect);
+	//Imgproc.erode(processed, processed, dilate_rect);
 	Imgproc.dilate(processed, processed, dilate_rect);
         Imgproc.dilate(processed, processed, dilate_rect);
         Imgproc.dilate(processed, processed, dilate_rect);
