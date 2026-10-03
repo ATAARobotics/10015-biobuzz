@@ -34,7 +34,7 @@ public class SimplePipeline extends OpenCvPipeline
     Mat processed = new Mat();
     Mat out = new Mat();
 
-    Mat dilate_rect = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(10.5, 10.5));
+    Mat dilate_rect = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5.5, 5.5));
 
     // in each "Scalar" are "H, S and V" values -- only because we're
     // using the "HSV" colour-space below when using "min" and "max";
@@ -71,9 +71,9 @@ public class SimplePipeline extends OpenCvPipeline
         // OpenCV says that "erode, then dilate" is a good thing to
         // do; playing with this in EasyOpenCV-Sim shows that a couple
         // erodes and then "several" dilates work well
-        Imgproc.erode(processed, processed, dilate_rect);
-        Imgproc.erode(processed, processed, dilate_rect);
-        Imgproc.dilate(processed, processed, dilate_rect);
+	Imgproc.erode(processed, processed, dilate_rect);
+	Imgproc.erode(processed, processed, dilate_rect);
+	Imgproc.dilate(processed, processed, dilate_rect);
         Imgproc.dilate(processed, processed, dilate_rect);
         Imgproc.dilate(processed, processed, dilate_rect);
         Imgproc.dilate(processed, processed, dilate_rect);
@@ -91,8 +91,7 @@ public class SimplePipeline extends OpenCvPipeline
         for(MatOfPoint contour : contours) {
             MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
             // Fit a rotated rectangle to the contour
-            //RotatedRect rect = Imgproc.minAreaRect(contour2f);
-            Rect rect = Imgproc.boundingRect(contour2f);
+            RotatedRect rect = Imgproc.minAreaRect(contour2f);
 	    // sample-detector looked at "minimum size" to exclude
 	    // outliers -- we could here too via "rect.size.area()"
 	    if (rect.center.y > bigY) {
