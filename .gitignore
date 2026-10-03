@@ -1,3 +1,7 @@
+## stuff that's messed us up already
+TeamCode/src/main/java/org/firstinspires/ftc/teamcode/vision/eocvsim_workspace.json
+gradle/gradle-daemon-jvm.properties
+
 # Built application files
 *.apk
 *.aar
