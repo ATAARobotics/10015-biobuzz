@@ -60,7 +60,7 @@ public class ShooterTestBiobuzz extends OpMode {
     @Override
     public void loop() {
 
-        double v = motor.getVelocity();
+        double v = motor.getVelocity()/28*60;
         recentVelocity.addLast(new VelocityData(time, v));
     while(recentVelocity.size() > dataPoints) {
         recentVelocity.removeFirst();
@@ -100,7 +100,7 @@ public class ShooterTestBiobuzz extends OpMode {
 */
 	telem.log("time", time);
 	telem.log("ticks", ticks);
-    telem.log("velocity", motor.getVelocity());
+    telem.log("velocity", v);
 	
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
