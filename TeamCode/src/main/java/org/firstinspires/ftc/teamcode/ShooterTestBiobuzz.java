@@ -3,6 +3,7 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -13,22 +14,24 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
 import java.util.LinkedList;
 
-
+@Configurable
 @TeleOp(name = "Motor Test")
 public class ShooterTestBiobuzz extends OpMode {
-
-    class RpmData {
+    public static int dataPoints = 5;
+    class VelocityData {
         public double time;
-        public double ticks;
-        public RpmData(double t, double r) {
+        public double velocity;
+        public VelocityData(double t, double v) {
             time = t;
-            ticks = r;
+            velocity = v;
+
+
         }
     }
 
     public static double kP = 20;
     public static double kV = 0.7;
-    LinkedList<RpmData> recentRpm = null;
+    LinkedList<VelocityData> recentVelocity = null;
     MotorEx motor;
     MotorEx motor2;
     double motorPower = 0.0;
@@ -46,7 +49,7 @@ public class ShooterTestBiobuzz extends OpMode {
         motor = new MotorEx(hardwareMap,"shooterL");
         motor2 = new MotorEx(hardwareMap, "encoder");
 	telem = new HyperTelemetry(telemetry);
-    recentRpm = new LinkedList<RpmData>();
+    recentVelocity = new LinkedList<VelocityData>();
   //  motor.setRunMode(Motor.RunMode.VelocityControl);
       //  motor.setVeloCoefficients(kP, 0, 0);
        // motor.setFeedforwardCoefficients(0, kV);
@@ -56,8 +59,19 @@ public class ShooterTestBiobuzz extends OpMode {
     
     @Override
     public void loop() {
-        ticks = motor.getCurrentPosition();
-	    recentRpm.addLast(new RpmData(time, ticks)); //add a new data point (recent)
+
+        double v = motor.getVelocity()/28*60;
+        recentVelocity.addLast(new VelocityData(time, v));
+    while(recentVelocity.size() > dataPoints) {
+        recentVelocity.removeFirst();
+    }
+        double total = 0.0;
+        for(VelocityData data:recentVelocity){
+            total = total + data.velocity; // adding recentvelocity data
+        }
+        double averageVelocity = total/recentVelocity.size(); //finding average - total value of data/number of data points
+        telem.log("Average-Velocity", averageVelocity);
+	/*    recentRpm.addLast(new RpmData(time, ticks)); //add a new data point (recent)
 	while(recentRpm.size() > 5){
 	    recentRpm.removeFirst();
 	}
@@ -83,10 +97,10 @@ public class ShooterTestBiobuzz extends OpMode {
             double rpm = rps * 60.0;
             telem.log("rpm-1", rpm);
         }
-
+*/
 	telem.log("time", time);
 	telem.log("ticks", ticks);
-    telem.log("velocity", motor.getVelocity()/28*60);
+    telem.log("velocity", v);
 	
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
