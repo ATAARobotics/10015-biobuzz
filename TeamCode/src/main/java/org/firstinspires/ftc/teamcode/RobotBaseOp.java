@@ -58,9 +58,9 @@ public abstract class RobotBaseOp extends OpMode {
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
-    public static double POLLEN_P = 0;
+    public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
-    public static double POLLEN_D = 0;
+    public static double POLLEN_D = 0.0001;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
 
     // we don't actually "know" in teleop, and also shouldn't care, so
