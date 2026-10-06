@@ -4,7 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
-import com.bylazar.configurables.annotations.Configurable;
+//import com.bylazar.configurables.annotations.Configurable;
 
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
 import org.firstinspires.ftc.vision.VisionProcessor;
@@ -29,8 +29,9 @@ import java.util.List;
  * https://github.com/alan412/LearnJavaForFTC/blob/master/LearnJavaForFTC.pdf
  */
 
-@Configurable
+//@Configurable
 public class PollenDetector implements VisionProcessor {
+
     public static double H_MIN = 20;
     public static double H_MAX = 40;
 
@@ -44,12 +45,22 @@ public class PollenDetector implements VisionProcessor {
     public static double MIN_AREA = 500;
 
 
-    // OpenCV uses Mat objects to hold images.
-    // The FTC example in Learn Java for FTC also uses Mats for the camera image and HSV image.
+    /*
+     * 0 = normal camera
+     * 1 = HSV mask after erosion/dilation
+     * 2 = filtered mask with accepted pollen only
+     */
+    public static double VIEW_MODE = 0;
+
 
     private final Mat hsv = new Mat();
     private final Mat mask = new Mat();
     private final Mat hierarchy = new Mat();
+
+    // Holds only blobs that passed area/circularity filtering.
+    private final Mat filteredMask = new Mat();
+
+
     private final Mat dilateKernel =
             Imgproc.getStructuringElement(
                     Imgproc.MORPH_RECT,
@@ -59,6 +70,7 @@ public class PollenDetector implements VisionProcessor {
             Imgproc.getStructuringElement(
                     Imgproc.MORPH_RECT,
                     new Size(7, 7));
+
 
     private volatile List<PollenBlob> blobs =
             Collections.emptyList();
@@ -70,28 +82,29 @@ public class PollenDetector implements VisionProcessor {
 
     public PollenDetector() {
 
-        // Canvas/Paint example is also in Learn Java for FTC Chapter 16.
-        // https://github.com/alan412/LearnJavaForFTC/blob/master/LearnJavaForFTC.pdf
-
         paint.setColor(Color.YELLOW);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(3);
     }
 
 
-    // Just a small class to save the information we want about each blob.
-
+    /*
+     * Saves the information about each detected pollen.
+     */
     public static class PollenBlob {
 
         public final double x;
         public final double y;
-        public final double radius;
 
+        public final double radius;
         public final double radiusInverse;
+
         public final double area;
         public final double circularity;
+
         public final double radiusVsDistSlope = 890.42;
         public final double radiusVsDistIntercept = -1.112;
+
         public final double pollenDistance;
 
 
@@ -104,22 +117,25 @@ public class PollenDetector implements VisionProcessor {
 
             this.x = x;
             this.y = y;
+
             this.radius = radius;
-            this.radiusInverse = 1/radius;
-            this.pollenDistance = radiusVsDistSlope*(1/radiusInverse)+radiusVsDistIntercept;
+
+            this.radiusInverse = 1.0 / radius;
+
+            /*
+             * Calibration equation:
+             *
+             * distance = slope * (1/radius) + intercept
+             */
+            this.pollenDistance =
+                    radiusVsDistSlope * radiusInverse
+                            + radiusVsDistIntercept;
+
             this.area = area;
             this.circularity = circularity;
         }
     }
 
-
-    /*
-     * VisionProcessor requires init(), processFrame(), and onDrawFrame().
-     *
-     * FTC example:
-     * https://github.com/alan412/LearnJavaForFTC/blob/master/LearnJavaForFTC.pdf
-     *
-     */
 
     @Override
     public void init(
@@ -136,33 +152,49 @@ public class PollenDetector implements VisionProcessor {
             Mat frame,
             long captureTimeNanos) {
 
-        //Convert the camera frame from RGB to HSV.
-        Imgproc.cvtColor(frame, hsv, Imgproc.COLOR_RGB2HSV);
+
+        // Convert camera frame from RGB to HSV.
+        Imgproc.cvtColor(
+                frame,
+                hsv,
+                Imgproc.COLOR_RGB2HSV);
 
 
-    // Make a black and white mask
+        // Make the black-and-white HSV mask.
         Core.inRange(
                 hsv,
-                new Scalar(H_MIN, S_MIN, V_MIN),
-                new Scalar(H_MAX, S_MAX, V_MAX),
+                new Scalar(
+                        H_MIN,
+                        S_MIN,
+                        V_MIN),
+                new Scalar(
+                        H_MAX,
+                        S_MAX,
+                        V_MAX),
                 mask);
-    // Dilation grows the white areas and erosion shrinks them.
 
-        Imgproc.erode(mask, mask, erodeKernel);
-        Imgproc.dilate(mask, mask, dilateKernel);
 
         /*
-         * Find the outlines of the white areas.
-         *
-         * OpenCV Java findContours example:
-         * https://docs.opencv.org/4.x/df/d0d/tutorial_find_contours.html
+         * Erosion removes small white areas.
+         * Dilation grows the surviving areas back.
          */
+        Imgproc.erode(
+                mask,
+                mask,
+                erodeKernel);
 
+        Imgproc.dilate(
+                mask,
+                mask,
+                dilateKernel);
+
+
+        /*
+         * Find contours in the mask.
+         */
         List<MatOfPoint> contours =
                 new ArrayList<>();
 
-        // RETR_EXTERNAL -> keep only outer-most contours
-        // CHAIN_APPROX_SIMPLE -> store simplifeid set of points instead of every single boundary pixel
         Imgproc.findContours(
                 mask,
                 contours,
@@ -170,40 +202,63 @@ public class PollenDetector implements VisionProcessor {
                 Imgproc.RETR_EXTERNAL,
                 Imgproc.CHAIN_APPROX_SIMPLE);
 
-        List<PollenBlob> found = new ArrayList<>();
+
+        /*
+         * Start with a completely black filtered mask.
+         */
+        filteredMask.create(
+                mask.rows(),
+                mask.cols(),
+                mask.type());
+
+        filteredMask.setTo(
+                new Scalar(0));
+
+
+        List<PollenBlob> found =
+                new ArrayList<>();
+
 
         for (MatOfPoint contour : contours) {
-            double area = Imgproc.contourArea(contour);
 
+            double area =
+                    Imgproc.contourArea(contour);
 
-            /*
-             * arcLength() uses MatOfPoint2f.
-             *
-             * The OpenCV Java example does basically this:
-             *
-             * Imgproc.arcLength(
-             *     new MatOfPoint2f(contours.get(i).toArray()),
-             *     true);
-             *
-             *  https://docs.opencv.org/4.13.0/d0/d49/tutorial_moments.html
-             */
 
             MatOfPoint2f curve =
                     new MatOfPoint2f(
                             contour.toArray());
 
 
-            double perimeter = Imgproc.arcLength(curve,true);
+            double perimeter =
+                    Imgproc.arcLength(
+                            curve,
+                            true);
+
+
             if (perimeter > 0) {
-                // Circularity = 4*pi*area / perimeter^2
-                double circularity = 4.0 * Math.PI * area / (perimeter * perimeter);
-                if (circularity >= MIN_CIRCULARITY && circularity <= 1.0 && area >MIN_AREA) {
+
+                /*
+                 * Circularity:
+                 *
+                 * 4 * pi * area / perimeter^2
+                 */
+                double circularity =
+                        4.0 * Math.PI * area
+                                / (perimeter * perimeter);
+
+
+                if (circularity >= MIN_CIRCULARITY
+                        && circularity <= 1.0
+                        && area > MIN_AREA) {
+
 
                     Point center =
                             new Point();
 
                     float[] radius =
                             new float[1];
+
 
                     Imgproc.minEnclosingCircle(
                             curve,
@@ -218,16 +273,34 @@ public class PollenDetector implements VisionProcessor {
                                     radius[0],
                                     area,
                                     circularity));
+
+
+                    /*
+                     * Draw accepted pollen into filteredMask.
+                     *
+                     * Anything rejected by area/circularity
+                     * remains black.
+                     */
+                    Imgproc.drawContours(
+                            filteredMask,
+                            Collections.singletonList(contour),
+                            -1,
+                            new Scalar(255),
+                            Imgproc.FILLED);
                 }
             }
+
 
             curve.release();
             contour.release();
         }
 
 
-        // Biggest blobs first.
-
+        /*
+         * Closest pollen first.
+         *
+         * Smaller pollenDistance = closer.
+         */
         found.sort(
                 (a, b) ->
                         Double.compare(
@@ -239,24 +312,42 @@ public class PollenDetector implements VisionProcessor {
 
 
         /*
-         * Whatever processFrame() returns is passed to onDrawFrame()
-         * as userContext.
+         * Change the image displayed by EOCV-Sim / VisionPortal.
          *
-         * This is explained in Learn Java for FTC Chapter 16.
-         * https://github.com/alan412/LearnJavaForFTC/blob/master/LearnJavaForFTC.pdf
+         * 0 = leave frame unchanged
+         * 1 = show HSV/morphology mask
+         * 2 = show only accepted pollen
          */
 
+        if (VIEW_MODE >= 1.5) {
+
+            // Accepted pollen only.
+            Imgproc.cvtColor(
+                    filteredMask,
+                    frame,
+                    Imgproc.COLOR_GRAY2RGB);
+
+        } else if (VIEW_MODE >= 0.5) {
+
+            // HSV mask after erosion/dilation.
+            Imgproc.cvtColor(
+                    mask,
+                    frame,
+                    Imgproc.COLOR_GRAY2RGB);
+        }
+
+
+        /*
+         * The returned list gets passed into
+         * onDrawFrame() as userContext.
+         */
         return found;
     }
 
 
     /*
-     * Draw circles over the pollen in the camera preview.
-     *
-     * Learn Java for FTC has actual Java Canvas/Paint/onDrawFrame code:
-     * https://github.com/alan412/LearnJavaForFTC/blob/master/LearnJavaForFTC.pdf
+     * Draw circles around accepted pollen.
      */
-
     @Override
     @SuppressWarnings("unchecked")
     public void onDrawFrame(
@@ -267,20 +358,35 @@ public class PollenDetector implements VisionProcessor {
             float scaleCanvasDensity,
             Object userContext) {
 
+
+        if (!(userContext instanceof List)) {
+            return;
+        }
+
+
         List<PollenBlob> found =
                 (List<PollenBlob>) userContext;
 
 
         for (PollenBlob blob : found) {
+
             canvas.drawCircle(
-                    (float) blob.x * scaleBmpPxToCanvasPx,
-                    (float) blob.y * scaleBmpPxToCanvasPx,
-                    (float) blob.radius * scaleBmpPxToCanvasPx,
+                    (float) blob.x
+                            * scaleBmpPxToCanvasPx,
+
+                    (float) blob.y
+                            * scaleBmpPxToCanvasPx,
+
+                    (float) blob.radius
+                            * scaleBmpPxToCanvasPx,
+
                     paint);
         }
     }
 
+
     public List<PollenBlob> getBlobs() {
+
         return blobs;
     }
 
