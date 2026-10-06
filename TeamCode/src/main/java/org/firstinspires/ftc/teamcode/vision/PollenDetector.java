@@ -34,14 +34,14 @@ public class PollenDetector implements VisionProcessor {
     public static double H_MIN = 20;
     public static double H_MAX = 40;
 
-    public static double S_MIN = 150;
+    public static double S_MIN = 200;
     public static double S_MAX = 255;
 
     public static double V_MIN = 100;
     public static double V_MAX = 255;
 
-    public static double MIN_CIRCULARITY = 0.7;
-    public static double MIN_AREA = 24;
+    public static double MIN_CIRCULARITY = 0.5;
+    public static double MIN_AREA = 500;
 
 
     // OpenCV uses Mat objects to hold images.
@@ -86,8 +86,13 @@ public class PollenDetector implements VisionProcessor {
         public final double x;
         public final double y;
         public final double radius;
+
+        public final double radiusInverse;
         public final double area;
         public final double circularity;
+        public final double radiusVsDistSlope = 890.42;
+        public final double radiusVsDistIntercept = -1.112;
+        public final double pollenDistance;
 
 
         public PollenBlob(
@@ -100,6 +105,8 @@ public class PollenDetector implements VisionProcessor {
             this.x = x;
             this.y = y;
             this.radius = radius;
+            this.radiusInverse = 1/radius;
+            this.pollenDistance = radiusVsDistSlope*(1/radiusInverse)+radiusVsDistIntercept;
             this.area = area;
             this.circularity = circularity;
         }
@@ -224,8 +231,8 @@ public class PollenDetector implements VisionProcessor {
         found.sort(
                 (a, b) ->
                         Double.compare(
-                                b.area,
-                                a.area));
+                                a.pollenDistance,
+                                b.pollenDistance));
 
 
         blobs = found;
