@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
@@ -29,8 +30,10 @@ public class ShooterTestBiobuzz extends OpMode {
         }
     }
 
-    public static double kP = 20;
-    public static double kV = 0.7;
+    PIDController rpmController;
+    public static double P = 0.05; //TODO: set pid values
+    public static double I = 0.0;
+    public static double D = 0.0;
     public static double AVERAGE_EXPONENT = 1.2;
     public static double motorPower = 0.0;
     LinkedList<VelocityData> recentVelocity = null;
@@ -48,6 +51,7 @@ public class ShooterTestBiobuzz extends OpMode {
 
     @Override
     public void init() {
+        rpmController = new PIDController(P, I, D);
         motor = new MotorEx(hardwareMap,"shooterL");
         motor2 = new MotorEx(hardwareMap, "encoder");
 	telem = new HyperTelemetry(telemetry);
@@ -61,7 +65,7 @@ public class ShooterTestBiobuzz extends OpMode {
     
     @Override
     public void loop() {
-
+    rpmController.setPID(P, I, D);
         double v = motor.getVelocity()/28*60; //this gives us rpm
         recentVelocity.addLast(new VelocityData(time, v));
     while(recentVelocity.size() > dataPoints) {
@@ -124,6 +128,12 @@ public class ShooterTestBiobuzz extends OpMode {
         }
 
         targetRpm = Math.max(0.0, Math.min(3000.0, targetRpm));
+
+        rpmController.setSetPoint(targetRpm); //we want to reach targetRpm
+
+        //pid
+        motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
+        //current rpm, then finds the pid output
 
 /*      //bangbang controller
         if (v < targetRpm){
