@@ -226,11 +226,12 @@ public abstract class RobotBaseOp extends OpMode {
 
             telemetry.addData(
                     "Pollen",
-                    "x=%.0f y=%.0f area=%.0f circ=%.2f",
+                    "x=%.0f y=%.0f area=%.0f circ=%.2f pollenDist=%.2f",
                     bestBlob.x,
                     bestBlob.y,
                     bestBlob.area,
-                    bestBlob.circularity);
+                    bestBlob.circularity,
+                    bestBlob.pollenDistance);
         }
 
 	// actually do the drive command for this loop
