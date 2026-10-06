@@ -217,7 +217,7 @@ public abstract class RobotBaseOp extends OpMode {
             double halfWidth =
                     pollenDetector.getFrameWidth()
                             / 2.0;
-            Imgproc.erode(mask, mask, erodeKernel);            frameCenter = pollenDetector.getFrameWidth() / 2.0;
+            frameCenter = pollenDetector.getFrameWidth() / 2.0;
         turn =
                    /* (bestBlob.x - halfWidth)
                             / halfWidth;*/
