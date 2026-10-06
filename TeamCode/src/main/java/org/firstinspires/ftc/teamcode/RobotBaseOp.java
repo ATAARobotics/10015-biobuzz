@@ -58,7 +58,7 @@ public abstract class RobotBaseOp extends OpMode {
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
-    public static double POLLEN_P = 1;
+    public static double POLLEN_P = 0;
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
@@ -179,6 +179,8 @@ public abstract class RobotBaseOp extends OpMode {
         clearCache();
         readControls();
         readSensors();
+
+        pollenTurnPID.setPID(POLLEN_P,POLLEN_I,POLLEN_D);
 
 	// testing driver controls
         strafe = driver.getRightX();
