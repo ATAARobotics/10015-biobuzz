@@ -17,7 +17,7 @@ import java.util.LinkedList;
 @Configurable
 @TeleOp(name = "Motor Test")
 public class ShooterTestBiobuzz extends OpMode {
-    public static int dataPoints = 5;
+    public static int dataPoints = 30;
     class VelocityData {
         public double time;
         public double velocity;
@@ -31,11 +31,13 @@ public class ShooterTestBiobuzz extends OpMode {
 
     public static double kP = 20;
     public static double kV = 0.7;
+    public static double AVERAGE_EXPONENT = 1.2;
+    public static double motorPower = 0.0;
     LinkedList<VelocityData> recentVelocity = null;
     MotorEx motor;
     MotorEx motor2;
-    double motorPower = 0.0;
-    double rpm;
+  //  double motorPower = 0.0;
+    double targetRpm = 0.0;
     double rps;
     int ticks;
     int lastTicks;
@@ -60,17 +62,22 @@ public class ShooterTestBiobuzz extends OpMode {
     @Override
     public void loop() {
 
-        double v = motor.getVelocity()/28*60;
+        double v = motor.getVelocity()/28*60; //this gives us rpm
         recentVelocity.addLast(new VelocityData(time, v));
     while(recentVelocity.size() > dataPoints) {
         recentVelocity.removeFirst();
     }
         double total = 0.0;
+        double amount = 1;
+        double totalAmount = 0.0;
         for(VelocityData data:recentVelocity){
-            total = total + data.velocity; // adding recentvelocity data
+            totalAmount = totalAmount + amount;
+            total = total + (data.velocity * amount); // adding recentvelocity data
+            amount *= AVERAGE_EXPONENT; //1.0 is equal to normal average, more than that
+            //creates an exponential graph
         }
-        double averageVelocity = total/recentVelocity.size(); //finding average - total value of data/number of data points
-        telem.log("Average-Velocity", averageVelocity);
+        double averageVelocity = total / totalAmount; //finding average - total value of data/number of data points
+        telem.log("Average-RPM", averageVelocity);
 	/*    recentRpm.addLast(new RpmData(time, ticks)); //add a new data point (recent)
 	while(recentRpm.size() > 5){
 	    recentRpm.removeFirst();
@@ -100,21 +107,35 @@ public class ShooterTestBiobuzz extends OpMode {
 */
 	telem.log("time", time);
 	telem.log("ticks", ticks);
-    telem.log("velocity", v);
-	
+    telem.log("RPM", v);
+    telem.log("targetRpm", targetRpm);
+
+
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
-            motorPower += 0.1;
+           // motorPower += 0.1;
+            targetRpm += 100;
         }
 
         // Decrease power by 0.1 on each new D-pad down press
         if (gamepad1.dpad_down && !lastDpadDown) {
-            motorPower -= 0.1;
+            //motorPower -= 0.1;
+            targetRpm -= 100;
         }
 
+        targetRpm = Math.max(0.0, Math.min(3000.0, targetRpm));
+
+/*      //bangbang controller
+        if (v < targetRpm){
+            motorPower = 1.0;
+
+        } else {
+            motorPower = 0.0;
+        }
+
+ */
         // Clamp power between 0.0 and 1.0
         motorPower = Math.max(0.0, Math.min(1.0, motorPower));
-
         motor.set(motorPower);
 
         // Remember current button states for next loop
