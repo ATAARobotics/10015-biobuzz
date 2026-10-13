@@ -30,8 +30,10 @@ public class ShooterTestBiobuzz extends OpMode {
         }
     }
 
-    PIDController rpmController;
-    public static double P = 0.05; //TODO: set pid values
+    PIDController rpmController;;
+    public static double increaseRate = 100.0;
+    public static double RPM_DROP = 200.0;
+    public static double P = 0.015; //TODO: set pid values
     public static double I = 0.0;
     public static double D = 0.0;
     public static double AVERAGE_EXPONENT = 1.2;
@@ -41,6 +43,8 @@ public class ShooterTestBiobuzz extends OpMode {
     MotorEx motor2;
   //  double motorPower = 0.0;
     double targetRpm = 0.0;
+    int shotCounter = 0;
+    double lastShotTime = 0.0;
     double rps;
     int ticks;
     int lastTicks;
@@ -81,7 +85,41 @@ public class ShooterTestBiobuzz extends OpMode {
             //creates an exponential graph
         }
         double averageVelocity = total / totalAmount; //finding average - total value of data/number of data points
-        telem.log("Average-RPM", averageVelocity);
+        telem.logBoth("Average-RPM", averageVelocity);
+
+        //Shot Counter
+        if(recentVelocity.size() >= 5){
+            double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size()-5).velocity;
+            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size()-5).time > lastShotTime) {
+                shotCounter+=1;
+                lastShotTime = recentVelocity.getLast().time;
+            }
+            /*
+            first attemp
+
+            double highRpm = 0.0;
+            double lowRpm = 100000.0;
+            double minTime = 0.0;
+            for (int i=recentVelocity.size()-1; i >= recentVelocity.size()-5; i--) {
+                VelocityData d = recentVelocity.get(i);
+                if(d.velocity > highRpm){
+                    highRpm = d.velocity;
+                }
+                if(d.velocity < lowRpm){
+                    lowRpm = d.velocity;
+                    minTime = d.time;
+                }
+            }
+            if(minTime > 0.0){
+                double dif = highRpm - lowRpm;
+                if(dif > RPM_DROP && minTime > lastShotTime){
+                    shotCounter += 1;
+                    lastShotTime = minTime;
+                }
+            }
+
+             */
+        }
 	/*    recentRpm.addLast(new RpmData(time, ticks)); //add a new data point (recent)
 	while(recentRpm.size() > 5){
 	    recentRpm.removeFirst();
@@ -112,22 +150,22 @@ public class ShooterTestBiobuzz extends OpMode {
 	telem.log("time", time);
 	telem.log("ticks", ticks);
     telem.log("RPM", v);
-    telem.log("targetRpm", targetRpm);
-
+    telem.logBoth("targetRpm", targetRpm);
+    telem.logBoth("shotCounter", shotCounter);
 
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
            // motorPower += 0.1;
-            targetRpm += 100;
+            targetRpm += increaseRate;
         }
 
         // Decrease power by 0.1 on each new D-pad down press
         if (gamepad1.dpad_down && !lastDpadDown) {
             //motorPower -= 0.1;
-            targetRpm -= 100;
+            targetRpm -= increaseRate;
         }
 
-        targetRpm = Math.max(0.0, Math.min(3000.0, targetRpm));
+        targetRpm = Math.max(0.0, Math.min(5000.0, targetRpm));
 
         rpmController.setSetPoint(targetRpm); //we want to reach targetRpm
 
