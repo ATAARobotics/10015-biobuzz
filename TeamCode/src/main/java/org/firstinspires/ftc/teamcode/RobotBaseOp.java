@@ -220,7 +220,7 @@ public abstract class RobotBaseOp extends OpMode {
                     pollenDetector.getFrameWidth()
                             / 2.0;
             frameCenter = pollenDetector.getFrameWidth() / 2.0;
-        turn =
+            turn =
                    /* (bestBlob.x - halfWidth)
                             / halfWidth;*/
                     -pollenTurnPID.calculate(bestBlob.x, frameCenter);

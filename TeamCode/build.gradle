@@ -31,4 +31,5 @@ dependencies {
     implementation project(':FtcRobotController')
     implementation "org.solverslib:core:0.3.6" // add SolversLib core
     implementation 'com.bylazar:fullpanels:1.0.13'
+    implementation "org.solverslib:pedroPathing:0.3.6" // pedroPathing
 }
