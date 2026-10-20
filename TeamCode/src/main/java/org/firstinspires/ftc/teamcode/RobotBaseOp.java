@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 // import android.graphics.Color;
 import android.util.Size;
 
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.button.Trigger;
@@ -175,6 +176,11 @@ public abstract class RobotBaseOp extends OpMode {
     // the rest of this class' "loop()" but also want to do their own
     // thing
     protected void loopExtra() {
+    }
+
+    public Command turnLightGreen() {
+        // fixme: return a new solvers-lib command that turns the light gree
+        return null;
     }
 
     @Override

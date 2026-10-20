@@ -64,6 +64,7 @@ public abstract class Auto extends RobotBaseOp {
 	SequentialCommandGroup auto = new SequentialCommandGroup();
 
 	auto.addCommands(new FollowPathCommand(follower, gardenPickUp()));
+    //fixme: auto.addCommands(turnLightGreen());
 	//Shoot preloads first from starting position
 	auto.addCommands(new FollowPathCommand(follower, gardenPickUp()));
 	//run intake
@@ -88,7 +89,6 @@ public abstract class Auto extends RobotBaseOp {
         //Scheduler.reset();
         follower = Constants.create(hardwareMap);
         follower.setPose(startNear);//start far if selected
-
     }
     @Override
     public void start() {
