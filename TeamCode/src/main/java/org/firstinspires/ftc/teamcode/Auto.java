@@ -64,21 +64,18 @@ public abstract class Auto extends RobotBaseOp {
 	SequentialCommandGroup auto = new SequentialCommandGroup();
 
 	auto.addCommands(new FollowPathCommand(follower, gardenPickUp()));
-			 
-	/*	
-              //Shoot preloads first from starting position
-                follow(follower, gardenPickUp()),
-                //run intake
-                follow(follower, goToFarShoot()), // Add partner bump option
-                //Shoot
-                follow(follower, turnToFlower()),
-                follow(follower, pickUpFarFlower()),
-                //intake flower
-                follow(follower, shootFromFarFlower()),
-                //shoot
-                follow(follower, parkFromFarShoot())
-        );
-	*/
+	//Shoot preloads first from starting position
+	auto.addCommands(new FollowPathCommand(follower, gardenPickUp()));
+	//run intake
+	auto.addCommands(new FollowPathCommand(follower, goToFarShoot())); // add partner bump option
+	//Shoot
+	auto.addCommands(new FollowPathCommand(follower, turnToFlower()));
+	auto.addCommands(new FollowPathCommand(follower, pickUpFarFlower()));
+	//intake flower
+	auto.addCommands(new FollowPathCommand(follower, shootFromFarFlower()));
+	//shoot
+	auto.addCommands(new FollowPathCommand(follower, parkFromFarShoot()));
+	    
         return auto;
     }
     private Command autoRoutineFar(){
