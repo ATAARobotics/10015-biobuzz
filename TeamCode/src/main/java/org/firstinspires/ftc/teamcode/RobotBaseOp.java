@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 // import android.graphics.Color;
 import android.util.Size;
 
+import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -63,6 +64,9 @@ public abstract class RobotBaseOp extends OpMode {
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
+    Servo indicatorLight;
+    double RED = 0.28;
+    double GREEN = 0.5;
 
     // we don't actually "know" in teleop, and also shouldn't care, so
     // we provide a default implementation
@@ -87,6 +91,7 @@ public abstract class RobotBaseOp extends OpMode {
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
+        indicatorLight = hardwareMap.get(Servo.class, "indicator");
 
         // (Do not remove this, we absolutely have problems without cancelling this)
         // Cancel all previous commands
@@ -178,9 +183,31 @@ public abstract class RobotBaseOp extends OpMode {
     protected void loopExtra() {
     }
 
+    class Shoot extends CommandBase{
+        @Override
+        public void execute(){
+            indicatorLight.setPosition(GREEN);
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
     public Command turnLightGreen() {
-        // fixme: return a new solvers-lib command that turns the light gree
-        return null;
+        return new Shoot();
+    }
+    class Intake extends CommandBase{
+        @Override
+        public void execute(){
+            indicatorLight.setPosition(RED);
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command turnLightRed() {
+        return new Intake();
     }
 
     @Override
@@ -246,7 +273,6 @@ public abstract class RobotBaseOp extends OpMode {
 	    }
 
 	    // let the command scheduler do stuff
-	    CommandScheduler.getInstance().run();
 
 	    // actually do the drive command for this loop
 	    // todo: incorporate into commands / default commands
@@ -254,6 +280,8 @@ public abstract class RobotBaseOp extends OpMode {
 
 	    logTelemetry();
 	}
+        CommandScheduler.getInstance().run();
+
     }
 
     @Override

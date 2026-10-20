@@ -63,18 +63,22 @@ public abstract class Auto extends RobotBaseOp {
     private Command autoRoutineNear() {
 	SequentialCommandGroup auto = new SequentialCommandGroup();
 
-	auto.addCommands(new FollowPathCommand(follower, gardenPickUp()));
     //fixme: auto.addCommands(turnLightGreen());
 	//Shoot preloads first from starting position
+    auto.addCommands(turnLightGreen());
 	auto.addCommands(new FollowPathCommand(follower, gardenPickUp()));
 	//run intake
-	auto.addCommands(new FollowPathCommand(follower, goToFarShoot())); // add partner bump option
+    auto.addCommands(turnLightRed());
+    auto.addCommands(new FollowPathCommand(follower, goToFarShoot())); // add partner bump option
 	//Shoot
+    auto.addCommands(turnLightGreen());
 	auto.addCommands(new FollowPathCommand(follower, turnToFlower()));
 	auto.addCommands(new FollowPathCommand(follower, pickUpFarFlower()));
 	//intake flower
+    auto.addCommands(turnLightRed());
 	auto.addCommands(new FollowPathCommand(follower, shootFromFarFlower()));
 	//shoot
+    auto.addCommands(turnLightGreen());
 	auto.addCommands(new FollowPathCommand(follower, parkFromFarShoot()));
 	    
         return auto;
