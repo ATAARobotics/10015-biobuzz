@@ -91,7 +91,7 @@ public abstract class RobotBaseOp extends OpMode {
         // Cancel all previous commands
         CommandScheduler.getInstance().reset();
 
-	//CommandScheduler.getInstance().registerSubsystem(drive);
+        //CommandScheduler.getInstance().registerSubsystem(drive);
 
         // set up controls
         bindOperatorControls();
@@ -104,24 +104,27 @@ public abstract class RobotBaseOp extends OpMode {
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-	loops = 0;
+        loops = 0;
 
 // camera and vision setup
 
-        pollenDetector = new PollenDetector();
 
-        portal = new VisionPortal.Builder()
-                .addProcessor(pollenDetector)
-                .setCameraResolution(new Size(640, 480))
-                .setCamera(
-                        hardwareMap.get(
-                                WebcamName.class,
-                                "Webcam 1"))
-                .build();
+            pollenDetector = new PollenDetector();
 
-        telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates for debugging.
-        telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
-    }
+
+            portal = new VisionPortal.Builder()
+                    .addProcessor(pollenDetector)
+                    .setCameraResolution(new Size(640, 480))
+                    .setCamera(
+                            hardwareMap.get(
+                                    WebcamName.class,
+                                    "Webcam 1"))
+                    .build();
+
+            telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates for debugging.
+            telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+        }
+
 
     protected void readSensors() {
         drive.readSensors(time);
@@ -179,66 +182,66 @@ public abstract class RobotBaseOp extends OpMode {
         clearCache();
         readControls();
         readSensors();
+if (!isAuto()) {
+    pollenTurnPID.setPID(POLLEN_P, POLLEN_I, POLLEN_D);
 
-        pollenTurnPID.setPID(POLLEN_P,POLLEN_I,POLLEN_D);
-
-	// testing driver controls
-        strafe = driver.getRightX();
-        forward = -driver.getRightY();
-        turn = 0;
+    // testing driver controls
+    strafe = driver.getRightX();
+    forward = -driver.getRightY();
+    turn = 0;
 
 // vision stuff: look for yellow / pollen blobs
 
-        List<PollenDetector.PollenBlob> blobs =
-                pollenDetector.getBlobs();
+    List<PollenDetector.PollenBlob> blobs =
+            pollenDetector.getBlobs();
 
-        telemetry.addData(
-                "Pollen Count",
-                blobs.size());
+    telemetry.addData(
+            "Pollen Count",
+            blobs.size());
 
 
-        /*
-         * PollenDetector sorts the list from
-         * largest area to smallest area.
-         */
+    /*
+     * PollenDetector sorts the list from
+     * largest area to smallest area.
+     */
 
-        PollenDetector.PollenBlob bestBlob = null;
+    PollenDetector.PollenBlob bestBlob = null;
 
-        if (!blobs.isEmpty()) {
+    if (!blobs.isEmpty()) {
 
-            bestBlob = blobs.get(0);
-        }
+        bestBlob = blobs.get(0);
+    }
 
 
         /*
          * Turn toward the largest pollen.
  Imgproc.erode(mask, mask, erodeKernel);Imgproc.erode(mask, mask, erodeKernel);        */
 
-        if (bestBlob != null) {
+    if (bestBlob != null) {
 
-            double halfWidth =
-                    pollenDetector.getFrameWidth()
-                            / 2.0;
-            frameCenter = pollenDetector.getFrameWidth() / 2.0;
-            turn =
+        double halfWidth =
+                pollenDetector.getFrameWidth()
+                        / 2.0;
+        frameCenter = pollenDetector.getFrameWidth() / 2.0;
+        turn =
                    /* (bestBlob.x - halfWidth)
                             / halfWidth;*/
-                    -pollenTurnPID.calculate(bestBlob.x, frameCenter);
+                -pollenTurnPID.calculate(bestBlob.x, frameCenter);
 
 
-            telemetry.addData(
-                    "Pollen",
-                    "x=%.0f y=%.0f area=%.0f circ=%.2f pollenDist=%.2f",
-                    bestBlob.x,
-                    bestBlob.y,
-                    bestBlob.area,
-                    bestBlob.circularity,
-                    bestBlob.pollenDistance);
-        }
+        telemetry.addData(
+                "Pollen",
+                "x=%.0f y=%.0f area=%.0f circ=%.2f pollenDist=%.2f",
+                bestBlob.x,
+                bestBlob.y,
+                bestBlob.area,
+                bestBlob.circularity,
+                bestBlob.pollenDistance);
+    }
 
-	// actually do the drive command for this loop
-        drive.drivebase.driveRobotCentric(strafe, forward, turn);
-
+    // actually do the drive command for this loop
+    drive.drivebase.driveRobotCentric(strafe, forward, turn);
+}
 	loopExtra();
 	
         logTelemetry();
