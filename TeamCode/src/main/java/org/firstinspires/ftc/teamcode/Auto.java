@@ -1,16 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import static com.pedropathing.api.Paths.curve;
 import static com.pedropathing.api.Paths.line;
-import static com.pedropathing.ivy.Scheduler.schedule;
-import static com.pedropathing.ivy.groups.Groups.sequential;
-import static com.pedropathing.ivy.pedro.PedroCommands.follow;
+//import static com.pedropathing.ivy.Scheduler.schedule;
+//import static com.pedropathing.ivy.groups.Groups.sequential;
+//import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.Scheduler;
+//import com.pedropathing.ivy.Command;
+//import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 
@@ -57,8 +61,12 @@ public abstract class Auto extends RobotBaseOp {
     }
 
     private Command autoRoutineNear() {
-        return sequential(
-                //Shoot preloads first from starting position
+	SequentialCommandGroup auto = new SequentialCommandGroup();
+
+	auto.addCommands(new FollowPathCommand(follower, gardenPickUp()));
+			 
+	/*	
+              //Shoot preloads first from starting position
                 follow(follower, gardenPickUp()),
                 //run intake
                 follow(follower, goToFarShoot()), // Add partner bump option
@@ -70,30 +78,29 @@ public abstract class Auto extends RobotBaseOp {
                 //shoot
                 follow(follower, parkFromFarShoot())
         );
+	*/
+        return auto;
     }
     private Command autoRoutineFar(){
-        return sequential(
-            //far pathing
-        );
-
+        return null;
     }
     @Override
     public void init() {
         super.init();
         // ADD IN START FAR THING IF STATEMENT ONCE WRITTEN!!!!!!!!!!
-        Scheduler.reset();
+        //Scheduler.reset();
         follower = Constants.create(hardwareMap);
         follower.setPose(startNear);//start far if selected
 
     }
     @Override
     public void start() {
-        schedule(autoRoutineNear());
+        CommandScheduler.getInstance().schedule(autoRoutineNear());
     }//Make far an option here
+
     @Override
     public void loop() {
         super.loop();
         follower.update();
-        Scheduler.execute();
     }
 }
