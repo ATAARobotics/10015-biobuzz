@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.pedro.procedures.PinpointTuner;
 import org.firstinspires.ftc.teamcode.pedro.procedures.Tests;
 
 public class Tuning {
-   /* @Tuner
+    @Tuner
     public static Procedure mecanumTuner() {
         return new MecanumTuner();
     }
@@ -34,11 +34,11 @@ public class Tuning {
         return new Tests(hardwareMap -> new Mecanum(hardwareMap, Constants.drivetrainConfig), (hardwareMap -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig)), null);
     }
 
-    @Tuner
+   @Tuner
     public static Procedure foresightTuner() {
         return new ForesightTuner((hardwareMap) -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig), (hardwareMap) -> new Mecanum(hardwareMap, Constants.drivetrainConfig));
     }
-*/
+
     @Tuner
     public static Procedure testsAll() {
         return new Tests(hardwareMap -> new Mecanum(hardwareMap, Constants.drivetrainConfig), (hardwareMap -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig)), () -> new Foresight(Constants.foresightConfig));
