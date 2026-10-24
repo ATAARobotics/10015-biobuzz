@@ -38,7 +38,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
     private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
     private final Pose shootFar = p.of(58,118,270);//Shoot at the far side
-    private final Pose shootFarControlPoint = p.of(32.1,110,270); // control point when driving from garden to far shoot
+    private final Pose shootFarControlPoint = p.of(32.1,135.8,270); // control point when driving from garden to far shoot
     private final Pose pointTowardsFlower = p.of(58,118.1,90); //rotate to point towards flower
     private final Pose farFlowerPickUp = p.of(46.4,122,90);//Pick up the flower at the far side
     private final Pose endParkSolo = p.of(9.64,115,0); //Parking in zone at end alone
