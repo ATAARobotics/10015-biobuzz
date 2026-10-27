@@ -47,6 +47,13 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose prepareToBumpPartner = p.of(10.25,69.16,180); //So we don't destroy them
     private final Pose controlPointToPrepareToBumpPartner = p.of(41.09,57.37,90); //Exactly what it sounds like
     private final Pose bumpPartner = p.of(10.25,96.33,180); //Push partner into park position
+    private final Pose startFar = p.of(60.96 + xOffset, 132.4 + yOffset, 270);
+    private final Pose checkAprilTag = p.of(58.13, 108.1, 270);
+    private final Pose generalShootingPositionFar = p.of(60.96, 132.4, 270);
+    private final Pose controlPointSharedBetweenShootAndFlower = p.of(51.97, 89.73, 270);
+    private final Pose flowerIntakeFar = p.of(47.13, 130.75, 90);
+    private final Pose parkFar = p.of(9.44, 115.3, 270);
+    private final Pose controlPointParkFar = p.of(63.5, 99.35, 270);
 
     class Delay extends CommandBase {
         double seconds;
