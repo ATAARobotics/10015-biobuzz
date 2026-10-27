@@ -44,6 +44,9 @@ public class ShooterTestBiobuzz extends OpMode {
   //  double motorPower = 0.0;
     double targetRpm = 0.0;
     int shotCounter = 0;
+    double shootRpmTolerance = 0.0; //Todo: find a range that the shooter is good at shooting
+    boolean shotCounterReady = true;
+    double rpmBeforeShot = 0.0;
     double lastShotTime = 0.0;
     double rps;
     int ticks;
@@ -71,7 +74,7 @@ public class ShooterTestBiobuzz extends OpMode {
     public void loop() {
     rpmController.setPID(P, I, D);
         double v = motor.getVelocity()/28*60; //this gives us rpm
-        recentVelocity.addLast(new VelocityData(time, v));
+        recentVelocity.addLast(new VelocityData(time, v)); //recent rpm
     while(recentVelocity.size() > dataPoints) {
         recentVelocity.removeFirst();
     }
@@ -87,12 +90,22 @@ public class ShooterTestBiobuzz extends OpMode {
         double averageVelocity = total / totalAmount; //finding average - total value of data/number of data points
         telem.logBoth("Average-RPM", averageVelocity);
 
+
+
+
+
         //Shot Counter
         if(recentVelocity.size() >= 5){
-            double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size()-5).velocity;
-            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size()-5).time > lastShotTime) {
-                shotCounter+=1;
+            double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size()-5).velocity; //recent - 5 ago
+            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size()-5).time > lastShotTime && shotCounterReady == true) {
+                rpmBeforeShot = recentVelocity.getLast().velocity;
+                shotCounter+=1; //adds a shot to the counter
+                shotCounterReady = false; //makes it false because its no longer ready
                 lastShotTime = recentVelocity.getLast().time;
+            }
+            if(!shotCounterReady && recentVelocity.getLast().velocity >= rpmBeforeShot - 100){ //rpmbeforeshot can be our target rpm that we want to get to, subtract by 100 for leeway
+                //checks if our current rpm has made it back to rpm before we shot
+                shotCounterReady = true; //since current rpm is greater than/equal to the rpm before we shot
             }
             /*
             first attemp
