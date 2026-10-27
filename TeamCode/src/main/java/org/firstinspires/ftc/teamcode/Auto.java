@@ -8,6 +8,7 @@ import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import static com.pedropathing.api.Paths.curve;
 import static com.pedropathing.api.Paths.line;
+import static com.pedropathing.ivy.commands.Commands.waitMs;
 //import static com.pedropathing.ivy.Scheduler.schedule;
 //import static com.pedropathing.ivy.groups.Groups.sequential;
 //import static com.pedropathing.ivy.pedro.PedroCommands.follow;
@@ -35,6 +36,7 @@ public abstract class Auto extends RobotBaseOp {
     double yOffset = 7.19;
     boolean noFarSide = false;
     boolean pushToPark = false;
+
     private final Pose startNear = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
     private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
@@ -48,11 +50,13 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose prepareToBumpPartner = p.of(10.25,69.16,180); //So we don't destroy them
     private final Pose controlPointToPrepareToBumpPartner = p.of(41.09,57.37,90); //Exactly what it sounds like
     private final Pose bumpPartner = p.of(10.25,96.33,180); //Push partner into park position
-    private final Pose startFar = p.of(60.96 + xOffset, 132.4 + yOffset, 270);
+
+    //far auto poses
+    private final Pose startFar = p.of(72 - xOffset, 141 - yOffset, 270);
     private final Pose checkAprilTag = p.of(58.13, 108.1, 270);
     private final Pose generalShootingPositionFar = p.of(60.96, 132.4, 270);
-    private final Pose controlPointSharedBetweenShootAndFlower = p.of(51.97, 89.73, 270);
-    private final Pose flowerIntakeFar = p.of(47.13, 130.75, 90);
+    private final Pose controlPointSharedBetweenShootAndFlower = p.of(52, 85, 270);
+    private final Pose flowerIntakeFar = p.of(47.13, 126, 90);
     private final Pose parkFar = p.of(9.44, 115.3, 270);
     private final Pose controlPointParkFar = p.of(63.5, 99.35, 270);
 
@@ -96,13 +100,14 @@ public abstract class Auto extends RobotBaseOp {
     private Path pushPartner(){
         return line(prepareToBumpPartner, bumpPartner).linear(prepareToBumpPartner, bumpPartner);
     }
-    private Path bumpToShoot(){
-        return line(bumpPartner,shootFar).linear(bumpPartner,shootFar);
+    private Path bumpToShoot() {
+        return line(bumpPartner, shootFar).linear(bumpPartner, shootFar);
     }
+    //basic far auto paths
     private Path startToAprilTags(){
         return line(startFar, checkAprilTag).linear(startFar, checkAprilTag);
     }
-    private Path AprilTagToShoot(){
+    private Path aprilTagToShoot(){
         return line(checkAprilTag, generalShootingPositionFar).linear(checkAprilTag, generalShootingPositionFar);
     }
     private Path shootToFlowerIntake(){
@@ -114,7 +119,6 @@ public abstract class Auto extends RobotBaseOp {
     private Path shootToPark(){
         return curve(generalShootingPositionFar, controlPointParkFar, parkFar).linear(generalShootingPositionFar, parkFar);
     }
-
 
     private Command autoRoutineNear() {
 	SequentialCommandGroup auto = new SequentialCommandGroup();
@@ -153,7 +157,13 @@ public abstract class Auto extends RobotBaseOp {
     private Command autoRoutineFar(){
         SequentialCommandGroup autoFar = new SequentialCommandGroup();
 
-        autoFar.addCommands(newFollowPathCommand);
+        //basic far auto commands
+        autoFar.addCommands(new FollowPathCommand(follower, startToAprilTags()));
+        autoFar.addCommands(new Delay(2.0));
+        autoFar.addCommands(new FollowPathCommand(follower, aprilTagToShoot()));
+        autoFar.addCommands(new FollowPathCommand(follower, shootToFlowerIntake()));
+        autoFar.addCommands(new FollowPathCommand(follower, flowerToShoot()));
+        autoFar.addCommands(new FollowPathCommand(follower, shootToPark()));
 
         return autoFar;
     }
