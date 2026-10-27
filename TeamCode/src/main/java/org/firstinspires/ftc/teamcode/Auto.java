@@ -99,6 +99,22 @@ public abstract class Auto extends RobotBaseOp {
     private Path bumpToShoot(){
         return line(bumpPartner,shootFar).linear(bumpPartner,shootFar);
     }
+    private Path startToAprilTags(){
+        return line(startFar, checkAprilTag).linear(startFar, checkAprilTag);
+    }
+    private Path AprilTagToShoot(){
+        return line(checkAprilTag, generalShootingPositionFar).linear(checkAprilTag, generalShootingPositionFar);
+    }
+    private Path shootToFlowerIntake(){
+        return curve(generalShootingPositionFar,controlPointSharedBetweenShootAndFlower, flowerIntakeFar).linear(generalShootingPositionFar, flowerIntakeFar);
+    }
+    private Path flowerToShoot(){
+        return curve(flowerIntakeFar, controlPointSharedBetweenShootAndFlower, generalShootingPositionFar).linear(flowerIntakeFar, generalShootingPositionFar);
+    }
+    private Path shootToPark(){
+        return curve(generalShootingPositionFar, controlPointParkFar, parkFar).linear(generalShootingPositionFar, parkFar);
+    }
+
 
     private Command autoRoutineNear() {
 	SequentialCommandGroup auto = new SequentialCommandGroup();
@@ -137,6 +153,7 @@ public abstract class Auto extends RobotBaseOp {
     private Command autoRoutineFar(){
         SequentialCommandGroup autoFar = new SequentialCommandGroup();
 
+        autoFar.addCommands(newFollowPathCommand);
 
         return autoFar;
     }
