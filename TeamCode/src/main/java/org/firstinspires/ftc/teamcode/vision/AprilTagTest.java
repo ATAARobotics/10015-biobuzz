@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.vision;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -31,10 +31,11 @@ public class AprilTagTest extends LinearOpMode {
                 if (tag.ftcPose == null) continue;
 
                 if (tag instanceof AprilTagSingleDetection) {
-                    telemetry.addData("Tag ID",
-                            ((AprilTagSingleDetection) tag).id);
-                } else {
-                    telemetry.addData("Cluster", tag.metadata.name);
+                    AprilTagSingleDetection single = (AprilTagSingleDetection) tag;
+                    telemetry.addData("Tag ID", single.id);
+                } else if (tag instanceof AprilTagClusterDetection) {
+                    AprilTagClusterDetection cluster = (AprilTagClusterDetection) tag;
+                    telemetry.addData("Cluster", cluster.metadata.name);
                 }
 
                 telemetry.addData("Distance", "%.1f inches", tag.ftcPose.range);
