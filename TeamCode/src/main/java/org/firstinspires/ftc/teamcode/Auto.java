@@ -28,6 +28,7 @@ public abstract class Auto extends RobotBaseOp {
     protected void bindOperatorControls() {}
     public boolean isAuto() { return true; }
 
+
     private Follower follower;
     private final PoseFactory p = PoseFactory.degrees();
     double xOffset = 7.179;
@@ -101,12 +102,11 @@ public abstract class Auto extends RobotBaseOp {
 
     private Command autoRoutineNear() {
 	SequentialCommandGroup auto = new SequentialCommandGroup();
-    //fixme: auto.addCommands(turnLightGreen());
 	//Shoot preloads first from starting position
-    //auto.addCommands(turnLightGreen());
+    auto.addCommands(turnLightGreen());
 	auto.addCommands(new FollowPathCommand(follower, gardenPickUp()));
 	//run intake
-    //auto.addCommands(turnLightRed());
+    auto.addCommands(turnLightRed());
     if(noFarSide){
         auto.addCommands(new FollowPathCommand(follower, parkFromGarden()));
     }
@@ -126,23 +126,31 @@ public abstract class Auto extends RobotBaseOp {
         auto.addCommands(new FollowPathCommand(follower, pickUpFarFlower()));
         new Delay(1);
         //intake flower
-       // auto.addCommands(turnLightRed());
+        auto.addCommands(turnLightRed());
         auto.addCommands(new FollowPathCommand(follower, shootFromFarFlower()));
         //shoot
-       // auto.addCommands(turnLightGreen());
+        auto.addCommands(turnLightGreen());
         auto.addCommands(new FollowPathCommand(follower, parkFromFarShoot()));
     }
         return auto;
     }
     private Command autoRoutineFar(){
-        return null;
+        SequentialCommandGroup autoFar = new SequentialCommandGroup();
+
+
+        return autoFar;
     }
     @Override
     public void init() {
         super.init();
         //Scheduler.reset();
         follower = Constants.create(hardwareMap);
-        follower.setPose(startNear);//start far if selected
+        if (getStartZone() == StartZone.NEAR){
+            follower.setPose(startNear);
+        }
+        else if(getStartZone() == StartZone.FAR){
+            follower.setPose(startFar);
+        }
     }
     @Override
     public void init_loop() {
@@ -169,8 +177,13 @@ public abstract class Auto extends RobotBaseOp {
     }
     @Override
     public void start() {
-        CommandScheduler.getInstance().schedule(autoRoutineNear());
-    }//Make far an option here
+        if(getStartZone() == StartZone.NEAR){
+            CommandScheduler.getInstance().schedule(autoRoutineNear());
+        }
+        else if(getStartZone() == StartZone.FAR){
+            CommandScheduler.getInstance().schedule(autoRoutineFar());
+        }
+    }
 
     @Override
     public void loop() {

@@ -108,7 +108,7 @@ public class ShooterTestBiobuzz extends OpMode {
                 shotCounterReady = true; //since current rpm is greater than/equal to the rpm before we shot
             }
             /*
-            first attemp
+            first attempt
 
             double highRpm = 0.0;
             double lowRpm = 100000.0;
