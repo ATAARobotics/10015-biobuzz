@@ -138,13 +138,13 @@ public abstract class Auto extends RobotBaseOp {
             auto.addCommands(new FollowPathCommand(follower,bumpToShoot())); //Going from parking to far shoot
         }else {
             auto.addCommands(new FollowPathCommand(follower, goToFarShoot())); //Going from garden to far shoot
-            new Delay(1);
+            auto.addCommands(new Delay(1.0));
         }
         //Shoot
         auto.addCommands(turnLightGreen());
         auto.addCommands(new FollowPathCommand(follower, turnToFlower()));
         auto.addCommands(new FollowPathCommand(follower, pickUpFarFlower()));
-        new Delay(1);
+        auto.addCommands(new Delay(1));
         //intake flower
         auto.addCommands(turnLightRed());
         auto.addCommands(new FollowPathCommand(follower, shootFromFarFlower()));
