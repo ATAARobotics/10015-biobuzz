@@ -31,6 +31,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 import org.firstinspires.ftc.teamcode.vision.PollenDetector;
+import org.firstinspires.ftc.vision.apriltag.AprilTagClusterDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.vision.apriltag.AprilTagSingleDetection;
 import org.opencv.imgproc.Imgproc;
 
 //import org.opencv.core.Scalar;
@@ -60,6 +64,8 @@ public abstract class RobotBaseOp extends OpMode {
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
+    public enum TippedSide {AUDIENCE, SCORING, UNKNOWN}
+    public TippedSide tippedSide = TippedSide.UNKNOWN;
     public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;
@@ -67,6 +73,7 @@ public abstract class RobotBaseOp extends OpMode {
     Servo indicatorLight;
     double RED = 0.28;
     double GREEN = 0.5;
+    AprilTagProcessor tags;
 
     // we don't actually "know" in teleop, and also shouldn't care, so
     // we provide a default implementation
@@ -115,7 +122,7 @@ public abstract class RobotBaseOp extends OpMode {
 	// camera and vision setup
 
 
-	pollenDetector = new PollenDetector();
+	/*pollenDetector = new PollenDetector();
 
 
             portal = new VisionPortal.Builder()
@@ -125,10 +132,17 @@ public abstract class RobotBaseOp extends OpMode {
                             hardwareMap.get(
                                     WebcamName.class,
                                     "Webcam 1"))
-                    .build();
+                    .build();*/
 
             telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates for debugging.
             telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+
+        tags = new AprilTagProcessor.Builder().build();
+
+        portal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .addProcessor(tags)
+                .build();
         }
 
 
@@ -215,6 +229,39 @@ public abstract class RobotBaseOp extends OpMode {
         clearCache();
         readControls();
         readSensors();
+        tippedSide = TippedSide.UNKNOWN;
+        telemetry.addData("Detections", tags.getDetections().size());
+        for (AprilTagDetection tag : tags.getDetections()) {
+
+            if (tag.ftcPose == null) continue;
+
+           if (tag instanceof AprilTagClusterDetection) {
+                AprilTagClusterDetection cluster = (AprilTagClusterDetection) tag;
+                telemetry.addData("Cluster", cluster.metadata.name);
+                if(cluster.metadata.name.startsWith("B") && getAlliance() == Alliance.BLUE){
+                    if (drive.getPosition().getY(DistanceUnit.INCH) < 48 && cluster.metadata.shortName.contains("AUDIENCE")){
+                        tippedSide = TippedSide.AUDIENCE;
+                    }else if (drive.getPosition().getY(DistanceUnit.INCH) > 96  && cluster.metadata.shortName.contains("SCORING")){
+                        tippedSide = TippedSide.SCORING;
+                    }
+                } else if (cluster.metadata.name.startsWith("R") && getAlliance() == Alliance.RED){
+                    if (drive.getPosition().getY(DistanceUnit.INCH) < 48  && cluster.metadata.shortName.contains("AUDIENCE")){
+                        tippedSide = TippedSide.AUDIENCE;
+                    }else if (drive.getPosition().getY(DistanceUnit.INCH) > 96  && cluster.metadata.shortName.contains("SCORING")){
+                        tippedSide = TippedSide.SCORING;
+                    }
+                }
+                telemetry.addData("Tipped Side:", tippedSide);
+            }
+
+           /* telemetry.addData("Distance", "%.1f inches", tag.ftcPose.range);
+            telemetry.addData("Bearing", "%.1f degrees", tag.ftcPose.bearing);
+            telemetry.addData("Roll", "%.1f degrees", tag.ftcPose.roll);
+            telemetry.addData("Pitch", "%.1f degrees", tag.ftcPose.pitch);
+            telemetry.addData("Yaw", "%.1f degrees", tag.ftcPose.yaw);
+            telemetry.addLine();*/
+        }
+
 	if (!isAuto()) {
 	    pollenTurnPID.setPID(POLLEN_P, POLLEN_I, POLLEN_D);
 
@@ -225,10 +272,10 @@ public abstract class RobotBaseOp extends OpMode {
 
 	    // vision stuff: look for yellow / pollen blobs
 
-	    List<PollenDetector.PollenBlob> blobs =
-		pollenDetector.getBlobs();
+	 //   List<PollenDetector.PollenBlob> blobs =
+	//	pollenDetector.getBlobs();
 
-	    telemetry.addData(
+	   /* telemetry.addData(
 			      "Pollen Count",
 			      blobs.size());
 
@@ -237,7 +284,7 @@ public abstract class RobotBaseOp extends OpMode {
 	     * PollenDetector sorts the list from
 	     * largest area to smallest area.
 	     */
-
+/*
 	    PollenDetector.PollenBlob bestBlob = null;
 
 	    if (!blobs.isEmpty()) {
@@ -250,15 +297,16 @@ public abstract class RobotBaseOp extends OpMode {
 	     * Turn toward the largest pollen.
 	     Imgproc.erode(mask, mask, erodeKernel);Imgproc.erode(mask, mask, erodeKernel);        */
 
-	    if (bestBlob != null) {
+	   // if (bestBlob != null) {
 
-		double halfWidth =
-		    pollenDetector.getFrameWidth()
-		    / 2.0;
-		frameCenter = pollenDetector.getFrameWidth() / 2.0;
-		turn =
+		//double halfWidth =
+		//    pollenDetector.getFrameWidth()
+		   // 2.0;
+		//frameCenter = pollenDetector.getFrameWidth() / 2.0;
+		//turn =
 		    /* (bestBlob.x - halfWidth)
 		       / halfWidth;*/
+                /*
 		    -pollenTurnPID.calculate(bestBlob.x, frameCenter);
 
 
@@ -270,7 +318,7 @@ public abstract class RobotBaseOp extends OpMode {
 				  bestBlob.area,
 				  bestBlob.circularity,
 				  bestBlob.pollenDistance);
-	    }
+	    }*/
 
 	    // let the command scheduler do stuff
 
