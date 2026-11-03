@@ -53,11 +53,11 @@ public abstract class Auto extends RobotBaseOp {
 
     //far auto poses
     private final Pose startFar = p.of(72 - xOffset, 141 - yOffset, 270);
-    private final Pose checkAprilTag = p.of(58.13, 108.1, 270);
+    private final Pose checkAprilTag = p.of(72-xOffset, (141 - yOffset) + 0.2, 270);
     private final Pose generalShootingPositionFar = p.of(60.96, 132.4, 270);
     private final Pose controlPointSharedBetweenShootAndFlower = p.of(52, 85, 270);
     private final Pose flowerIntakeFar = p.of(47.13, 126, 90);
-    private final Pose parkFar = p.of(9.44, 115.3, 270);
+    private final Pose parkFar = p.of(13.0, 115.3, 270);
     private final Pose controlPointParkFar = p.of(63.5, 99.35, 270);
 
     class Delay extends CommandBase {
@@ -73,6 +73,16 @@ public abstract class Auto extends RobotBaseOp {
             return (time - start) > seconds;
         }
     }
+    class WaitForTip extends CommandBase {
+        RobotBaseOp.TippedSide target;
+        public WaitForTip(RobotBaseOp.TippedSide target) {
+            this.target = target;
+        }
+        public boolean isFinished(){
+            return tipDetector.tip() == target;
+        }
+    }
+
     private Path gardenPickUp() {
         return curve(startNear, controlGarden, garden).linear(startNear, garden);
     }
@@ -159,7 +169,7 @@ public abstract class Auto extends RobotBaseOp {
 
         //basic far auto commands
         autoFar.addCommands(new FollowPathCommand(follower, startToAprilTags()));
-        autoFar.addCommands(new Delay(2.0));
+        autoFar.addCommands(new WaitForTip(RobotBaseOp.TippedSide.SCORING));
         autoFar.addCommands(new FollowPathCommand(follower, aprilTagToShoot()));
         autoFar.addCommands(new FollowPathCommand(follower, shootToFlowerIntake()));
         autoFar.addCommands(new FollowPathCommand(follower, flowerToShoot()));

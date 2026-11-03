@@ -20,6 +20,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.vision.TipDetector;
 import org.firstinspires.ftc.vision.VisionPortal;
 //import org.firstinspires.ftc.vision.opencv.Circle;
 //import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
@@ -74,7 +75,8 @@ public abstract class RobotBaseOp extends OpMode {
     double RED = 0.28;
     double GREEN = 0.5;
     AprilTagProcessor tags;
-
+    TipDetector tipDetector;
+    Alliance alliance;
     // we don't actually "know" in teleop, and also shouldn't care, so
     // we provide a default implementation
     public StartZone getStartZone() {
@@ -96,6 +98,7 @@ public abstract class RobotBaseOp extends OpMode {
         operator = new GamepadEx(gamepad2);
 
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
+        tipDetector = new TipDetector( tags, telemetry, alliance, drive);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
         indicatorLight = hardwareMap.get(Servo.class, "indicator");
@@ -143,6 +146,7 @@ public abstract class RobotBaseOp extends OpMode {
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessor(tags)
                 .build();
+        tipDetector = new TipDetector(tags, telemetry, getAlliance(),drive);
         }
 
 
@@ -229,38 +233,7 @@ public abstract class RobotBaseOp extends OpMode {
         clearCache();
         readControls();
         readSensors();
-        tippedSide = TippedSide.UNKNOWN;
-        telemetry.addData("Detections", tags.getDetections().size());
-        for (AprilTagDetection tag : tags.getDetections()) {
 
-            if (tag.ftcPose == null) continue;
-
-           if (tag instanceof AprilTagClusterDetection) {
-                AprilTagClusterDetection cluster = (AprilTagClusterDetection) tag;
-                telemetry.addData("Cluster", cluster.metadata.name);
-                if(cluster.metadata.name.startsWith("B") && getAlliance() == Alliance.BLUE){
-                    if (drive.getPosition().getY(DistanceUnit.INCH) < 48 && cluster.metadata.shortName.contains("AUDIENCE")){
-                        tippedSide = TippedSide.AUDIENCE;
-                    }else if (drive.getPosition().getY(DistanceUnit.INCH) > 96  && cluster.metadata.shortName.contains("SCORING")){
-                        tippedSide = TippedSide.SCORING;
-                    }
-                } else if (cluster.metadata.name.startsWith("R") && getAlliance() == Alliance.RED){
-                    if (drive.getPosition().getY(DistanceUnit.INCH) < 48  && cluster.metadata.shortName.contains("AUDIENCE")){
-                        tippedSide = TippedSide.AUDIENCE;
-                    }else if (drive.getPosition().getY(DistanceUnit.INCH) > 96  && cluster.metadata.shortName.contains("SCORING")){
-                        tippedSide = TippedSide.SCORING;
-                    }
-                }
-                telemetry.addData("Tipped Side:", tippedSide);
-            }
-
-           /* telemetry.addData("Distance", "%.1f inches", tag.ftcPose.range);
-            telemetry.addData("Bearing", "%.1f degrees", tag.ftcPose.bearing);
-            telemetry.addData("Roll", "%.1f degrees", tag.ftcPose.roll);
-            telemetry.addData("Pitch", "%.1f degrees", tag.ftcPose.pitch);
-            telemetry.addData("Yaw", "%.1f degrees", tag.ftcPose.yaw);
-            telemetry.addLine();*/
-        }
 
 	if (!isAuto()) {
 	    pollenTurnPID.setPID(POLLEN_P, POLLEN_I, POLLEN_D);
