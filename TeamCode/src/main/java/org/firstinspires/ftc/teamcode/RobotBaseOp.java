@@ -20,7 +20,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.vision.TipDetector;
+import org.firstinspires.ftc.teamcode.TipDetector;
 import org.firstinspires.ftc.vision.VisionPortal;
 //import org.firstinspires.ftc.vision.opencv.Circle;
 //import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
@@ -65,8 +65,6 @@ public abstract class RobotBaseOp extends OpMode {
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
-    public enum TippedSide {AUDIENCE, SCORING, UNKNOWN}
-    public TippedSide tippedSide = TippedSide.UNKNOWN;
     public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;

@@ -74,8 +74,8 @@ public abstract class Auto extends RobotBaseOp {
         }
     }
     class WaitForTip extends CommandBase {
-        RobotBaseOp.TippedSide target;
-        public WaitForTip(RobotBaseOp.TippedSide target) {
+        TipDetector.TippedSide target;
+        public WaitForTip(TipDetector.TippedSide target) {
             this.target = target;
         }
         public boolean isFinished(){
@@ -169,7 +169,7 @@ public abstract class Auto extends RobotBaseOp {
 
         //basic far auto commands
         autoFar.addCommands(new FollowPathCommand(follower, startToAprilTags()));
-        autoFar.addCommands(new WaitForTip(RobotBaseOp.TippedSide.SCORING));
+        autoFar.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
         autoFar.addCommands(new FollowPathCommand(follower, aprilTagToShoot()));
         autoFar.addCommands(new FollowPathCommand(follower, shootToFlowerIntake()));
         autoFar.addCommands(new FollowPathCommand(follower, flowerToShoot()));

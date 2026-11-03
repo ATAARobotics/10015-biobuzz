@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -14,7 +14,7 @@ public class TipDetector extends SubsystemBase {
     AprilTagProcessor tags;
     Telemetry telemetry;
     RobotBaseOp.Alliance alliance;
-    public RobotBaseOp.TippedSide tippedSide = RobotBaseOp.TippedSide.UNKNOWN;
+    public TippedSide tippedSide = TippedSide.UNKNOWN;
     Drive drive;
 
     public TipDetector(AprilTagProcessor tags, Telemetry telemetry, RobotBaseOp.Alliance alliance, Drive drive) {
@@ -24,11 +24,11 @@ public class TipDetector extends SubsystemBase {
         this.drive = drive;
     }
 
-    public RobotBaseOp.TippedSide tip(){
+    public TippedSide tip(){
         return tippedSide;
     }
         public void periodic () {
-            tippedSide = RobotBaseOp.TippedSide.UNKNOWN;
+            tippedSide = TippedSide.UNKNOWN;
             telemetry.addData("Detections", tags.getDetections().size());
             for (AprilTagDetection tag : tags.getDetections()) {
 
@@ -39,15 +39,15 @@ public class TipDetector extends SubsystemBase {
                     telemetry.addData("Cluster", cluster.metadata.name);
                     if (cluster.metadata.name.startsWith("B") && alliance == RobotBaseOp.Alliance.BLUE) {
                         if (drive.getPosition().getY(DistanceUnit.INCH) < 48 && cluster.metadata.shortName.contains("AUDIENCE")) {
-                            tippedSide = RobotBaseOp.TippedSide.AUDIENCE;
+                            tippedSide = TippedSide.AUDIENCE;
                         } else if (drive.getPosition().getY(DistanceUnit.INCH) > 96 && cluster.metadata.shortName.contains("SCORING")) {
-                            tippedSide = RobotBaseOp.TippedSide.SCORING;
+                            tippedSide = TippedSide.SCORING;
                         }
                     } else if (cluster.metadata.name.startsWith("R") && alliance == RobotBaseOp.Alliance.RED) {
                         if (drive.getPosition().getY(DistanceUnit.INCH) < 48 && cluster.metadata.shortName.contains("AUDIENCE")) {
-                            tippedSide = RobotBaseOp.TippedSide.AUDIENCE;
+                            tippedSide = TippedSide.AUDIENCE;
                         } else if (drive.getPosition().getY(DistanceUnit.INCH) > 96 && cluster.metadata.shortName.contains("SCORING")) {
-                            tippedSide = RobotBaseOp.TippedSide.SCORING;
+                            tippedSide = TippedSide.SCORING;
                         }
                     }
                     telemetry.addData("Tipped Side:", tippedSide);
