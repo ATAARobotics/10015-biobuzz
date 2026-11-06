@@ -37,11 +37,9 @@ public class ShooterTestBiobuzz extends OpMode {
     public static double I = 0.0;
     public static double D = 0.0;
     public static double AVERAGE_EXPONENT = 1.2;
-    public static double motorPower = 0.0;
     LinkedList<VelocityData> recentVelocity = null;
     MotorEx motor;
     MotorEx motor2;
-  //  double motorPower = 0.0;
     double targetRpm = 0.0;
     int shotCounter = 0;
     double shootRpmTolerance = 0.0; //Todo: find a range that the shooter is good at shooting
@@ -168,22 +166,20 @@ public class ShooterTestBiobuzz extends OpMode {
 
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
-           // motorPower += 0.1;
             targetRpm += increaseRate;
         }
 
         // Decrease power by 0.1 on each new D-pad down press
         if (gamepad1.dpad_down && !lastDpadDown) {
-            //motorPower -= 0.1;
             targetRpm -= increaseRate;
         }
 
-        targetRpm = Math.max(0.0, Math.min(5000.0, targetRpm));
+        targetRpm = Math.max(0.0, Math.min(6000.0, targetRpm));
 
         rpmController.setSetPoint(targetRpm); //we want to reach targetRpm
 
         //pid
-        motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
+        double motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
         //current rpm, then finds the pid output
 
 /*      //bangbang controller
