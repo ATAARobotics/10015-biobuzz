@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.seattlesolvers.solverslib.controller.PIDController;
+import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.util.Timing;
@@ -32,9 +33,12 @@ public class ShooterTestBiobuzz extends OpMode {
         }
     }
 
-    PIDController rpmController;;
+    PIDController rpmController;
+    SimpleMotorFeedforward rpmFeedforward;
+    
     public static double increaseRate = 100.0;
     public static double RPM_DROP = 200.0;
+    public static double FF = 0.0;
     public static double P = 0.015; //TODO: set pid values
     public static double I = 0.0;
     public static double D = 0.0;
@@ -66,6 +70,7 @@ public class ShooterTestBiobuzz extends OpMode {
     @Override
     public void init() {
         rpmController = new PIDController(P, I, D);
+	rpmFeedforward = new SimpleMotorFeedforward(FF, 0.0);
         motor = new MotorEx(hardwareMap,"shooterL");
         motor2 = new MotorEx(hardwareMap, "encoder");
 	telem = new HyperTelemetry(telemetry);
@@ -84,6 +89,9 @@ public class ShooterTestBiobuzz extends OpMode {
     @Override
     public void loop() {
     rpmController.setPID(P, I, D);
+    if (rpmFeedforward.ks != FF) {
+	rpmFeedforward = new SimpleMotorFeedforward(FF, 0.0);
+    }
         double v = motor.getVelocity()/28*60; //this gives us rpm
         recentVelocity.addLast(new VelocityData(time, v)); //recent rpm
     while(recentVelocity.size() > dataPoints) {
@@ -217,6 +225,9 @@ public class ShooterTestBiobuzz extends OpMode {
         //pid
         double motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
         //current rpm, then finds the pid output
+
+	// ONLY feedforward for now
+        motorPower = rpmFeedforward.calculate(targetRpm);
 
 /*      //bangbang controller
         if (v < targetRpm){
