@@ -11,9 +11,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+import com.seattlesolvers.solverslib.util.Timing;
 
 
 import java.util.LinkedList;
+import java.util.Timer;
 
 @Configurable
 @TeleOp(name = "Motor Test")
@@ -38,6 +40,9 @@ public class ShooterTestBiobuzz extends OpMode {
     public static double D = 0.0;
     public static double AVERAGE_EXPONENT = 1.2;
     LinkedList<VelocityData> recentVelocity = null;
+    LinkedList<Double> rpmHistory = new LinkedList<>();
+    public static int MAX_SAMPLES = 5;
+    Timing.Stopwatch timeSinceStart;
     MotorEx motor;
     MotorEx motor2;
     double targetRpm = 0.0;
@@ -50,10 +55,14 @@ public class ShooterTestBiobuzz extends OpMode {
     int ticks;
     int lastTicks;
     double lastTime;
+   public static double error;
+    double sum;
     boolean lastDpadUp = false;
     boolean lastDpadDown = false;
+    boolean lastDpadLeft = false;
+    boolean lastDpadRight = false;
     HyperTelemetry telem;
-
+    int loopCounter = 0;
     @Override
     public void init() {
         rpmController = new PIDController(P, I, D);
@@ -65,7 +74,11 @@ public class ShooterTestBiobuzz extends OpMode {
       //  motor.setVeloCoefficients(kP, 0, 0);
        // motor.setFeedforwardCoefficients(0, kV);
 
+        timeSinceStart = new Timing.Stopwatch();
+    }
 
+    public void start(){
+        timeSinceStart.start();
     }
     
     @Override
@@ -89,7 +102,17 @@ public class ShooterTestBiobuzz extends OpMode {
         telem.logBoth("Average-RPM", averageVelocity);
 
 
+        loopCounter ++;
 
+
+        rpmHistory.add(recentVelocity.getLast().velocity);
+        while (rpmHistory.size() > MAX_SAMPLES){
+            rpmHistory.removeFirst();
+            for(double i: rpmHistory){
+                sum += Math.abs(i - targetRpm);
+            }
+        }
+        error = sum/MAX_SAMPLES; //average error
 
 
         //Shot Counter
@@ -99,7 +122,7 @@ public class ShooterTestBiobuzz extends OpMode {
                 rpmBeforeShot = recentVelocity.getLast().velocity;
                 shotCounter+=1; //adds a shot to the counter
                 shotCounterReady = false; //makes it false because its no longer ready
-                lastShotTime = recentVelocity.getLast().time;
+                lastShotTime = recentVelocity.get(recentVelocity.size()-5).time;
             }
             if(!shotCounterReady && recentVelocity.getLast().velocity >= rpmBeforeShot - 100){ //rpmbeforeshot can be our target rpm that we want to get to, subtract by 100 for leeway
                 //checks if our current rpm has made it back to rpm before we shot
@@ -158,11 +181,16 @@ public class ShooterTestBiobuzz extends OpMode {
             telem.log("rpm-1", rpm);
         }
 */
+
 	telem.log("time", time);
 	telem.log("ticks", ticks);
     telem.log("RPM", v);
     telem.logBoth("targetRpm", targetRpm);
     telem.logBoth("shotCounter", shotCounter);
+    if (timeSinceStart.elapsedTime() > 0.0){
+            telem.logBoth("fps:", loopCounter/timeSinceStart.elapsedTime());
+    }
+    telem.logBoth("error:", error);
 
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
@@ -172,6 +200,14 @@ public class ShooterTestBiobuzz extends OpMode {
         // Decrease power by 0.1 on each new D-pad down press
         if (gamepad1.dpad_down && !lastDpadDown) {
             targetRpm -= increaseRate;
+        }
+
+        if (gamepad1.dpad_left && !lastDpadLeft) {
+            targetRpm += 500;
+        }
+
+        if (gamepad1.dpad_right&& !lastDpadRight) {
+            targetRpm -= 500;
         }
 
         targetRpm = Math.max(0.0, Math.min(6000.0, targetRpm));
@@ -198,6 +234,8 @@ public class ShooterTestBiobuzz extends OpMode {
         // Remember current button states for next loop
         lastDpadUp = gamepad1.dpad_up;
         lastDpadDown = gamepad1.dpad_down;
+        lastDpadLeft = gamepad1.dpad_left;
+        lastDpadRight = gamepad1.dpad_right;
         lastTicks = ticks;
         lastTime = time;
 
