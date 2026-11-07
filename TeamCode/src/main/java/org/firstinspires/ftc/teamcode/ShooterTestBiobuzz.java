@@ -127,10 +127,10 @@ public class ShooterTestBiobuzz extends OpMode {
         if(recentVelocity.size() >= 5){
             double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size()-5).velocity; //recent - 5 ago
             if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size()-5).time > lastShotTime && shotCounterReady == true) {
-                rpmBeforeShot = recentVelocity.getLast().velocity;
+                rpmBeforeShot = recentVelocity.get(recentVelocity.size()-5).velocity;
                 shotCounter+=1; //adds a shot to the counter
                 shotCounterReady = false; //makes it false because its no longer ready
-                lastShotTime = recentVelocity.get(recentVelocity.size()-5).time;
+                lastShotTime = recentVelocity.getLast().time;
             }
             if(!shotCounterReady && recentVelocity.getLast().velocity >= rpmBeforeShot - 100){ //rpmbeforeshot can be our target rpm that we want to get to, subtract by 100 for leeway
                 //checks if our current rpm has made it back to rpm before we shot
