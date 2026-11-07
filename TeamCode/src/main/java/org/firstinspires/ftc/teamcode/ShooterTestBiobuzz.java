@@ -116,17 +116,18 @@ public class ShooterTestBiobuzz extends OpMode {
         rpmHistory.add(recentVelocity.getLast().velocity);
         while (rpmHistory.size() > MAX_SAMPLES){
             rpmHistory.removeFirst();
-            for(double i: rpmHistory){
-                sum += Math.abs(i - targetRpm);
             }
+        sum = 0.0;
+        for(double i: rpmHistory){
+            sum += Math.abs(i - targetRpm);
         }
-        error = sum/MAX_SAMPLES; //average error
+        error = sum/rpmHistory.size(); //average error
 
 
         //Shot Counter
         if(recentVelocity.size() >= 5){
             double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size()-5).velocity; //recent - 5 ago
-            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size()-5).time > lastShotTime && shotCounterReady == true) {
+            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size()-5).time > lastShotTime && shotCounterReady) {
                 rpmBeforeShot = recentVelocity.get(recentVelocity.size()-5).velocity;
                 shotCounter+=1; //adds a shot to the counter
                 shotCounterReady = false; //makes it false because its no longer ready
@@ -199,7 +200,7 @@ public class ShooterTestBiobuzz extends OpMode {
     if (timeSinceStart.elapsedTime() > 0.0){
             telem.logBoth("fps", loopCounter/timeSinceStart.elapsedTime());
     }
-    telem.logBoth("error:", error);
+    telem.logBoth("error", error);
 
         // Increase power by 0.1 on each new D-pad up press
         if (gamepad1.dpad_up && !lastDpadUp) {
