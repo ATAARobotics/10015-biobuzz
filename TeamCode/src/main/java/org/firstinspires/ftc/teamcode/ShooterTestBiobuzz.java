@@ -38,7 +38,7 @@ public class ShooterTestBiobuzz extends OpMode {
     
     public static double increaseRate = 100.0;
     public static double RPM_DROP = 200.0;
-    public static double FF = 0.0;
+    public static double FF = 0.00025;
     public static double P = 0.015; //TODO: set pid values
     public static double I = 0.0;
     public static double D = 0.0;
@@ -70,7 +70,7 @@ public class ShooterTestBiobuzz extends OpMode {
     @Override
     public void init() {
         rpmController = new PIDController(P, I, D);
-	rpmFeedforward = new SimpleMotorFeedforward(FF, 0.0);
+	rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
         motor = new MotorEx(hardwareMap,"shooterL");
         motor2 = new MotorEx(hardwareMap, "encoder");
 	telem = new HyperTelemetry(telemetry);
@@ -89,9 +89,9 @@ public class ShooterTestBiobuzz extends OpMode {
     @Override
     public void loop() {
     rpmController.setPID(P, I, D);
-    if (rpmFeedforward.ks != FF) {
-	rpmFeedforward = new SimpleMotorFeedforward(FF, 0.0);
-    }
+    rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
+    telem.logBoth("feedforward", FF);
+
         double v = motor.getVelocity()/28*60; //this gives us rpm
         recentVelocity.addLast(new VelocityData(time, v)); //recent rpm
     while(recentVelocity.size() > dataPoints) {
@@ -195,8 +195,9 @@ public class ShooterTestBiobuzz extends OpMode {
     telem.log("RPM", v);
     telem.logBoth("targetRpm", targetRpm);
     telem.logBoth("shotCounter", shotCounter);
+    telem.logBoth("loops", loopCounter);
     if (timeSinceStart.elapsedTime() > 0.0){
-            telem.logBoth("fps:", loopCounter/timeSinceStart.elapsedTime());
+            telem.logBoth("fps", loopCounter/timeSinceStart.elapsedTime());
     }
     telem.logBoth("error:", error);
 
@@ -228,6 +229,8 @@ public class ShooterTestBiobuzz extends OpMode {
 
 	// ONLY feedforward for now
         motorPower = rpmFeedforward.calculate(targetRpm);
+
+	telem.logBoth("motor-power", motorPower);
 
 /*      //bangbang controller
         if (v < targetRpm){
