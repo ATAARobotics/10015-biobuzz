@@ -1,0 +1,217 @@
+
+
+package org.firstinspires.ftc.teamcode;
+
+
+import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.seattlesolvers.solverslib.controller.PIDController;
+import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeedforward;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
+import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+
+
+import java.util.LinkedList;
+
+@Configurable
+@TeleOp(name = "Shooter Feedforward")
+public class BiobuzzFeedforward extends OpMode {
+    public static int dataPoints = 30;
+    class VelocityData {
+        public double time;
+        public double velocity;
+        public VelocityData(double t, double v) {
+            time = t;
+            velocity = v;
+
+
+        }
+    }
+
+    PIDController rpmController;
+    SimpleMotorFeedforward rpmFeedforward;
+    
+    public static double increaseRate = 100.0;
+    public static double RPM_DROP = 200.0;
+    public static double FF = 0.0;
+    public static double P = 0.015; //TODO: set pid values
+    public static double I = 0.0;
+    public static double D = 0.0;
+    public static double AVERAGE_EXPONENT = 1.2;
+    LinkedList<VelocityData> recentVelocity = null;
+    MotorEx motor;
+    MotorEx motor2;
+    double targetRpm = 0.0;
+    int shotCounter = 0;
+    double shootRpmTolerance = 0.0; //Todo: find a range that the shooter is good at shooting
+    boolean shotCounterReady = true;
+    double rpmBeforeShot = 0.0;
+    double lastShotTime = 0.0;
+    double rps;
+    int ticks;
+    int lastTicks;
+    double lastTime;
+    boolean lastDpadUp = false;
+    boolean lastDpadDown = false;
+    HyperTelemetry telem;
+
+    @Override
+    public void init() {
+        rpmController = new PIDController(P, I, D);
+	rpmFeedforward = new SimpleMotorFeedforward(FF, 0.0);
+	
+        motor = new MotorEx(hardwareMap,"shooterL");
+        motor2 = new MotorEx(hardwareMap, "encoder");
+	telem = new HyperTelemetry(telemetry);
+    recentVelocity = new LinkedList<VelocityData>();
+  //  motor.setRunMode(Motor.RunMode.VelocityControl);
+      //  motor.setVeloCoefficients(kP, 0, 0);
+       // motor.setFeedforwardCoefficients(0, kV);
+
+
+    }
+    
+    @Override
+    public void loop() {
+    rpmController.setPID(P, I, D);
+    if (rpmFeedforward.ks != FF) {
+        rpmFeedforward = new SimpleMotorFeedforward(FF, 0.0);
+    }
+        double v = motor.getVelocity()/28*60; //this gives us rpm
+        recentVelocity.addLast(new VelocityData(time, v)); //recent rpm
+    while(recentVelocity.size() > dataPoints) {
+        recentVelocity.removeFirst();
+    }
+        double total = 0.0;
+        double amount = 1;
+        double totalAmount = 0.0;
+        for(VelocityData data:recentVelocity){
+            totalAmount = totalAmount + amount;
+            total = total + (data.velocity * amount); // adding recentvelocity data
+            amount *= AVERAGE_EXPONENT; //1.0 is equal to normal average, more than that
+            //creates an exponential graph
+        }
+        double averageVelocity = total / totalAmount; //finding average - total value of data/number of data points
+        telem.logBoth("Average-RPM", averageVelocity);
+
+        //Shot Counter
+        if(recentVelocity.size() >= 5){
+            double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size()-5).velocity; //recent - 5 ago
+            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size()-5).time > lastShotTime && shotCounterReady == true) {
+                rpmBeforeShot = recentVelocity.getLast().velocity;
+                shotCounter+=1; //adds a shot to the counter
+                shotCounterReady = false; //makes it false because its no longer ready
+                lastShotTime = recentVelocity.getLast().time;
+            }
+            if(!shotCounterReady && recentVelocity.getLast().velocity >= rpmBeforeShot - 100){ //rpmbeforeshot can be our target rpm that we want to get to, subtract by 100 for leeway
+                //checks if our current rpm has made it back to rpm before we shot
+                shotCounterReady = true; //since current rpm is greater than/equal to the rpm before we shot
+            }
+            /*
+            first attempt
+
+            double highRpm = 0.0;
+            double lowRpm = 100000.0;
+            double minTime = 0.0;
+            for (int i=recentVelocity.size()-1; i >= recentVelocity.size()-5; i--) {
+                VelocityData d = recentVelocity.get(i);
+                if(d.velocity > highRpm){
+                    highRpm = d.velocity;
+                }
+                if(d.velocity < lowRpm){
+                    lowRpm = d.velocity;
+                    minTime = d.time;
+                }
+            }
+            if(minTime > 0.0){
+                double dif = highRpm - lowRpm;
+                if(dif > RPM_DROP && minTime > lastShotTime){
+                    shotCounter += 1;
+                    lastShotTime = minTime;
+                }
+            }
+
+             */
+        }
+	/*    recentRpm.addLast(new RpmData(time, ticks)); //add a new data point (recent)
+	while(recentRpm.size() > 5){
+	    recentRpm.removeFirst();
+	}
+
+        if(recentRpm.size() >= 2) { // 2 or more data points
+            // recentRpm.removeFirst();
+            double previousTime = recentRpm.get(recentRpm.size() - 2).time; //ex. 3 data points.
+            // when we use index, it counts the size as 0, 1, 2. 3-1 is giving current data.
+            //3-2 is previous data.
+            double previousTicks = recentRpm.get(recentRpm.size() - 2).ticks;
+            double rps = ((ticks-previousTicks)/28.0)/(time-previousTime);
+            double rpm = rps * 60.0;
+            telem.log("rpm-0", rpm);
+        }
+
+        if(recentRpm.size() >= 2) { // 2 or more data points
+            // recentRpm.removeFirst();
+            double previousTime = recentRpm.get(0).time; //'get' uses an index,
+            // so it counts the data points starting from 0. 0 would be the
+            //first data point
+            double previousTicks = recentRpm.get(0).ticks;
+            double rps = ((ticks-previousTicks)/28.0)/(time-previousTime);
+            double rpm = rps * 60.0;
+            telem.log("rpm-1", rpm);
+        }
+*/
+	telem.log("time", time);
+	telem.log("ticks", ticks);
+    telem.log("RPM", v);
+    telem.logBoth("targetRpm", targetRpm);
+    telem.logBoth("shotCounter", shotCounter);
+
+        // Increase power by 0.1 on each new D-pad up press
+        if (gamepad1.dpad_up && !lastDpadUp) {
+            targetRpm += increaseRate;
+        }
+
+        // Decrease power by 0.1 on each new D-pad down press
+        if (gamepad1.dpad_down && !lastDpadDown) {
+            targetRpm -= increaseRate;
+        }
+
+        targetRpm = Math.max(0.0, Math.min(6000.0, targetRpm));
+
+        rpmController.setSetPoint(targetRpm); //we want to reach targetRpm
+
+        //pid
+        double motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
+        //current rpm, then finds the pid output
+
+        // feedforward (ONLY for now, combine with above later)
+        motorPower = rpmFeedforward.calculate(targetRpm);
+
+/*      //bangbang controller
+        if (v < targetRpm){
+            motorPower = 1.0;
+
+        } else {
+            motorPower = 0.0;
+        }
+
+ */
+        // Clamp power between 0.0 and 1.0
+        motorPower = Math.max(0.0, Math.min(1.0, motorPower));
+        motor.set(motorPower);
+
+        // Remember current button states for next loop
+        lastDpadUp = gamepad1.dpad_up;
+        lastDpadDown = gamepad1.dpad_down;
+        lastTicks = ticks;
+        lastTime = time;
+
+	// update panels etc
+	telem.update();
+    }
+
+}
+
