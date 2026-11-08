@@ -31,7 +31,7 @@ public class Shooter extends SubsystemBase {
     SimpleMotorFeedforward rpmFeedforward;
 
     public static double increaseRate = 50.0;
-    public static double RPM_DROP = 200.0;
+    public static double RPM_DROP = 150.0;
     public static double FF = 0.000171; //November 8 2026
     public static double P = 0.0011; //November 8 2026
     public static double I = 0.00012; //November 8 2026
@@ -129,6 +129,7 @@ public class Shooter extends SubsystemBase {
         telem.log("RPM", v);
         telem.logBoth("targetRpm", targetRpm);
         telem.logBoth("shotCounter", shotCounter);
+        telem.logBoth("Shot counter ready", shotCounterReady);
     }
     public class HumanInputs extends CommandBase {
         GamepadEx driver;

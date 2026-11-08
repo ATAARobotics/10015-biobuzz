@@ -109,16 +109,16 @@ public class Drive extends SubsystemBase {
         // driving backwards also in turbo .. we've done this at least
         // once Nov 28)
 
-        Motor motor_fl = new FloodMotor(hardwareMap, "fl");//, Motor.GoBILDA.RPM_435);
+        Motor motor_fl = new FloodMotor(hardwareMap, "fl");//, Motor.GoBILDA.RPM_435); port 0
         motor_fl.setInverted(true);
         motor_fl.setZeroPowerBehavior(zeroPowerBehavior);
-        Motor motor_fr = new FloodMotor(hardwareMap, "fr");//, Motor.GoBILDA.RPM_435);
+        Motor motor_fr = new FloodMotor(hardwareMap, "fr");//, Motor.GoBILDA.RPM_435); port 1
         turretEncoder = motor_fr.motor;
         motor_fr.setZeroPowerBehavior(zeroPowerBehavior);
-        Motor motor_bl = new FloodMotor(hardwareMap, "bl");//, Motor.GoBILDA.RPM_435);
+        Motor motor_bl = new FloodMotor(hardwareMap, "bl");//, Motor.GoBILDA.RPM_435); port 2
         motor_bl.setInverted(true);
         motor_bl.setZeroPowerBehavior(zeroPowerBehavior);
-        Motor motor_br = new FloodMotor(hardwareMap, "br");//, Motor.GoBILDA.RPM_435);
+        Motor motor_br = new FloodMotor(hardwareMap, "br");//, Motor.GoBILDA.RPM_435); port 3
         motor_br.setZeroPowerBehavior(zeroPowerBehavior);
         drivebase = new MecanumDrive(false, motor_fl, motor_fr, motor_bl, motor_br);
         drivebase.setMaxSpeed(1);

@@ -14,8 +14,8 @@ public abstract class TeleOp extends RobotBaseOp {
     }
 
     protected void bindDriverControls() {
-        CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
-       // CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
+      //  CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
+        CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
     }
 
     protected void bindOperatorControls() {

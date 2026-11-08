@@ -99,8 +99,8 @@ public abstract class RobotBaseOp extends OpMode {
         operator = new GamepadEx(gamepad2);
 
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
-        tipDetector = new TipDetector( tags, telemetry, alliance, drive);//FIXME give tip decetor hyper telem instead of telemetry
-        shooter = new Shooter(hardwareMap, telem);
+       // tipDetector = new TipDetector( tags, telemetry, alliance, drive);//FIXME give tip decetor hyper telem instead of telemetry
+        //shooter = new Shooter(hardwareMap, telem);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
         indicatorLight = hardwareMap.get(Servo.class, "indicator");
@@ -110,8 +110,8 @@ public abstract class RobotBaseOp extends OpMode {
         CommandScheduler.getInstance().reset();
 
 	CommandScheduler.getInstance().registerSubsystem(drive);
-    CommandScheduler.getInstance().registerSubsystem(tipDetector);
-    CommandScheduler.getInstance().registerSubsystem(shooter);
+   // CommandScheduler.getInstance().registerSubsystem(tipDetector);
+   // CommandScheduler.getInstance().registerSubsystem(shooter);
 
         // set up controls
         bindOperatorControls();
@@ -147,10 +147,10 @@ public abstract class RobotBaseOp extends OpMode {
         tags = new AprilTagProcessor.Builder().build();
 
         portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .setCamera(hardwareMap.get(WebcamName.class, "elp"))
                 .addProcessor(tags)
                 .build();
-        tipDetector = new TipDetector(tags, telemetry, getAlliance(),drive);
+      //  tipDetector = new TipDetector(tags, telemetry, getAlliance(),drive);
         }
 
 
@@ -191,7 +191,7 @@ public abstract class RobotBaseOp extends OpMode {
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
         drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 94 - 7.179 : 47.25 + 7.179, 7.19, AngleUnit.DEGREES, 90));
         loops = 0;
-        shooter.start();
+      //  shooter.start();
     }
 
     @Override
