@@ -38,9 +38,9 @@ public class ShooterTestBiobuzz extends OpMode {
     
     public static double increaseRate = 100.0;
     public static double RPM_DROP = 200.0;
-    public static double FF = 0.00025;
-    public static double P = 0.015; //TODO: set pid values
-    public static double I = 0.0;
+    public static double FF = 0.000171; //November 8 2026
+    public static double P = 0.0011; //November 8 2026
+    public static double I = 0.00012; //November 9 2026
     public static double D = 0.0;
     public static double AVERAGE_EXPONENT = 1.2;
     LinkedList<VelocityData> recentVelocity = null;
@@ -59,7 +59,7 @@ public class ShooterTestBiobuzz extends OpMode {
     int ticks;
     int lastTicks;
     double lastTime;
-   public static double error;
+    public double error;
     double sum;
     boolean lastDpadUp = false;
     boolean lastDpadDown = false;
@@ -228,8 +228,8 @@ public class ShooterTestBiobuzz extends OpMode {
         double motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
         //current rpm, then finds the pid output
 
-	// ONLY feedforward for now
-        motorPower = rpmFeedforward.calculate(targetRpm);
+	// add in feed forward
+        motorPower += rpmFeedforward.calculate(targetRpm);
 
 	telem.logBoth("motor-power", motorPower);
 
