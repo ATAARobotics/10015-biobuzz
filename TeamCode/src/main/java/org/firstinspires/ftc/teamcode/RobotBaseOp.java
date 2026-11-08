@@ -46,6 +46,7 @@ import java.util.List;
 
 @Configurable
 public abstract class RobotBaseOp extends OpMode {
+    HyperTelemetry telem;
     GamepadEx driver;
     GamepadEx operator;
 
@@ -54,6 +55,7 @@ public abstract class RobotBaseOp extends OpMode {
     int loops;
 
     Drive drive;
+    Shooter shooter;
     double strafe;
     double forward;
     double turn;
@@ -92,11 +94,13 @@ public abstract class RobotBaseOp extends OpMode {
 
     @Override
     public void init() {
+        telem =  new HyperTelemetry(telemetry);
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
-        tipDetector = new TipDetector( tags, telemetry, alliance, drive);
+        tipDetector = new TipDetector( tags, telemetry, alliance, drive);//FIXME give tip decetor hyper telem instead of telemetry
+        shooter = new Shooter(hardwareMap, telem);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
         indicatorLight = hardwareMap.get(Servo.class, "indicator");
@@ -166,7 +170,6 @@ public abstract class RobotBaseOp extends OpMode {
     }
 
     protected void logTelemetry() {
-        HyperTelemetry telem = new HyperTelemetry(telemetry);
         //telem.log("elapsed", runtime.seconds());
         telem.log("time", time);
         telem.log("battery", battery.getVoltage());
@@ -186,6 +189,7 @@ public abstract class RobotBaseOp extends OpMode {
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
         drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 94 - 7.179 : 47.25 + 7.179, 7.19, AngleUnit.DEGREES, 90));
         loops = 0;
+        shooter.start();
     }
 
     @Override

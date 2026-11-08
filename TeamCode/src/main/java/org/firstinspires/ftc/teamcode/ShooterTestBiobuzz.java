@@ -233,15 +233,6 @@ public class ShooterTestBiobuzz extends OpMode {
 
 	telem.logBoth("motor-power", motorPower);
 
-/*      //bangbang controller
-        if (v < targetRpm){
-            motorPower = 1.0;
-
-        } else {
-            motorPower = 0.0;
-        }
-
- */
         // Clamp power between 0.0 and 1.0
         motorPower = Math.max(0.0, Math.min(1.0, motorPower));
         motor.set(motorPower);
