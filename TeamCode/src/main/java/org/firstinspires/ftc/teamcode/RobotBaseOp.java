@@ -110,6 +110,8 @@ public abstract class RobotBaseOp extends OpMode {
         CommandScheduler.getInstance().reset();
 
 	CommandScheduler.getInstance().registerSubsystem(drive);
+    CommandScheduler.getInstance().registerSubsystem(tipDetector);
+    CommandScheduler.getInstance().registerSubsystem(shooter);
 
         // set up controls
         bindOperatorControls();
