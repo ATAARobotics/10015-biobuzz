@@ -43,11 +43,13 @@ public class Drive extends SubsystemBase {
         this.isRedAlliance = isRedAlliance;
         this.isAuto = isAuto;
 
-        Motor motor_fl = new Motor(hardwareMap, "fl", Motor.GoBILDA.RPM_312); //port 0
-        Motor motor_fr = new Motor(hardwareMap, "fr", Motor.GoBILDA.RPM_312); //port 1
-        Motor motor_bl = new Motor(hardwareMap, "bl", Motor.GoBILDA.RPM_312); //port 2
-        Motor motor_br = new Motor(hardwareMap, "br", Motor.GoBILDA.RPM_312); //port 3
-        drivebase = new MecanumDrive(motor_fl, motor_fr, motor_bl, motor_br);
+        Motor motor_fl = new Motor(hardwareMap, "fl", Motor.GoBILDA.RPM_435); //port 0
+        Motor motor_fr = new Motor(hardwareMap, "fr", Motor.GoBILDA.RPM_435); //port 1
+        Motor motor_bl = new Motor(hardwareMap, "bl", Motor.GoBILDA.RPM_435); //port 2
+        Motor motor_br = new Motor(hardwareMap, "br", Motor.GoBILDA.RPM_435); //port 3
+        motor_fl.setInverted(true);
+        motor_bl.setInverted(true);
+        drivebase = new MecanumDrive(false, motor_fl, motor_fr, motor_bl, motor_br);
         drivebase.setMaxSpeed(1);
 
         /*
