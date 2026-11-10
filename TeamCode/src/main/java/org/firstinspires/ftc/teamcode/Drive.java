@@ -24,8 +24,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 @Configurable
 public class Drive extends SubsystemBase {
-    public static boolean FIELD_CENTRIC = false;
-    
+    public static double MAX_SPEED = 0.75;
     MecanumDrive drivebase;
     GoBildaPinpointDriver pinpoint;
     Follower follower;
@@ -38,6 +37,9 @@ public class Drive extends SubsystemBase {
     double strafe;
     double forward;
     double turn;
+
+    double xOffset = 8.124; //from side edge to center of the robot. Nov 11 2026
+    double yOffset = 8.649; //from top edge to center of the robot, not including crash bar. Nov 11 2026
     
     public Drive(HardwareMap hardwareMap, boolean isRedAlliance, boolean isAuto) {
         this.isRedAlliance = isRedAlliance;
@@ -47,10 +49,10 @@ public class Drive extends SubsystemBase {
         Motor motor_fr = new Motor(hardwareMap, "fr", Motor.GoBILDA.RPM_435); //port 1
         Motor motor_bl = new Motor(hardwareMap, "bl", Motor.GoBILDA.RPM_435); //port 2
         Motor motor_br = new Motor(hardwareMap, "br", Motor.GoBILDA.RPM_435); //port 3
-        motor_fl.setInverted(true);
-        motor_bl.setInverted(true);
+        motor_fr.setInverted(true);
+        motor_br.setInverted(true);
         drivebase = new MecanumDrive(false, motor_fl, motor_fr, motor_bl, motor_br);
-        drivebase.setMaxSpeed(1);
+
 
         /*
         motor_fl.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -62,8 +64,8 @@ public class Drive extends SubsystemBase {
         // configure odometry sensor
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 
-        // FIXME: new offsets for biobuzz robot
-        pinpoint.setOffsets(5.693, 1.899, DistanceUnit.INCH); // Note: Y is forward, X is right.
+        // Offsets from Nov 11 2026
+        pinpoint.setOffsets(6.5131, 0.97, DistanceUnit.INCH); // Note: Y is forward, X is right.
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
                 GoBildaPinpointDriver.EncoderDirection.FORWARD); //These have to match what is in Constants
@@ -89,6 +91,19 @@ public class Drive extends SubsystemBase {
 
     public Pose2D getPosition() {
         return pinpoint.getPosition();
+    }
+    public double blueXToRedX(double x){
+        x = -x + 141;
+        return x;
+    }
+    public double blueYToRedY(double y){
+        y = -y + 141;
+        return y;
+    }
+    public double blueHeadingToRedHeading(double heading){
+        heading += 180;
+        heading %= 360;
+        return heading;
     }
 
     // all interaction with gamepads should go through this inner class
@@ -124,18 +139,16 @@ public class Drive extends SubsystemBase {
     public void readSensors(double time) {
         // Get the latest pose, which includes the x and y coordinates, plus the heading angle
         pinpoint.update();
-        ///currentPosition = pinpoint.getPosition();
+        currentPosition = pinpoint.getPosition();
     }
 
     @Override
     public void periodic() {
-        if (FIELD_CENTRIC) {
-            drivebase.driveFieldCentric(strafe, forward, turn, currentPosition.getHeading(AngleUnit.DEGREES), false);
-        } else {
-            drivebase.driveRobotCentric(strafe, forward, turn, false);
-        }
+        drivebase.setMaxSpeed(MAX_SPEED);
+        drivebase.driveFieldCentric(strafe, forward, turn, currentPosition.getHeading(AngleUnit.DEGREES), false);
     }
 
     public void addTelemetry(HyperTelemetry telem) {
+
     }
 }

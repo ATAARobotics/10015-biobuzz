@@ -46,6 +46,8 @@ import java.util.List;
 
 @Configurable
 public abstract class RobotBaseOp extends OpMode {
+    double xOffset = 8.34; //from side edge to center of the robot. Nov 11 2026
+    double yOffset = 10.11; //from top edge to center of the robot, including intake. Nov 11 2026
     HyperTelemetry telem;
     GamepadEx driver;
     GamepadEx operator;
@@ -174,6 +176,9 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("time", time);
         telem.log("battery", battery.getVoltage());
         telem.log("alliance", getAlliance());
+        telem.logBoth("X:", drive.currentPosition.getX(DistanceUnit.INCH));
+        telem.logBoth("Y:", drive.currentPosition.getY(DistanceUnit.INCH));
+        telem.logBoth("Heading:", drive.currentPosition.getHeading(AngleUnit.DEGREES));
 
         //double fps = loops / runtime.seconds();
         //telem.logDrivers("average fps", fps);
@@ -186,8 +191,10 @@ public abstract class RobotBaseOp extends OpMode {
     @Override
     public void start() {
         //runtime.reset();
-        // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
-        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 94 - 7.179 : 47.25 + 7.179, 7.19, AngleUnit.DEGREES, 90));
+        // This is right above the loading zone for blue, touching the wall. Red is below the loading zone. Both face the hive.
+        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? drive.blueXToRedX(141 - yOffset): 141 - yOffset,
+                isRedAlliance() ? drive.blueYToRedY(47 + xOffset):47 + xOffset,
+                AngleUnit.DEGREES, isRedAlliance() ? drive.blueHeadingToRedHeading(180) :180));
         loops = 0;
       //  shooter.start();
     }

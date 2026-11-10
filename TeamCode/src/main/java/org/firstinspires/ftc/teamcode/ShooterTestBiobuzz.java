@@ -51,8 +51,9 @@ public class ShooterTestBiobuzz extends OpMode {
     MotorEx motor2;
     double targetRpm = 0.0;
     int shotCounter = 0;
+    boolean firstShot = true;
     double shootRpmTolerance = 0.0; //Todo: find a range that the shooter is good at shooting
-    boolean shotCounterReady = true;
+    boolean shotCounterReady = false;
     double rpmBeforeShot = 0.0;
     double lastShotTime = 0.0;
     double rps;
@@ -84,6 +85,7 @@ public class ShooterTestBiobuzz extends OpMode {
 
     public void start(){
         timeSinceStart.start();
+        targetRpm = 2550;
     }
     
     @Override
@@ -125,10 +127,11 @@ public class ShooterTestBiobuzz extends OpMode {
 
 
         //Shot Counter
-        if(recentVelocity.size() >= 5){
-            double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size()-5).velocity; //recent - 5 ago
-            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size()-5).time > lastShotTime && shotCounterReady) {
-                rpmBeforeShot = recentVelocity.get(recentVelocity.size()-5).velocity;
+        if(recentVelocity.size() >= 20){
+//            double dif = recentVelocity.getLast().velocity - targetRpm;
+            double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size()-20).velocity; //recent - 5 ago
+            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size()-20).time > lastShotTime && shotCounterReady) {
+                rpmBeforeShot = recentVelocity.get(recentVelocity.size()-20).velocity;
                 shotCounter+=1; //adds a shot to the counter
                 shotCounterReady = false; //makes it false because its no longer ready
                 lastShotTime = recentVelocity.getLast().time;
@@ -136,6 +139,9 @@ public class ShooterTestBiobuzz extends OpMode {
             if(!shotCounterReady && recentVelocity.getLast().velocity >= rpmBeforeShot - 100){ //rpmbeforeshot can be our target rpm that we want to get to, subtract by 100 for leeway
                 //checks if our current rpm has made it back to rpm before we shot
                 shotCounterReady = true; //since current rpm is greater than/equal to the rpm before we shot
+            } else if (targetRpm - recentVelocity.getLast().velocity < 100 && firstShot){
+                shotCounterReady = true;
+                firstShot = false;
             }
             /*
             first attempt

@@ -32,8 +32,8 @@ public abstract class Auto extends RobotBaseOp {
 
     private Follower follower;
     private final PoseFactory p = PoseFactory.degrees();
-    double xOffset = 7.179;
-    double yOffset = 7.19;
+    double xOffset = 8.34; //from side edge to center of the robot. Nov 11 2026
+    double yOffset = 10.11; //from top edge to center of the robot, including intake. Nov 11 2026
     boolean noFarSide = false;
     boolean pushToPark = false;
 
