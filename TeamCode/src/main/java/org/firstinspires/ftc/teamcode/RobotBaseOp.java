@@ -56,9 +56,6 @@ public abstract class RobotBaseOp extends OpMode {
 
     Drive drive;
     Shooter shooter;
-    double strafe;
-    double forward;
-    double turn;
     double frameCenter;
 
     PollenDetector pollenDetector;
@@ -103,7 +100,7 @@ public abstract class RobotBaseOp extends OpMode {
         //shooter = new Shooter(hardwareMap, telem);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
-        indicatorLight = hardwareMap.get(Servo.class, "indicator");
+	//        indicatorLight = hardwareMap.get(Servo.class, "indicator");
 
         // (Do not remove this, we absolutely have problems without cancelling this)
         // Cancel all previous commands
@@ -145,12 +142,13 @@ public abstract class RobotBaseOp extends OpMode {
             telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
 
         tags = new AprilTagProcessor.Builder().build();
-
+	/*
         portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "elp"))
-                .addProcessor(tags)
-                .build();
+	    .setCamera(hardwareMap.get(WebcamName.class, "elp"))
+	    .addProcessor(tags)
+	    .build();
       //  tipDetector = new TipDetector(tags, telemetry, getAlliance(),drive);
+      */
         }
 
 
@@ -238,75 +236,11 @@ public abstract class RobotBaseOp extends OpMode {
         readControls();
         readSensors();
 
+	// subsystems can log things
+	logTelemetry();
 
-	if (!isAuto()) {
-	    pollenTurnPID.setPID(POLLEN_P, POLLEN_I, POLLEN_D);
-
-	    // testing driver controls
-	    strafe = driver.getRightX();
-	    forward = -driver.getRightY();
-	    turn = 0;
-
-	    // vision stuff: look for yellow / pollen blobs
-
-	 //   List<PollenDetector.PollenBlob> blobs =
-	//	pollenDetector.getBlobs();
-
-	   /* telemetry.addData(
-			      "Pollen Count",
-			      blobs.size());
-
-
-	    /*
-	     * PollenDetector sorts the list from
-	     * largest area to smallest area.
-	     */
-/*
-	    PollenDetector.PollenBlob bestBlob = null;
-
-	    if (!blobs.isEmpty()) {
-
-		bestBlob = blobs.get(0);
-	    }
-
-
-	    /*
-	     * Turn toward the largest pollen.
-	     Imgproc.erode(mask, mask, erodeKernel);Imgproc.erode(mask, mask, erodeKernel);        */
-
-	   // if (bestBlob != null) {
-
-		//double halfWidth =
-		//    pollenDetector.getFrameWidth()
-		   // 2.0;
-		//frameCenter = pollenDetector.getFrameWidth() / 2.0;
-		//turn =
-		    /* (bestBlob.x - halfWidth)
-		       / halfWidth;*/
-                /*
-		    -pollenTurnPID.calculate(bestBlob.x, frameCenter);
-
-
-		telemetry.addData(
-				  "Pollen",
-				  "x=%.0f y=%.0f area=%.0f circ=%.2f pollenDist=%.2f",
-				  bestBlob.x,
-				  bestBlob.y,
-				  bestBlob.area,
-				  bestBlob.circularity,
-				  bestBlob.pollenDistance);
-	    }*/
-
-	    // let the command scheduler do stuff
-
-	    // actually do the drive command for this loop
-	    // todo: incorporate into commands / default commands
-	    drive.drivebase.driveRobotCentric(strafe, forward, turn);
-
-	    logTelemetry();
-	}
+	// let the command scheduler do stuff
         CommandScheduler.getInstance().run();
-
     }
 
     @Override
