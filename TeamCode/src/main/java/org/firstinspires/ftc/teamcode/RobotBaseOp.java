@@ -10,6 +10,8 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.util.Timing;
+import java.util.concurrent.TimeUnit;
 
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.bylazar.configurables.annotations.Configurable;
@@ -52,7 +54,9 @@ public abstract class RobotBaseOp extends OpMode {
 
     VoltageSensor battery;
     List<LynxModule> allHubs;
+
     int loops;
+    Timing.Stopwatch runtime;
 
     Drive drive;
     Shooter shooter;
@@ -122,6 +126,7 @@ public abstract class RobotBaseOp extends OpMode {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
         loops = 0;
+	runtime = new Timing.Stopwatch(TimeUnit.MILLISECONDS);
 
 	// camera and vision setup
 
@@ -166,7 +171,6 @@ public abstract class RobotBaseOp extends OpMode {
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
         }
-        loops++;
     }
 
     protected void logTelemetry() {
@@ -175,8 +179,9 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("battery", battery.getVoltage());
         telem.log("alliance", getAlliance());
 
-        //double fps = loops / runtime.seconds();
-        //telem.logDrivers("average fps", fps);
+	double seconds = runtime.deltaTime() / 1000.0;
+        double fps = loops / seconds;
+	telem.logBoth("fps", fps);
 
         drive.addTelemetry(telem);
 
@@ -189,18 +194,13 @@ public abstract class RobotBaseOp extends OpMode {
         // this is the far-zone starting position, against the wall with robot facing "north" / away from audience
         drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? 94 - 7.179 : 47.25 + 7.179, 7.19, AngleUnit.DEGREES, 90));
         loops = 0;
-      //  shooter.start();
+	runtime.start();
+	//  shooter.start();
     }
 
     @Override
     public void init_loop() {
         clearCache();
-    }
-
-    // this is called once per loop for subclasses that want to keep
-    // the rest of this class' "loop()" but also want to do their own
-    // thing
-    protected void loopExtra() {
     }
 
     class Shoot extends CommandBase{
@@ -232,6 +232,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     @Override
     public void loop() {
+        loops++;
         clearCache();
         readControls();
         readSensors();
