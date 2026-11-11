@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 // import android.graphics.Color;
 import android.util.Size;
 
+import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
@@ -197,9 +198,14 @@ public abstract class RobotBaseOp extends OpMode {
     public void start() {
         //runtime.reset();
         // This is right above the loading zone for blue, touching the wall. Red is below the loading zone. Both face the hive.
-        drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? drive.blueXToRedX(141 - yOffset): 141 - yOffset,
-                isRedAlliance() ? drive.blueYToRedY(47 + xOffset):47 + xOffset,
-                AngleUnit.DEGREES, isRedAlliance() ? drive.blueHeadingToRedHeading(180) :180));
+        //drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? drive.blueXToRedX(141 - yOffset): 141 - yOffset,
+              //  isRedAlliance() ? drive.blueYToRedY(47 + xOffset):47 + xOffset,
+              // AngleUnit.DEGREES, isRedAlliance() ? drive.blueHeadingToRedHeading(180) :180));
+        if (!isAuto()) {
+            drive.follower.setPose(new Pose(isRedAlliance() ? drive.blueXToRedX(141 - yOffset) : 141 - yOffset,
+                    isRedAlliance() ? drive.blueYToRedY(47 + xOffset) : 47 + xOffset,
+                    isRedAlliance() ? Math.toRadians(drive.blueHeadingToRedHeading(180)) : Math.toRadians(180)));
+        }
         loops = 0;
 	runtime.start();
 	//  shooter.start();

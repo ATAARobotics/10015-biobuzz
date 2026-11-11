@@ -154,18 +154,16 @@ public class Drive extends SubsystemBase {
 
     @Override
     public void periodic() {
-        powers = ManualDrive.fieldCentric(
+        DrivePowers powers = ManualDrive.fieldCentric(
                 forward,
                 -strafe,
-               -turn,
+                -turn,
                 follower.pose().heading()
         );
-        double autoTurn = headingLock.calculate(0,wrapAngle(targetAngle - currentPosition.getHeading(AngleUnit.DEGREES)));
-        telem.logBoth("autoTurn", autoTurn);
+        ManualDrive.driveOrHold(follower, powers);
+        follower.update();
         drivebase.setMaxSpeed(MAX_SPEED);
 
-        follower.manual(powers);
-        follower.update();
         //drivebase.driveFieldCentric(strafe, forward, autoTurn, currentPosition.getHeading(AngleUnit.DEGREES), false);
     }
 }
