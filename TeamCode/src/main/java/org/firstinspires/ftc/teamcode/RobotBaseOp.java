@@ -207,8 +207,8 @@ public abstract class RobotBaseOp extends OpMode {
         }
         else{
             if (!isAuto()) {
-            drive.follower.setPose(new Pose(isRedAlliance() ? drive.blueXToRedX(141 - yOffset) : 141 - yOffset,
-                    isRedAlliance() ? drive.blueYToRedY(47 + xOffset) : 47 + xOffset,
+            drive.follower.setPose(new Pose(isRedAlliance() ? drive.blueXToRedX(141.5 - yOffset) : 141.5 - yOffset,
+                    isRedAlliance() ? drive.blueYToRedY(47.5 + xOffset) : 47.5 + xOffset,
                     isRedAlliance() ? Math.toRadians(drive.blueHeadingToRedHeading(180)) : Math.toRadians(180)));
             }
         }
