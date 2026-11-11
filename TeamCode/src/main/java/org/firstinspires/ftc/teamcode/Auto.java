@@ -15,7 +15,6 @@ import static com.pedropathing.ivy.commands.Commands.waitMs;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.api.PoseFactory;
-import com.pedropathing.follower.Follower;
 //import com.pedropathing.ivy.Command;
 //import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.math.Pose;
@@ -28,9 +27,7 @@ public abstract class Auto extends RobotBaseOp {
     protected void bindDriverControls() {}
     protected void bindOperatorControls() {}
     public boolean isAuto() { return true; }
-
-
-    private Follower follower;
+    
     private final PoseFactory p = PoseFactory.degrees();
     double xOffset = 8.34; //from side edge to center of the robot. Nov 11 2026
     double yOffset = 10.11; //from top edge to center of the robot, including intake. Nov 11 2026
@@ -133,34 +130,34 @@ public abstract class Auto extends RobotBaseOp {
     private Command autoRoutineNear() {
 	SequentialCommandGroup auto = new SequentialCommandGroup();
 	//Shoot preloads first from starting position
-    auto.addCommands(turnLightGreen());
-	auto.addCommands(new FollowPathCommand(follower, gardenPickUp()));
+   // auto.addCommands(turnLightGreen());
+	auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
 	//run intake
-    auto.addCommands(turnLightRed());
+ //   auto.addCommands(turnLightRed());
     if(noFarSide){
-        auto.addCommands(new FollowPathCommand(follower, parkFromGarden()));
+        auto.addCommands(new FollowPathCommand(drive.follower, parkFromGarden()));
     }
     else {
         if(pushToPark){
-            auto.addCommands(new FollowPathCommand(follower,prepareToPush()));
+            auto.addCommands(new FollowPathCommand(drive.follower,prepareToPush()));
             //add delay here?
-            auto.addCommands(new FollowPathCommand(follower,pushPartner()));
-            auto.addCommands(new FollowPathCommand(follower,bumpToShoot())); //Going from parking to far shoot
+            auto.addCommands(new FollowPathCommand(drive.follower,pushPartner()));
+            auto.addCommands(new FollowPathCommand(drive.follower,bumpToShoot())); //Going from parking to far shoot
         }else {
-            auto.addCommands(new FollowPathCommand(follower, goToFarShoot())); //Going from garden to far shoot
+            auto.addCommands(new FollowPathCommand(drive.follower, goToFarShoot())); //Going from garden to far shoot
             auto.addCommands(new Delay(1.0));
         }
         //Shoot
-        auto.addCommands(turnLightGreen());
-        auto.addCommands(new FollowPathCommand(follower, turnToFlower()));
-        auto.addCommands(new FollowPathCommand(follower, pickUpFarFlower()));
+    //    auto.addCommands(turnLightGreen());
+        auto.addCommands(new FollowPathCommand(drive.follower, turnToFlower()));
+        auto.addCommands(new FollowPathCommand(drive.follower, pickUpFarFlower()));
         auto.addCommands(new Delay(1));
         //intake flower
-        auto.addCommands(turnLightRed());
-        auto.addCommands(new FollowPathCommand(follower, shootFromFarFlower()));
+      //  auto.addCommands(turnLightRed());
+        auto.addCommands(new FollowPathCommand(drive.follower, shootFromFarFlower()));
         //shoot
-        auto.addCommands(turnLightGreen());
-        auto.addCommands(new FollowPathCommand(follower, parkFromFarShoot()));
+     //   auto.addCommands(turnLightGreen());
+        auto.addCommands(new FollowPathCommand(drive.follower, parkFromFarShoot()));
     }
         return auto;
     }
@@ -168,26 +165,39 @@ public abstract class Auto extends RobotBaseOp {
         SequentialCommandGroup autoFar = new SequentialCommandGroup();
 
         //basic far auto commands
-        autoFar.addCommands(new FollowPathCommand(follower, startToAprilTags()));
+        autoFar.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
         autoFar.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
-        autoFar.addCommands(new FollowPathCommand(follower, aprilTagToShoot()));
-        autoFar.addCommands(new FollowPathCommand(follower, shootToFlowerIntake()));
-        autoFar.addCommands(new FollowPathCommand(follower, flowerToShoot()));
-        autoFar.addCommands(new FollowPathCommand(follower, shootToPark()));
+        autoFar.addCommands(new FollowPathCommand(drive.follower, aprilTagToShoot()));
+        autoFar.addCommands(new FollowPathCommand(drive.follower, shootToFlowerIntake()));
+        autoFar.addCommands(new FollowPathCommand(drive.follower, flowerToShoot()));
+        autoFar.addCommands(new FollowPathCommand(drive.follower, shootToPark()));
 
         return autoFar;
+    }
+
+    private final Pose testStart = p.of(73-xOffset, yOffset, 90);
+    private final Pose testEnd = p.of(73-xOffset, 120, 90);
+    private Path testPath(){
+        return line(testStart, testEnd).linear(testStart, testEnd);
+    }
+    private Command test(){
+        SequentialCommandGroup testAuto = new SequentialCommandGroup();
+        testAuto.addCommands(new FollowPathCommand(drive.follower, testPath()));
+        return testAuto;
+
     }
     @Override
     public void init() {
         super.init();
         //Scheduler.reset();
-        follower = Constants.create(hardwareMap);
+        drive.follower = Constants.create(hardwareMap);
         if (getStartZone() == StartZone.NEAR){
-            follower.setPose(startNear);
+           // drive.follower.setPose(startNear);
         }
         else if(getStartZone() == StartZone.FAR){
-            follower.setPose(startFar);
+          //  drive.follower.setPose(startFar);
         }
+        drive.follower.setPose(testStart);
     }
     @Override
     public void init_loop() {
@@ -215,16 +225,17 @@ public abstract class Auto extends RobotBaseOp {
     @Override
     public void start() {
         if(getStartZone() == StartZone.NEAR){
-            CommandScheduler.getInstance().schedule(autoRoutineNear());
+           // CommandScheduler.getInstance().schedule(autoRoutineNear());
         }
         else if(getStartZone() == StartZone.FAR){
-            CommandScheduler.getInstance().schedule(autoRoutineFar());
+           // CommandScheduler.getInstance().schedule(autoRoutineFar());
         }
+        CommandScheduler.getInstance().schedule(test());
     }
 
     @Override
     public void loop() {
         super.loop();
-        follower.update();
+        drive.follower.update();
     }
 }
