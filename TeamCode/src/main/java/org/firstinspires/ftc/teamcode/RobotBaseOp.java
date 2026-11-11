@@ -101,7 +101,7 @@ public abstract class RobotBaseOp extends OpMode {
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
-        drive = new Drive(hardwareMap, isRedAlliance(), isAuto());
+        drive = new Drive(hardwareMap, isRedAlliance(), isAuto(), telem);
        // tipDetector = new TipDetector( tags, telemetry, alliance, drive);//FIXME give tip decetor hyper telem instead of telemetry
         //shooter = new Shooter(hardwareMap, telem);
 
@@ -188,7 +188,7 @@ public abstract class RobotBaseOp extends OpMode {
         double fps = loops / seconds;
 	telem.logBoth("fps", fps);
 
-        drive.addTelemetry(telem);
+
 
         telem.update();
     }
