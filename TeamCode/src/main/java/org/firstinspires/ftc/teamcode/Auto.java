@@ -224,7 +224,9 @@ public abstract class Auto extends RobotBaseOp {
     }
     @Override
     public void start() {
+        OpmodeStorage.autoRan=true;
         if(getStartZone() == StartZone.NEAR){
+
            // CommandScheduler.getInstance().schedule(autoRoutineNear());
         }
         else if(getStartZone() == StartZone.FAR){

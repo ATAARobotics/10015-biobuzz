@@ -8,7 +8,11 @@ import com.bylazar.configurables.annotations.Configurable;
 
 @Configurable
 public abstract class TeleOp extends RobotBaseOp {
-
+    @Override
+    public void start(){
+        super.start();
+        OpmodeStorage.autoRan=false;
+    }
     public boolean isAuto(){
         return false;
     }
