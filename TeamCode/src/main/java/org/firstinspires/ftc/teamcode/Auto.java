@@ -238,4 +238,9 @@ public abstract class Auto extends RobotBaseOp {
         super.loop();
         drive.follower.update();
     }
+
+    @Override
+    public void stop(){
+        OpmodeStorage.autonomousEndPose = drive.follower.pose(); //saves your position in that file
+    }
 }

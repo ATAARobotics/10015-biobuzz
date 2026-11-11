@@ -94,7 +94,7 @@ public class Drive extends SubsystemBase {
     public Pose2D getPosition() {
         return pinpoint.getPosition();
     }
-    public double blueXToRedX(double x){
+    public double bleuXToRedX(double x){
         x = -x + 141;
         return x;
     }
