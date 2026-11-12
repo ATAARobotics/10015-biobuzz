@@ -39,7 +39,7 @@ public class ShooterTestBiobuzz extends OpMode {
     public static double increaseRate = 50.0;
     public static double RPM_DROP = 200.0;
     public static double FF = 0.000171; //November 8 2026
-    public static double P = 0.0011; //November 8 2026
+    public static double P = 0.011; //November 12 2026
     public static double I = 0.00012; //November 8 2026
     public static double D = 0.0;
     public static double AVERAGE_EXPONENT = 1.2;
@@ -85,7 +85,7 @@ public class ShooterTestBiobuzz extends OpMode {
 
     public void start(){
         timeSinceStart.start();
-        targetRpm = 2425;
+        targetRpm = 2225;
     }
     
     @Override
