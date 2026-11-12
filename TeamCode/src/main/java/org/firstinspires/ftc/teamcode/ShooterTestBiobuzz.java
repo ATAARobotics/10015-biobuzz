@@ -85,7 +85,7 @@ public class ShooterTestBiobuzz extends OpMode {
 
     public void start(){
         timeSinceStart.start();
-        targetRpm = 2550;
+        targetRpm = 2425;
     }
     
     @Override

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.pedropathing.controllers.PIDController;
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.ManualDrive;
@@ -12,6 +13,7 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -35,6 +37,10 @@ public class Drive extends SubsystemBase {
     double turn;
     double lateral;
     Controller headingLock;
+    public static double HEADING_P = 0;
+    public static double HEADING_I = 0;
+    public static double HEADING_D = 0;
+    boolean driverTurn = false;
     double targetAngle = 180;
     HyperTelemetry telem;
 
@@ -64,8 +70,8 @@ public class Drive extends SubsystemBase {
                 GoBildaPinpointDriver.EncoderDirection.FORWARD); //These have to match what is in Constants
 
         follower = Constants.create(hardwareMap);
-        headingLock = Constants.foresightConfig.headingFeedback.get();
-
+      //  headingLock = Constants.foresightConfig.headingFeedback.get();
+        headingLock = new PIDController(HEADING_P, HEADING_I, HEADING_D);
         pinpoint.resetPosAndIMU();
     }
 
@@ -128,7 +134,12 @@ public class Drive extends SubsystemBase {
                 strafe = -driver.getRightX();
                 forward = driver.getRightY();
             }
-
+            if (Math.abs(driver.getLeftX()) > 0.1){
+                driverTurn = true;
+            }
+            else{
+                driverTurn = false;
+            }
             turn = driver.getLeftX();
 
             // if we're holding left trigger _currently_, we go to
@@ -146,12 +157,21 @@ public class Drive extends SubsystemBase {
 
     @Override
     public void periodic() {
+        headingLock = new PIDController(HEADING_P, HEADING_I, HEADING_D);
+        if (!driverTurn){
+           turn = 0;
+        }
         DrivePowers powers = ManualDrive.fieldCentric(
                 forward,
                 -strafe,
                 -turn,
                 follower.pose().heading()
         );
+        if (driverTurn){
+            targetAngle = currentPosition.getHeading(AngleUnit.DEGREES);
+        } else{
+            powers = ManualDrive.headingLock(follower, headingLock, powers, targetAngle);
+        }
         ManualDrive.driveOrHold(follower, powers);
         follower.update();
         drivebase.setMaxSpeed(MAX_SPEED);

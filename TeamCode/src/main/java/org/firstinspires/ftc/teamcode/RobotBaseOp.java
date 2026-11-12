@@ -184,6 +184,8 @@ public abstract class RobotBaseOp extends OpMode {
         telem.logBoth("X:", drive.currentPosition.getX(DistanceUnit.INCH));
         telem.logBoth("Y:", drive.currentPosition.getY(DistanceUnit.INCH));
         telem.logBoth("Heading:", drive.currentPosition.getHeading(AngleUnit.DEGREES));
+        telem.logBoth("TargetAngle", drive.targetAngle);
+        telem.logBoth("currentAngle", drive.currentPosition.getHeading(AngleUnit.DEGREES));
 
 	double seconds = runtime.deltaTime() / 1000.0;
         double fps = loops / seconds;
