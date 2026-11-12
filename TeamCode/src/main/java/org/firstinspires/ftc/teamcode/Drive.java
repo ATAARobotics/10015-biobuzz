@@ -36,7 +36,7 @@ public class Drive extends SubsystemBase {
     double forward;
     double turn;
     double lateral;
-    Controller headingLock;
+    PIDController headingLock;
     public static double HEADING_P = 0;
     public static double HEADING_I = 0;
     public static double HEADING_D = 0;
@@ -157,7 +157,8 @@ public class Drive extends SubsystemBase {
 
     @Override
     public void periodic() {
-        headingLock = new PIDController(HEADING_P, HEADING_I, HEADING_D);
+        headingLock.kP = HEADING_P;
+        headingLock.kD = HEADING_D;
         if (!driverTurn){
            turn = 0;
         }
@@ -168,7 +169,7 @@ public class Drive extends SubsystemBase {
                 follower.pose().heading()
         );
         if (driverTurn){
-            targetAngle = currentPosition.getHeading(AngleUnit.DEGREES);
+            targetAngle = follower.pose().heading();
         } else{
             powers = ManualDrive.headingLock(follower, headingLock, powers, targetAngle);
         }
