@@ -23,10 +23,18 @@ public abstract class TeleOp extends RobotBaseOp {
     }
 
     protected void bindOperatorControls() {
+        TriggerHeld operatorLeft = new TriggerHeld(operator, GamepadKeys.Trigger.LEFT_TRIGGER);
+        TriggerHeld operatorRight = new TriggerHeld(operator, GamepadKeys.Trigger.RIGHT_TRIGGER);
+        operatorRight.whileActiveOnce(new Intake(), true);
+        operatorLeft.whileActiveOnce(new Outtake(), true);
         operator.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new SetCrashBarNothing(), true);
         operator.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(new SetCrashBarPollen(), true);
         operator.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(new RPMUp(), true);
         operator.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new RPMDown(), true);
         operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new ToggleRPM(), true);
+        operator.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new ToggleShoot(), true);
+
+
+
     }
 }

@@ -56,21 +56,18 @@ public class Transfer extends SubsystemBase {
         crashBarServo2 = hardwareMap.get(Servo.class, "crashBar2");
     }
 
-    /*  public void runIntakeMotor(){
+      public void runIntake(){
           intakeMotor.set(intakePower);
       }
-      public void stopIntakeMotor(){
-          intakeMotor.set(0);
-      }
-      public void reverseIntakeMotor(){
+      public void reverseIntake(){
           intakeMotor.set(-intakePower);
       }
-      public void runTransferMotor(){
+      public void runTransfer(){
           transferMotor.set(transferPower);
       }
-      public void stopTransferMotor(){
-          transferMotor.set(0);
-      }*/
+      public void reverseTransfer(){
+          transferMotor.set(-transferPower);
+      }
     public void setCrashBarNothing() {
         if (crashBarMode == CrashBarMode.NOTHING) {
             crashBarServo1.setPosition(crashOneNothing);

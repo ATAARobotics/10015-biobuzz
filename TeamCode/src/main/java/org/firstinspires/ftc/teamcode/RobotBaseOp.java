@@ -326,37 +326,77 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public boolean isFinished(){
-            return true;}
-    }
-    public Command toggleShoot{
-        return new ToggleShoot();
-    }
-
-    class Shoot extends CommandBase{
-        @Override
-        public void execute(){
-            indicatorLight.setPosition(GREEN);
-        }
-        @Override
-        public boolean isFinished(){
             return true;
         }
     }
-    public Command turnLightGreen() {
-        return new Shoot();
+    public Command toggleShoot() {
+        return new ToggleShoot();
     }
     class Intake extends CommandBase{
         @Override
         public void execute(){
-            indicatorLight.setPosition(RED);
+            transfer.runIntake();
         }
         @Override
         public boolean isFinished(){
             return true;
         }
     }
-    public Command turnLightRed() {
+    public Command intake(){
         return new Intake();
+    }
+    class Outtake extends CommandBase{
+        @Override
+        public void execute(){
+            transfer.reverseIntake();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command outtake(){
+        return new Outtake();
+    }
+    class RunTransfer extends CommandBase{
+        @Override
+        public void execute(){
+            transfer.runTransfer();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command runTransfer(){
+        return new RunTransfer();
+    }
+    class ReverseTransfer extends CommandBase{
+        @Override
+        public void execute(){
+            transfer.reverseTransfer();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command reverseTransfer(){
+        return new ReverseTransfer();
+    }
+    public class TriggerHeld extends Trigger {
+        GamepadEx pad;
+        GamepadKeys.Trigger trigger;
+
+        public TriggerHeld(GamepadEx gp, GamepadKeys.Trigger tr) {
+            pad = gp;
+            trigger = tr;
+        }
+
+        @Override
+        public boolean get() {
+            return (pad.getTrigger(trigger) > 0.5);
+        }
     }
 
     @Override
