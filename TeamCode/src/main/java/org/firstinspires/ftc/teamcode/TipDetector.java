@@ -12,14 +12,14 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class TipDetector extends SubsystemBase {
     public enum TippedSide {AUDIENCE, SCORING, UNKNOWN}
     AprilTagProcessor tags;
-    Telemetry telemetry;
+    HyperTelemetry telem;
     RobotBaseOp.Alliance alliance;
     public TippedSide tippedSide = TippedSide.UNKNOWN;
     Drive drive;
 
-    public TipDetector(AprilTagProcessor tags, Telemetry telemetry, RobotBaseOp.Alliance alliance, Drive drive) {
+    public TipDetector(AprilTagProcessor tags, HyperTelemetry telem, RobotBaseOp.Alliance alliance, Drive drive) {
         this.tags = tags;
-        this.telemetry=telemetry;
+        this.telem=telem;
         this.alliance = alliance;
         this.drive = drive;
     }
@@ -29,14 +29,14 @@ public class TipDetector extends SubsystemBase {
     }
         public void periodic () {
             tippedSide = TippedSide.UNKNOWN;
-            telemetry.addData("Detections", tags.getDetections().size());
+            telem.log("Detections", tags.getDetections().size());
             for (AprilTagDetection tag : tags.getDetections()) {
 
                 if (tag.ftcPose == null) continue;
 
                 if (tag instanceof AprilTagClusterDetection) {
                     AprilTagClusterDetection cluster = (AprilTagClusterDetection) tag;
-                    telemetry.addData("Cluster", cluster.metadata.name);
+                    telem.log("Cluster", cluster.metadata.name);
                     if (cluster.metadata.name.startsWith("B") && alliance == RobotBaseOp.Alliance.BLUE) {
                         if (drive.getPosition().getY(DistanceUnit.INCH) < 48 && cluster.metadata.shortName.contains("AUDIENCE")) {
                             tippedSide = TippedSide.AUDIENCE;
@@ -50,7 +50,7 @@ public class TipDetector extends SubsystemBase {
                             tippedSide = TippedSide.SCORING;
                         }
                     }
-                    telemetry.addData("Tipped Side:", tippedSide);
+                    telem.logBoth("Tipped Side:", tippedSide);
                 }
             }
         }
