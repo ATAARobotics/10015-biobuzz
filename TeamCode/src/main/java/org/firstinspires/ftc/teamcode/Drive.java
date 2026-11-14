@@ -41,7 +41,7 @@ public class Drive extends SubsystemBase {
     public static double HEADING_I = 0;
     public static double HEADING_D = 0;
     boolean driverTurn = false;
-    double targetAngle = 180;
+    double targetAngle = Math.toRadians(180);
     HyperTelemetry telem;
 
     double xOffset = 8.124; //from side edge to center of the robot. Nov 11 2026
@@ -169,7 +169,7 @@ public class Drive extends SubsystemBase {
                 follower.pose().heading()
         );
         if (driverTurn){
-            targetAngle = follower.pose().heading();
+             Math.toRadians(targetAngle = follower.pose().heading());
         } else{
             powers = ManualDrive.headingLock(follower, headingLock, powers, targetAngle);
         }
