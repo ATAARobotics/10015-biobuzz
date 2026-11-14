@@ -23,5 +23,6 @@ public abstract class TeleOp extends RobotBaseOp {
     }
 
     protected void bindOperatorControls() {
+        CommandScheduler.getInstance().setDefaultCommand(transfer, transfer.new HumanInputs(operator));
     }
 }

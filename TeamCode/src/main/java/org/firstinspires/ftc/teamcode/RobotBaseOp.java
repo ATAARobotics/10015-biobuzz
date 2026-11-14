@@ -62,6 +62,7 @@ public abstract class RobotBaseOp extends OpMode {
     Timing.Stopwatch runtime;
 
     Drive drive;
+    Transfer transfer;
     Shooter shooter;
     double frameCenter;
 
@@ -105,6 +106,7 @@ public abstract class RobotBaseOp extends OpMode {
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto(), telem);
        // tipDetector = new TipDetector( tags, telemetry, alliance, drive);//FIXME give tip decetor hyper telem instead of telemetry
         //shooter = new Shooter(hardwareMap, telem);
+        transfer = new Transfer(hardwareMap, telem);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
 	//        indicatorLight = hardwareMap.get(Servo.class, "indicator");
@@ -114,6 +116,7 @@ public abstract class RobotBaseOp extends OpMode {
         CommandScheduler.getInstance().reset();
 
 	CommandScheduler.getInstance().registerSubsystem(drive);
+    CommandScheduler.getInstance().registerSubsystem(transfer);
    // CommandScheduler.getInstance().registerSubsystem(tipDetector);
    // CommandScheduler.getInstance().registerSubsystem(shooter);
 
