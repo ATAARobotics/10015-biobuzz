@@ -45,7 +45,7 @@ public class Shooter extends SubsystemBase {
     MotorEx motor2;
     double targetRpm = 0.0;
     public static double SHOOT_RPM = 2225;
-    boolean shooting = false;
+    private boolean shooting = false;
     double operatorTweak = 50;
     int shotCounter = 0;
     double shootRpmTolerance = 0.0; //Todo: find a range that the shooter is good at shooting
@@ -88,7 +88,7 @@ public class Shooter extends SubsystemBase {
     public void rpmDown(){
         operatorTweak -= 50;
     }
-    public void toggleShooter(){
+    public void toggleRpm(){
         if (shooting){
             targetRpm = 0;
             shooting = false;

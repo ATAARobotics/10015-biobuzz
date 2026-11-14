@@ -16,7 +16,9 @@ public class Transfer extends SubsystemBase {
     private MotorEx intakeMotor;
     private MotorEx transferMotor;
     private Servo pollenBlocker;
-    double pollenShooting = 0; //FIXME figure out value for notshooting Adrian thinks 0.3ish
+    double pollenShooting = 0;
+    double pollenBlocked = 0.3;//FIXME actually test this value this is an estimate
+    private boolean shooting = false;
     private Servo magazineServo;
     private Servo crashBarServo1;//port 0 control hub
     private Servo crashBarServo2;//port 5 expansion hub
@@ -43,12 +45,12 @@ public class Transfer extends SubsystemBase {
 
     public Transfer(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
-        // intakeMotor = new MotorEx(hardwareMap, "intake");
-        // intakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        //   transferMotor = new MotorEx(hardwareMap, "transfer");
-        //    transferMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+         intakeMotor = new MotorEx(hardwareMap, "intake");
+         intakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+           transferMotor = new MotorEx(hardwareMap, "transfer");
+            transferMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // magazineServo = hardwareMap.get(Servo.class, "magazine"); Commented out bc we don't need until next comp
-        //  pollenBlocker = hardwareMap.get(Servo.class, "pollenBlocker");
+          pollenBlocker = hardwareMap.get(Servo.class, "pollenBlocker");
         //nectarBlocker = hardwareMap.get(Servo.class, "nectarBlocker"); Commented out bc we don't need until next comp
         crashBarServo1 = hardwareMap.get(Servo.class, "crashBar1");
         crashBarServo2 = hardwareMap.get(Servo.class, "crashBar2");
@@ -94,10 +96,15 @@ public class Transfer extends SubsystemBase {
                 crashBarServo2.setPosition(crashTwoStart);
             }
         }
-        public void pollenBlockerOpen() {
 
-        }
-        public void pollenBlockerClosed() {
-
+        public void togglePollenBlocker(){
+            if (shooting){
+                pollenBlocker.setPosition(pollenBlocked);
+                shooting = false;
+            }
+            else{
+                pollenBlocker.setPosition(pollenShooting);
+                shooting = true;
+            }
         }
     }

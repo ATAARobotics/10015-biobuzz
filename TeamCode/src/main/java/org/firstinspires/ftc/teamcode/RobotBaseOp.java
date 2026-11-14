@@ -280,18 +280,18 @@ public abstract class RobotBaseOp extends OpMode {
     public Command setCrashBarStart() {
         return new SetCrashBarStart();
     }
-    class ToggleShoot extends CommandBase{
+    class ToggleRPM extends CommandBase{
         @Override
         public void execute(){
-            shooter.toggleShooter();
+            shooter.toggleRpm();
         }
         @Override
         public boolean isFinished(){
             return true;
         }
     }
-    public Command toggleShoot() {
-        return new ToggleShoot();
+    public Command toggleRpm() {
+        return new ToggleRPM();
     }
     class RPMUp extends CommandBase{
         @Override
@@ -318,6 +318,18 @@ public abstract class RobotBaseOp extends OpMode {
     }
     public Command rpmDown() {
         return new RPMDown();
+    }
+    class ToggleShoot extends CommandBase{
+        @Override
+        public void execute(){
+            transfer.togglePollenBlocker();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;}
+    }
+    public Command toggleShoot{
+        return new ToggleShoot();
     }
 
     class Shoot extends CommandBase{

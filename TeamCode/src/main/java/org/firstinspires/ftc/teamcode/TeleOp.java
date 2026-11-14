@@ -27,6 +27,6 @@ public abstract class TeleOp extends RobotBaseOp {
         operator.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(new SetCrashBarPollen(), true);
         operator.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(new RPMUp(), true);
         operator.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new RPMDown(), true);
-        operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new ToggleShoot(), true);
+        operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new ToggleRPM(), true);
     }
 }
