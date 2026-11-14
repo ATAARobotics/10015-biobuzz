@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.command.Command;
@@ -129,7 +130,7 @@ public abstract class Auto extends RobotBaseOp {
 
     private Command autoRoutineNear() {
 	SequentialCommandGroup auto = new SequentialCommandGroup();
-    auto.addCommands(setCrashBarPollen());
+    auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
 	//Shoot preloads first from starting position
    // auto.addCommands(turnLightGreen());
 	auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
@@ -164,7 +165,7 @@ public abstract class Auto extends RobotBaseOp {
     }
     private Command autoRoutineFar(){
         SequentialCommandGroup autoFar = new SequentialCommandGroup();
-        autoFar.addCommands(setCrashBarPollen());
+        autoFar.addCommands(new InstantCommand(transfer::setCrashBarPollen));
 
         //basic far auto commands
         autoFar.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
