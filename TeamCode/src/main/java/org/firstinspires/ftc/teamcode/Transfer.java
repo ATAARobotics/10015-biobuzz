@@ -99,28 +99,4 @@ public class Transfer extends SubsystemBase {
         public void pollenBlockerClosed() {
 
         }
-        public class HumanInputs extends CommandBase {
-            GamepadEx operator;
-
-            public HumanInputs(GamepadEx operator) {
-                this.operator = operator;
-                addRequirements(Transfer.this);
-            }
-
-            @Override
-            public void execute() {
-                if (operator.wasJustPressed(GamepadKeys.Button.B)) {
-                    setCrashBarNothing();
-                }
-                if (operator.wasJustPressed(GamepadKeys.Button.Y)) {
-                    setCrashBarNectar();
-                }
-                if (operator.wasJustPressed(GamepadKeys.Button.X)) {
-                    setCrashBarPollen();
-                }
-                if (operator.wasJustPressed(GamepadKeys.Button.A)) {
-                    setCrashBarStart();
-                }
-            }
-        }
     }

@@ -23,6 +23,7 @@ public abstract class TeleOp extends RobotBaseOp {
     }
 
     protected void bindOperatorControls() {
-        CommandScheduler.getInstance().setDefaultCommand(transfer, transfer.new HumanInputs(operator));
+        operator.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new SetCrashBarNothing(), true);
+        operator.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(new SetCrashBarPollen(), true);
     }
 }
