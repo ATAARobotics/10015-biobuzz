@@ -29,7 +29,6 @@ public class Transfer extends SubsystemBase {
     private final double crashTwoEverything = -1;
     private final double crashTwoPollen = -1; //all set to -1 so the code crashes instead of wrecking robot with guessed numbers
     public enum CrashBarMode{NOTHING, EVERYTHING, POLLEN}
-    private CrashBarMode crashMode = CrashBarMode.NOTHING;
     public Transfer(HardwareMap hardwareMap, HyperTelemetry telem){
         this.telem = telem;
         intakeMotor = new MotorEx(hardwareMap, "intake");
@@ -50,7 +49,7 @@ public class Transfer extends SubsystemBase {
         intakeMotor.set(0);
     }
     public void reverseIntakeMotor(){
-        intakeMotor.set(-1);
+        intakeMotor.set(-intakePower);
     }
     public void runTransferMotor(){
         transferMotor.set(transferPower);
@@ -58,16 +57,16 @@ public class Transfer extends SubsystemBase {
     public void stopTransferMotor(){
         transferMotor.set(0);
     }
-    public void setCrashBarMode(){
-        if(crashMode == CrashBarMode.NOTHING){
+    public void setCrashBar(CrashBarMode newMode){
+        if(newMode == CrashBarMode.NOTHING){
             crashBarServo1.setPosition(crashOneNothing);
             crashBarServo2.setPosition(crashTwoNothing);
         }
-        else if(crashMode == CrashBarMode.EVERYTHING){
+        else if(newMode == CrashBarMode.EVERYTHING){
             crashBarServo1.setPosition(crashOneEverything);
             crashBarServo2.setPosition(crashTwoEverything);
         }
-        else if(crashMode == CrashBarMode.POLLEN){
+        else if(newMode == CrashBarMode.POLLEN){
             crashBarServo1.setPosition(crashOnePollen);
             crashBarServo2.setPosition(crashTwoPollen);
         }
