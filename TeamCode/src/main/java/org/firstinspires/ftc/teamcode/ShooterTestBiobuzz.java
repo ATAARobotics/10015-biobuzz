@@ -92,7 +92,7 @@ public class ShooterTestBiobuzz extends OpMode {
     public void loop() {
     rpmController.setPID(P, I, D);
     rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
-    telem.logBoth("feedforward", FF);
+   // telem.logBoth("feedforward", FF);
 
         double v = motor.getVelocity()/28*60; //this gives us rpm
         recentVelocity.addLast(new VelocityData(time, v)); //recent rpm
