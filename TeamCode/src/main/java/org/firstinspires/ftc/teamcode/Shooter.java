@@ -44,6 +44,9 @@ public class Shooter extends SubsystemBase {
     MotorEx motor;
     MotorEx motor2;
     double targetRpm = 0.0;
+    public static double SHOOT_RPM = 2225;
+    boolean shooting = false;
+    double operatorTweak = 50;
     int shotCounter = 0;
     double shootRpmTolerance = 0.0; //Todo: find a range that the shooter is good at shooting
     boolean shotCounterReady = true;
@@ -54,6 +57,7 @@ public class Shooter extends SubsystemBase {
     int lastTicks;
     double lastTime;
     public double error;
+    double motorPower;
     double sum;
     boolean lastDpadUp = false;
     boolean lastDpadDown = false;
@@ -78,86 +82,44 @@ public class Shooter extends SubsystemBase {
         timeSinceStart.start();
     }
 
+    public void rpmUp(){
+        operatorTweak += 50;
+    }
+    public void rpmDown(){
+        operatorTweak -= 50;
+    }
+    public void toggleShooter(){
+        if (shooting){
+            targetRpm = 0;
+            shooting = false;
+        } else{
+            targetRpm = SHOOT_RPM + operatorTweak;
+            shooting = true;
+        }
+    }
+
+
     @Override
     public void periodic() {
+        //Deleted shot counter stuff because it doesn't work and is messy, it still can be found in shootertestbiobuzz
         rpmController.setPID(P, I, D);
         rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
         telem.logBoth("feedforward", FF);
 
         double v = motor.getVelocity() / 28 * 60; //this gives us rpm
-        recentVelocity.addLast(new Shooter.VelocityData(timeSinceStart.elapsedTime(), v)); //recent rpm
-        while (recentVelocity.size() > dataPoints) {
-            recentVelocity.removeFirst();
-        }
-        double total = 0.0;
-        double amount = 1;
-        double totalAmount = 0.0;
-        for (Shooter.VelocityData data : recentVelocity) {
-            totalAmount = totalAmount + amount;
-            total = total + (data.velocity * amount); // adding recentvelocity data
-            amount *= AVERAGE_EXPONENT; //1.0 is equal to normal average, more than that
-            //creates an exponential graph
-        }
-        double averageVelocity = total / totalAmount; //finding average - total value of data/number of data points
-        telem.logBoth("Average-RPM", averageVelocity);
 
-        rpmHistory.add(recentVelocity.getLast().velocity);
-        while (rpmHistory.size() > MAX_SAMPLES) {
-            rpmHistory.removeFirst();
-        }
-        sum = 0.0;
-        for (double i : rpmHistory) {
-            sum += Math.abs(i - targetRpm);
-        }
-        error = sum / rpmHistory.size(); //average error
+        motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
+        //current rpm, then finds the pid output
 
+        if (targetRpm < 0){targetRpm = 0;}
+        // add in feed forward
+        motorPower += rpmFeedforward.calculate(targetRpm);
 
-        //Shot Counter
-        if (recentVelocity.size() >= 5) {
-            double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size() - 5).velocity; //recent - 5 ago
-            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size() - 5).time > lastShotTime && shotCounterReady) {
-                rpmBeforeShot = recentVelocity.get(recentVelocity.size() - 5).velocity;
-                shotCounter += 1; //adds a shot to the counter
-                shotCounterReady = false; //makes it false because its no longer ready
-                lastShotTime = recentVelocity.getLast().time;
-            }
-            if (!shotCounterReady && recentVelocity.getLast().velocity >= rpmBeforeShot - 100) { //rpmbeforeshot can be our target rpm that we want to get to, subtract by 100 for leeway
-                //checks if our current rpm has made it back to rpm before we shot
-                shotCounterReady = true; //since current rpm is greater than/equal to the rpm before we shot
-            }
-        }
+        // Clamp power between 0.0 and 1.0
+        motorPower = Math.max(0.0, Math.min(1.0, motorPower));
+        motor.set(motorPower);
+
         telem.log("RPM", v);
         telem.logBoth("targetRpm", targetRpm);
-        telem.logBoth("shotCounter", shotCounter);
-        telem.logBoth("Shot counter ready", shotCounterReady);
-    }
-    public class HumanInputs extends CommandBase {
-        GamepadEx driver;
-        GamepadEx operator;
-
-        public HumanInputs(GamepadEx operator, GamepadEx driver) {
-            this.operator = operator;
-            this.driver = driver;
-            addRequirements(Shooter.this);
-        }
-
-        @Override
-        public void execute() {
-            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
-                targetRpm += increaseRate;
-            }
-            // Decrease power by 0.1 on each new D-pad down press
-            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
-                targetRpm -= increaseRate;
-            }
-
-            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
-                targetRpm += 500;
-            }
-
-            if (driver.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-                targetRpm -= 500;
-            }
-        }
     }
 }

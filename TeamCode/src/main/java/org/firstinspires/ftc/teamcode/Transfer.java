@@ -16,6 +16,7 @@ public class Transfer extends SubsystemBase {
     private MotorEx intakeMotor;
     private MotorEx transferMotor;
     private Servo pollenBlocker;
+    double pollenShooting = 0; //FIXME figure out value for notshooting Adrian thinks 0.3ish
     private Servo magazineServo;
     private Servo crashBarServo1;//port 0 control hub
     private Servo crashBarServo2;//port 5 expansion hub
