@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 // import android.graphics.Color;
-import android.util.Size;
 
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -19,11 +18,8 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.TipDetector;
 import org.firstinspires.ftc.vision.VisionPortal;
 //import org.firstinspires.ftc.vision.opencv.Circle;
 //import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
@@ -32,18 +28,12 @@ import org.firstinspires.ftc.vision.VisionPortal;
 //import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 import org.firstinspires.ftc.teamcode.vision.PollenDetector;
-import org.firstinspires.ftc.vision.apriltag.AprilTagClusterDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.firstinspires.ftc.vision.apriltag.AprilTagSingleDetection;
-import org.opencv.imgproc.Imgproc;
 
 //import org.opencv.core.Scalar;
 
-import java.util.LinkedList;
 import java.util.List;
 
 
@@ -106,7 +96,7 @@ public abstract class RobotBaseOp extends OpMode {
 
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto(), telem);
        // tipDetector = new TipDetector( tags, telemetry, alliance, drive);//FIXME give tip decetor hyper telem instead of telemetry
-        //shooter = new Shooter(hardwareMap, telem);
+        shooter = new Shooter(hardwareMap, telem);
         transfer = new Transfer(hardwareMap, telem);
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
@@ -119,7 +109,7 @@ public abstract class RobotBaseOp extends OpMode {
 	CommandScheduler.getInstance().registerSubsystem(drive);
     CommandScheduler.getInstance().registerSubsystem(transfer);
    // CommandScheduler.getInstance().registerSubsystem(tipDetector);
-   // CommandScheduler.getInstance().registerSubsystem(shooter);
+    CommandScheduler.getInstance().registerSubsystem(shooter);
 
         // set up controls
         bindOperatorControls();
@@ -334,12 +324,16 @@ public abstract class RobotBaseOp extends OpMode {
     }
     class Intake extends CommandBase{
         @Override
-        public void execute(){
+        public void initialize(){
             transfer.runIntake();
         }
         @Override
         public boolean isFinished(){
-            return true;
+            return false;
+        }
+        @Override
+        public void end(boolean interrupted){
+            transfer.stopIntake();
         }
     }
     public Command intake(){
@@ -347,12 +341,16 @@ public abstract class RobotBaseOp extends OpMode {
     }
     class Outtake extends CommandBase{
         @Override
-        public void execute(){
+        public void initialize(){
             transfer.reverseIntake();
         }
         @Override
         public boolean isFinished(){
-            return true;
+            return false;
+        }
+        @Override
+        public void end(boolean interrupted){
+            transfer.stopIntake();
         }
     }
     public Command outtake(){
@@ -360,12 +358,16 @@ public abstract class RobotBaseOp extends OpMode {
     }
     class RunTransfer extends CommandBase{
         @Override
-        public void execute(){
+        public void initialize(){
             transfer.runTransfer();
         }
         @Override
         public boolean isFinished(){
-            return true;
+            return false;
+        }
+        @Override
+        public void end(boolean interrupted){
+            transfer.stopTransfer();
         }
     }
     public Command runTransfer(){
@@ -373,12 +375,16 @@ public abstract class RobotBaseOp extends OpMode {
     }
     class ReverseTransfer extends CommandBase{
         @Override
-        public void execute(){
+        public void initialize(){
             transfer.reverseTransfer();
         }
         @Override
         public boolean isFinished(){
-            return true;
+            return false;
+        }
+        @Override
+        public void end(boolean interrupted){
+            transfer.stopTransfer();
         }
     }
     public Command reverseTransfer(){

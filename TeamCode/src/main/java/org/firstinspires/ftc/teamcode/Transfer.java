@@ -16,8 +16,8 @@ public class Transfer extends SubsystemBase {
     private MotorEx intakeMotor;
     private MotorEx transferMotor;
     private Servo pollenBlocker;
-    double pollenShooting = 0;
-    double pollenBlocked = 0.3;//FIXME actually test this value this is an estimate
+    public static double pollenShooting = 0.05;
+    public static double pollenBlocked = 0.2;
     private boolean shooting = false;
     private Servo magazineServo;
     private Servo crashBarServo1;//port 0 control hub
@@ -28,7 +28,7 @@ public class Transfer extends SubsystemBase {
 
     private IntakeMode mode = IntakeMode.IDLE;
     private double intakePower = 1;
-    private double transferPower = 0.0378;
+    private double transferPower = 1;//0.29;
     //The value of the two crash bars for each position MUST ADD UP TO ONE.
     private final double crashOneStart = 0;
     private final double crashTwoStart = 1;
@@ -62,36 +62,35 @@ public class Transfer extends SubsystemBase {
       public void reverseIntake(){
           intakeMotor.set(-intakePower);
       }
+    public void stopIntake(){
+        intakeMotor.set(0);
+    }
       public void runTransfer(){
           transferMotor.set(transferPower);
       }
       public void reverseTransfer(){
           transferMotor.set(-transferPower);
       }
+      public void stopTransfer(){
+        transferMotor.set(0);
+      }
     public void setCrashBarNothing() {
-        if (crashBarMode == CrashBarMode.NOTHING) {
             crashBarServo1.setPosition(crashOneNothing);
             crashBarServo2.setPosition(crashTwoNothing);
-        }
     }
 
     public void setCrashBarNectar() {
-        if (crashBarMode == CrashBarMode.NECTAR) {
             crashBarServo1.setPosition(crashOneNectar);
             crashBarServo2.setPosition(crashTwoNectar);
-        }
     }
         public void setCrashBarPollen() {
-            if (crashBarMode == CrashBarMode.POLLEN) {
                 crashBarServo1.setPosition(crashOnePollen);
                 crashBarServo2.setPosition(crashTwoPollen);
-            }
+
         }
         public void setCrashBarStart() {
-            if (crashBarMode == CrashBarMode.START) {
                 crashBarServo1.setPosition(crashOneStart);
                 crashBarServo2.setPosition(crashTwoStart);
-            }
         }
 
         public void togglePollenBlocker(){

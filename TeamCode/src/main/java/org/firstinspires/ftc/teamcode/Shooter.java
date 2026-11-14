@@ -70,8 +70,8 @@ public class Shooter extends SubsystemBase {
         this.telem = telem;
         rpmController = new PIDController(P, I, D);
         rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
-        motor = new MotorEx(hardwareMap, "shooterL");
-        motor2 = new MotorEx(hardwareMap, "encoder");
+      //  motor = new MotorEx(hardwareMap, "shooterL");
+      //  motor2 = new MotorEx(hardwareMap, "encoder");
         recentVelocity = new LinkedList<Shooter.VelocityData>();
 
         timeSinceStart = new Timing.Stopwatch();
@@ -106,20 +106,20 @@ public class Shooter extends SubsystemBase {
         rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
         telem.logBoth("feedforward", FF);
 
-        double v = motor.getVelocity() / 28 * 60; //this gives us rpm
+       // double v = motor.getVelocity() / 28 * 60; //this gives us rpm
 
-        motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
+       // motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
         //current rpm, then finds the pid output
 
         if (targetRpm < 0){targetRpm = 0;}
         // add in feed forward
-        motorPower += rpmFeedforward.calculate(targetRpm);
+      //  motorPower += rpmFeedforward.calculate(targetRpm);
 
         // Clamp power between 0.0 and 1.0
-        motorPower = Math.max(0.0, Math.min(1.0, motorPower));
-        motor.set(motorPower);
+       // motorPower = Math.max(0.0, Math.min(1.0, motorPower));
+      //  motor.set(motorPower);
 
-        telem.log("RPM", v);
+       // telem.log("RPM", v);
         telem.logBoth("targetRpm", targetRpm);
     }
 }
