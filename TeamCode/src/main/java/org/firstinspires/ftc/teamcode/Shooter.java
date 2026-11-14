@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
@@ -65,13 +66,15 @@ public class Shooter extends SubsystemBase {
     boolean lastDpadRight = false;
     HyperTelemetry telem;
     int loopCounter = 0;
+    Servo turret;
 
     public Shooter(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
         rpmController = new PIDController(P, I, D);
         rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
-        motor = new MotorEx(hardwareMap, "shooterL");
+        motor = new MotorEx(hardwareMap, "shooterL"); // port 2 on expansion
         motor2 = new MotorEx(hardwareMap, "encoder");
+        turret = hardwareMap.get(Servo.class, "turret");//port 0 on expansion
         recentVelocity = new LinkedList<Shooter.VelocityData>();
 
         timeSinceStart = new Timing.Stopwatch();

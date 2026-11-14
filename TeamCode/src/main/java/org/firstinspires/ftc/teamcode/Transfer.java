@@ -103,6 +103,22 @@ public class Transfer extends SubsystemBase {
                 shooting = true;
             }
         }
+    public class HumanInputs extends CommandBase {
+        GamepadEx operator;
 
+        public HumanInputs(GamepadEx operator) {
+            this.operator = operator;
+            addRequirements(Transfer.this);
+        }
 
+        @Override
+        public void execute() {
+            if (operator.getLeftY() > 0.1){
+                runIntake();
+            }
+            else if (operator.getLeftY() < -0.1){
+                reverseIntake();
+            }
+        }
     }
+}

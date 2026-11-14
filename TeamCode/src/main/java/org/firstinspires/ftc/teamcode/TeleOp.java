@@ -40,5 +40,7 @@ public abstract class TeleOp extends RobotBaseOp {
         operator.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new InstantCommand(transfer::togglePollenBlocker));
 
         operator.getGamepadButton(GamepadKeys.Button.B).whenPressed(new InstantCommand(transfer::setCrashBarStart, transfer));//just for sizing
+        CommandScheduler.getInstance().setDefaultCommand(transfer, transfer.new HumanInputs(operator));
+
     }
 }
