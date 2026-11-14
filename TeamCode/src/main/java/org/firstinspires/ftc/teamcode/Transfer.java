@@ -28,7 +28,7 @@ public class Transfer extends SubsystemBase {
 
     private IntakeMode mode = IntakeMode.IDLE;
     private double intakePower = 1;
-    private double transferPower = 0.4;
+    private double transferPower = 0.0378;
     //The value of the two crash bars for each position MUST ADD UP TO ONE.
     private final double crashOneStart = 0;
     private final double crashTwoStart = 1;
@@ -45,9 +45,9 @@ public class Transfer extends SubsystemBase {
 
     public Transfer(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
-         intakeMotor = new MotorEx(hardwareMap, "intake");
+         intakeMotor = new MotorEx(hardwareMap, "intake");//port 0 expansion
          intakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-           transferMotor = new MotorEx(hardwareMap, "transfer");
+           transferMotor = new MotorEx(hardwareMap, "transfer");//port 1 expansion
             transferMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // magazineServo = hardwareMap.get(Servo.class, "magazine"); Commented out bc we don't need until next comp
           pollenBlocker = hardwareMap.get(Servo.class, "pollenBlocker");
