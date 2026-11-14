@@ -26,42 +26,40 @@ public class Constants {
         c.frontRightDirection.set(DcMotorSimple.Direction.FORWARD);
         c.backLeftDirection.set(DcMotorSimple.Direction.REVERSE);
         c.backRightDirection.set(DcMotorSimple.Direction.FORWARD);
-        //c.manualBrakeMode.set(true) add for teleop usage if you want to have manual brake mode enabled.
     });
     public static PinpointConfig localizerConfig = new PinpointConfig(c -> {
         c.name.set("pinpoint");
         c.podType.set(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        c.xPodOffset.set(5.162211741049459);
-        c.yPodOffset.set(2.1510477141132505);
+        c.xPodOffset.set(-6.57945948322927);
+        c.yPodOffset.set(-1.4112854003906252);
         c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.REVERSED);
-        c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.REVERSED);
         c.globalDistanceUnit.set(DistanceUnit.INCH);
         c.offsetUnits.set(DistanceUnit.INCH);
     });
-
     public static ForesightConfig foresightConfig = new ForesightConfig(
             c -> {
-                Controller primaryTranslationalForward = Controller.proportional(0.30574640599131575);
-                Controller secondaryTranslationalForward = Controller.proportional(0.11296512731935968);
-                Controller primaryTranslationalLateral = Controller.proportional(0.5008336245039062);
-                Controller secondaryTranslationalLateral = Controller.proportional(0.1850446417332772);
+                Controller primaryTranslationalForward = Controller.proportional(0.2609026821911951);
+                Controller secondaryTranslationalForward = Controller.proportional(0.09639656962158344);
+                Controller primaryTranslationalLateral = Controller.proportional(0.3741454436925221);
+                Controller secondaryTranslationalLateral = Controller.proportional(0.13823674409400763);
 
                 c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(2.5, primaryTranslationalForward));
                 c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(2.5, primaryTranslationalLateral));
 
-                c.coast.set(Controller.proportionalFeedforward(0.01577738034395283));
-                c.brake.set(Controller.proportionalFeedforward(0.013410773292359904));
+                c.coast.set(Controller.proportionalFeedforward(0.011861897575572856));
+                c.brake.set(Controller.proportionalFeedforward(0.010082612939236927));
 
-                c.headingFeedback.set(Controller.proportional(5.727709390565341/2));
-                c.headingBrakeCoefficients.set(Vector2D.cartesian(0.053712816419025755, 0.0060265235344253675));
+                c.headingFeedback.set(Controller.proportional(5.413495293092176));
+                c.headingBrakeCoefficients.set(Vector2D.cartesian(0.05137796086221628, 0.006494064771510991));
 
-                c.linearBrakeCoefficients.set(Matrix.diag(0.0801693877236864, 0.07372056657910407));
-                c.quadraticBrakeCoefficients.set(Matrix.diag(0.0014248657119717719, 0.0012953592673826742));
+                c.linearBrakeCoefficients.set(Matrix.diag(0.10858058041441195, 0.034080521367515416));
+                c.quadraticBrakeCoefficients.set(Matrix.diag(5.151954492705028E-4, 0.0022141402651067277));
 
-                c.maxAchievableForwardVelocity.set(61.50756019242531);
-                c.maxAchievableStrafeVelocity.set(49.99310127687052);
-                c.naturalForwardDeceleration.set(30.229390802371324);
-                c.naturalStrafeDeceleration.set(65.7377274910355);
+                c.maxAchievableForwardVelocity.set(60.0194831215382);
+                c.maxAchievableStrafeVelocity.set(49.207602811703595);
+                c.naturalForwardDeceleration.set(44.87040279726386);
+                c.naturalStrafeDeceleration.set(91.29694632021278);
             }
     );
     public static Follower create(HardwareMap h) {
