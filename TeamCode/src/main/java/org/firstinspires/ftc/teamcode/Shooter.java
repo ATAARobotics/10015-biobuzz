@@ -72,9 +72,9 @@ public class Shooter extends SubsystemBase {
         this.telem = telem;
         rpmController = new PIDController(P, I, D);
         rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
-        motor = new MotorEx(hardwareMap, "shooterL"); // port 2 on expansion
-        motor2 = new MotorEx(hardwareMap, "encoder");
-        turret = hardwareMap.get(Servo.class, "turret");//port 0 on expansion
+        motor = new MotorEx(hardwareMap, "shooter"); // port 2 on expansion
+       // motor2 = new MotorEx(hardwareMap, "encoder");
+        turret = hardwareMap.get(Servo.class, "turret");// servo port 0 on expansion
         recentVelocity = new LinkedList<Shooter.VelocityData>();
 
         timeSinceStart = new Timing.Stopwatch();
@@ -110,6 +110,7 @@ public class Shooter extends SubsystemBase {
         //telem.logBoth("feedforward", FF);
 
         double v = motor.getVelocity() / 28 * 60; //this gives us rpm
+        rpmController.setSetPoint(targetRpm);
 
         motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
         //current rpm, then finds the pid output
@@ -123,7 +124,7 @@ public class Shooter extends SubsystemBase {
         motor.set(motorPower);
 
         telem.log("shooter-motorPower", motorPower);
-        telem.log("RPM", v);
+        telem.logBoth("RPM", v);
         telem.logBoth("targetRpm", targetRpm);
     }
 }

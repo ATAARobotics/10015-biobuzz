@@ -16,7 +16,7 @@ public class Transfer extends SubsystemBase {
     private MotorEx intakeMotor;
     private MotorEx transferMotor;
     private Servo pollenBlocker;
-    public static double pollenShooting = 0.05;
+    public static double pollenShooting = 0;
     public static double pollenBlocked = 0.2;
     private boolean shooting = false;
     private Servo magazineServo;
