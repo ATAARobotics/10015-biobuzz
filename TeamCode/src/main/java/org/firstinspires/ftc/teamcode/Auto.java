@@ -129,6 +129,7 @@ public abstract class Auto extends RobotBaseOp {
 
     private Command autoRoutineNear() {
 	SequentialCommandGroup auto = new SequentialCommandGroup();
+    auto.addCommands(setCrashBarPollen());
 	//Shoot preloads first from starting position
    // auto.addCommands(turnLightGreen());
 	auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
@@ -163,6 +164,7 @@ public abstract class Auto extends RobotBaseOp {
     }
     private Command autoRoutineFar(){
         SequentialCommandGroup autoFar = new SequentialCommandGroup();
+        autoFar.addCommands(setCrashBarPollen());
 
         //basic far auto commands
         autoFar.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));

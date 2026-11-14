@@ -63,6 +63,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     Drive drive;
     Transfer transfer;
+    Transfer.CrashBarMode crashMode;
     Shooter shooter;
     double frameCenter;
 
@@ -227,6 +228,59 @@ public abstract class RobotBaseOp extends OpMode {
     public void init_loop() {
         clearCache();
     }
+    class SetCrashBarPollen extends CommandBase{
+        @Override
+        public void execute(){
+            transfer.setCrashBarPollen();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command setCrashBarPollen() {
+        return new SetCrashBarPollen();
+    }
+    class SetCrashBarNothing extends CommandBase{
+        @Override
+        public void execute(){
+            transfer.setCrashBarNothing();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command setCrashBarNothing() {
+        return new SetCrashBarNothing();
+    }
+    class SetCrashBarNectar extends CommandBase{
+        @Override
+        public void execute(){
+            transfer.setCrashBarNectar();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command setCrashBarNectar() {
+        return new SetCrashBarNectar();
+    }
+    class SetCrashBarStart extends CommandBase{
+        @Override
+        public void execute(){
+            transfer.setCrashBarStart();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public Command setCrashBarStart() {
+        return new SetCrashBarStart();
+    }
+
 
     class Shoot extends CommandBase{
         @Override
