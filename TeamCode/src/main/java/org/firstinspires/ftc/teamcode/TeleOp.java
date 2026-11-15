@@ -26,8 +26,6 @@ public abstract class TeleOp extends RobotBaseOp {
     protected void bindOperatorControls() {
         TriggerHeld operatorLeft = new TriggerHeld(operator, GamepadKeys.Trigger.LEFT_TRIGGER);
         TriggerHeld operatorRight = new TriggerHeld(operator, GamepadKeys.Trigger.RIGHT_TRIGGER);
-       // operatorRight.whenActive(new RunTransfer(), true);
-       // operatorLeft.whenActive(new ReverseTransfer(), true);
         operatorRight.whenActive(new InstantCommand(transfer::runTransfer, transfer));
         operatorLeft.whenActive(new InstantCommand(transfer::reverseTransfer, transfer));
         operatorRight.whenInactive(new InstantCommand(transfer::stopTransfer, transfer));

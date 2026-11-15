@@ -115,10 +115,11 @@ public class Transfer extends SubsystemBase {
         public void execute() {
             if (operator.getLeftY() > 0.1){
                 runIntake();
-            }
-            else if (operator.getLeftY() < -0.1){
+            } else if (operator.getLeftY() < -0.1){
                 reverseIntake();
-            }
+            } else{
+                 stopIntake();
+             }
         }
     }
 }
