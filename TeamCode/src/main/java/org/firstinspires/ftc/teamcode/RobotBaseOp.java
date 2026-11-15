@@ -286,17 +286,17 @@ public abstract class RobotBaseOp extends OpMode {
         public void execute() {
             if (state == ShootState.WAIT_SHOOT) {
                 if (readyToShoot()) {
-                        transfer.runTransfer();
-                        transfer.runIntake();
-                        transfer.pollenUnblocked();
-                        feedTimer.reset();
-                        state = ShootState.SHOOT;
+		    transfer.runTransfer();
+		    transfer.runIntake();
+		    transfer.pollenUnblocked();
+		    feedTimer.reset();
+		    state = ShootState.SHOOT;
                 }
             }
             else if (state == ShootState.SHOOT) {
                 if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
-                    //state = ShootState.DONE;
-                    //stopEverything();
+                    state = ShootState.DONE;
+                    stopEverything();
                 }
             }
         }
