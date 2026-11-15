@@ -4,7 +4,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.button.Trigger;
@@ -53,8 +52,8 @@ public abstract class RobotBaseOp extends OpMode {
 
     Drive drive;
     Transfer transfer;
-    Transfer.CrashBarMode crashMode;
     Shooter shooter;
+    Turret turret;
     double frameCenter;
 
     PollenDetector pollenDetector;
@@ -63,9 +62,11 @@ public abstract class RobotBaseOp extends OpMode {
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
+    public enum ShootState{WAIT_SHOOT, SHOOT, DONE}
     public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;
+    public static double RPM_TOLERANCE = 100;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
     Servo indicatorLight;
     double RED = 0.28;
@@ -98,6 +99,8 @@ public abstract class RobotBaseOp extends OpMode {
        // tipDetector = new TipDetector( tags, telemetry, alliance, drive);//FIXME give tip decetor hyper telem instead of telemetry
         shooter = new Shooter(hardwareMap, telem);
         transfer = new Transfer(hardwareMap, telem);
+        turret = new Turret(hardwareMap, telem);
+
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
 	//        indicatorLight = hardwareMap.get(Servo.class, "indicator");
@@ -110,6 +113,7 @@ public abstract class RobotBaseOp extends OpMode {
     CommandScheduler.getInstance().registerSubsystem(transfer);
    // CommandScheduler.getInstance().registerSubsystem(tipDetector);
     CommandScheduler.getInstance().registerSubsystem(shooter);
+    CommandScheduler.getInstance().registerSubsystem(turret);
 
         // set up controls
         bindOperatorControls();
@@ -184,9 +188,6 @@ public abstract class RobotBaseOp extends OpMode {
 	double seconds = runtime.deltaTime() / 1000.0;
         double fps = loops / seconds;
 	telem.logBoth("fps", fps);
-
-
-
         telem.update();
     }
 
@@ -218,6 +219,85 @@ public abstract class RobotBaseOp extends OpMode {
     public void init_loop() {
         clearCache();
     }
+    public class StartAutoIntake extends CommandBase{
+        public StartAutoIntake(){
+            addRequirements(transfer);
+        }
+        @Override
+        public void execute() {
+            transfer.pollenBlocked();
+            transfer.runIntake();
+            transfer.runTransfer();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public class StopAutoIntake extends CommandBase{
+        public StopAutoIntake(){
+            addRequirements(transfer);
+        }
+        @Override
+        public void execute(){
+            transfer.stopIntake();
+            transfer.stopTransfer();
+            transfer.setCrashBarNothing();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public class AutoShoot extends CommandBase{
+        private ShootState state;
+        public AutoShoot() {
+            addRequirements(shooter);
+            addRequirements(transfer);
+            addRequirements(turret);
+        }
+        @Override
+        public void initialize(){
+            state = ShootState.WAIT_SHOOT;
+        }
+        @Override
+        public void execute(){
+            if (state == ShootState.WAIT_SHOOT){
+                shooter.setRpm();
+                //fixme: Add turret aim method here
+                if (readyToShoot()) {
+                    state = ShootState.SHOOT;
+                    transfer.runTransfer();
+                    transfer.runIntake();
+                    transfer.pollenUnblocked();
+                }
+            } else if (state == ShootState.SHOOT){
+                state = ShootState.DONE;
+            }
+        }
+        public boolean isFinished(){
+            return state == ShootState.DONE;
+        }
+        public void end(boolean interrupted){
+            if (!interrupted){
+                shooter.stopRpm();
+                //fixme: turret stop tracking
+                transfer.stopTransfer();
+                transfer.stopIntake();
+                transfer.pollenBlocked();
+            }
+        }
+    }
+    public boolean readyToShoot(){
+        //fixme: make it so turret has to be at position too
+        if (shooter.targetRpm - shooter.recentVelocity.getLast().velocity <= RPM_TOLERANCE ||
+            shooter.targetRpm - shooter.recentVelocity.getLast().velocity >= RPM_TOLERANCE){
+            return true;
+        } else{
+            return false;
+        }
+    }
+
     public class TriggerHeld extends Trigger {
         GamepadEx pad;
         GamepadKeys.Trigger trigger;

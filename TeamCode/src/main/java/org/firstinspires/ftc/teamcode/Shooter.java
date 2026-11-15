@@ -31,7 +31,6 @@ public class Shooter extends SubsystemBase {
     PIDController rpmController;
     SimpleMotorFeedforward rpmFeedforward;
 
-    public static double increaseRate = 50.0;
     public static double RPM_DROP = 150.0;
     public static double FF = 0.000171; //November 8 2026
     public static double P = 0.0011; //November 8 2026
@@ -49,32 +48,22 @@ public class Shooter extends SubsystemBase {
     private boolean shooting = false;
     double operatorTweak = 50;
     int shotCounter = 0;
-    double shootRpmTolerance = 0.0; //Todo: find a range that the shooter is good at shooting
     boolean shotCounterReady = true;
     double rpmBeforeShot = 0.0;
     double lastShotTime = 0.0;
-    double rps;
-    int ticks;
-    int lastTicks;
-    double lastTime;
     public double error;
     double motorPower;
     double sum;
-    boolean lastDpadUp = false;
-    boolean lastDpadDown = false;
-    boolean lastDpadLeft = false;
-    boolean lastDpadRight = false;
+    boolean firstShot = true;
     HyperTelemetry telem;
     int loopCounter = 0;
-    Servo turret;
 
     public Shooter(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
         rpmController = new PIDController(P, I, D);
         rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
         motor = new MotorEx(hardwareMap, "shooter"); // port 2 on expansion
-       // motor2 = new MotorEx(hardwareMap, "encoder");
-        turret = hardwareMap.get(Servo.class, "turret");// servo port 0 on expansion
+        // motor2 = new MotorEx(hardwareMap, "encoder");
         recentVelocity = new LinkedList<Shooter.VelocityData>();
 
         timeSinceStart = new Timing.Stopwatch();
@@ -85,46 +74,97 @@ public class Shooter extends SubsystemBase {
         timeSinceStart.start();
     }
 
-    public void rpmUp(){
+    public void rpmUp() {
         operatorTweak += 50;
     }
-    public void rpmDown(){
+
+    public void rpmDown() {
         operatorTweak -= 50;
     }
-    public void toggleRpm(){
-        if (shooting){
+
+    public void toggleRpm() {
+        if (shooting) {
             targetRpm = 0;
             shooting = false;
-        } else{
+        } else {
             targetRpm = SHOOT_RPM + operatorTweak;
             shooting = true;
         }
+    }
+    public void setRpm(){
+        targetRpm = SHOOT_RPM + operatorTweak;
+        shooting = true;
+    }
+    public void stopRpm(){
+        targetRpm =0;
+        shooting = false;
     }
 
 
     @Override
     public void periodic() {
-        //Deleted shot counter stuff because it doesn't work and is messy, it still can be found in shootertestbiobuzz
         rpmController.setPID(P, I, D);
         rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
         //telem.logBoth("feedforward", FF);
 
         double v = motor.getVelocity() / 28 * 60; //this gives us rpm
-        rpmController.setSetPoint(targetRpm);
+        double time = timeSinceStart.elapsedTime();
+        recentVelocity.addLast(new VelocityData(time, v)); //recent rpm
+        while (recentVelocity.size() > dataPoints) {
+            recentVelocity.removeFirst();
+        }
+        double total = 0.0;
+        double amount = 1;
+        double totalAmount = 0.0;
+        for (Shooter.VelocityData data : recentVelocity) {
+            totalAmount = totalAmount + amount;
+            total = total + (data.velocity * amount); // adding recentvelocity data
+            amount *= AVERAGE_EXPONENT; //1.0 is equal to normal average, more than that
+            //creates an exponential graph
+        }
+        rpmHistory.add(recentVelocity.getLast().velocity);
+        while (rpmHistory.size() > MAX_SAMPLES) {
+            rpmHistory.removeFirst();
+        }
+        sum = 0.0;
+        for (double i : rpmHistory) {
+            sum += Math.abs(i - targetRpm);
+        }
+        error = sum / rpmHistory.size(); //average error
+        //Shot Counter
+        if (recentVelocity.size() >= 20) {
+            double dif = recentVelocity.getLast().velocity - recentVelocity.get(recentVelocity.size() - 20).velocity; //recent - 5 ago
+            if (dif < -RPM_DROP && recentVelocity.get(recentVelocity.size() - 20).time > lastShotTime && shotCounterReady) {
+                rpmBeforeShot = recentVelocity.get(recentVelocity.size() - 20).velocity;
+                shotCounter += 1; //adds a shot to the counter
+                shotCounterReady = false; //makes it false because its no longer ready
+                lastShotTime = recentVelocity.getLast().time;
+            }
+            if (!shotCounterReady && recentVelocity.getLast().velocity >= rpmBeforeShot - 100) { //rpmbeforeshot can be our target rpm that we want to get to, subtract by 100 for leeway
+                //checks if our current rpm has made it back to rpm before we shot
+                shotCounterReady = true; //since current rpm is greater than/equal to the rpm before we shot
+            } else if (targetRpm - recentVelocity.getLast().velocity < 100 && firstShot) {
+                shotCounterReady = true;
+                firstShot = false;
+            }
+            rpmController.setSetPoint(targetRpm);
 
-        motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
-        //current rpm, then finds the pid output
+            motorPower = rpmController.calculate(v); //calculates error between setpoint/targetRpm and
+            //current rpm, then finds the pid output
 
-        if (targetRpm < 0){targetRpm = 0;}
-        // add in feed forward
-        motorPower += rpmFeedforward.calculate(targetRpm);
+            if (targetRpm < 0) {
+                targetRpm = 0;
+            }
+            // add in feed forward
+            motorPower += rpmFeedforward.calculate(targetRpm);
 
-        // Clamp power between 0.0 and 1.0
-        motorPower = Math.max(0.0, Math.min(1.0, motorPower));
-        motor.set(motorPower);
+            // Clamp power between 0.0 and 1.0
+            motorPower = Math.max(0.0, Math.min(1.0, motorPower));
+            motor.set(motorPower);
 
-        telem.log("shooter-motorPower", motorPower);
-        telem.logBoth("RPM", v);
-        telem.logBoth("targetRpm", targetRpm);
+            telem.log("shooter-motorPower", motorPower);
+            telem.logBoth("RPM", v);
+            telem.logBoth("targetRpm", targetRpm);
+        }
     }
 }

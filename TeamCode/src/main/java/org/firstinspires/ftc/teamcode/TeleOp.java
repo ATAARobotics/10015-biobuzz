@@ -21,13 +21,15 @@ public abstract class TeleOp extends RobotBaseOp {
     protected void bindDriverControls() {
       //  CommandScheduler.getInstance().setDefaultCommand(shooter, shooter.new HumanInputs(operator, driver));
         CommandScheduler.getInstance().setDefaultCommand(drive, drive.new HumanInputs(driver));
+        TriggerHeld driverLeft = new TriggerHeld(driver, GamepadKeys.Trigger.LEFT_TRIGGER);
+        driverLeft.whenActive(new StartAutoIntake(), true);
+        driverLeft.whenInactive(new StopAutoIntake(), true);
+        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed((new AutoShoot()));
     }
 
     protected void bindOperatorControls() {
         TriggerHeld operatorLeft = new TriggerHeld(operator, GamepadKeys.Trigger.LEFT_TRIGGER);
         TriggerHeld operatorRight = new TriggerHeld(operator, GamepadKeys.Trigger.RIGHT_TRIGGER);
-       // operatorRight.whenActive(new RunTransfer(), true);
-       // operatorLeft.whenActive(new ReverseTransfer(), true);
         operatorRight.whenActive(new InstantCommand(transfer::runTransfer, transfer));
         operatorLeft.whenActive(new InstantCommand(transfer::reverseTransfer, transfer));
         operatorRight.whenInactive(new InstantCommand(transfer::stopTransfer, transfer));
@@ -41,6 +43,5 @@ public abstract class TeleOp extends RobotBaseOp {
 
         operator.getGamepadButton(GamepadKeys.Button.B).whenPressed(new InstantCommand(transfer::setCrashBarStart, transfer));//just for sizing
         CommandScheduler.getInstance().setDefaultCommand(transfer, transfer.new HumanInputs(operator));
-
     }
 }

@@ -24,7 +24,7 @@ public class Transfer extends SubsystemBase {
     private Servo crashBarServo2;//port 5 expansion hub
     private Servo nectarBlocker;
 
-    public enum IntakeMode {IN, OUT, IDLE}
+    public enum IntakeMode {IN, IDLE}
 
     private IntakeMode mode = IntakeMode.IDLE;
     private double intakePower = 1;
@@ -38,10 +38,6 @@ public class Transfer extends SubsystemBase {
     private final double crashTwoNectar = 0.15;
     private final double crashOnePollen = 1;
     private final double crashTwoPollen = 0;
-
-    public enum CrashBarMode {NOTHING, NECTAR, POLLEN, START}
-
-    CrashBarMode crashBarMode;
 
     public Transfer(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
@@ -57,10 +53,10 @@ public class Transfer extends SubsystemBase {
     }
 
       public void runIntake(){
-          intakeMotor.set(intakePower);
+          intakeMotor.set(-intakePower);
       }
       public void reverseIntake(){
-          intakeMotor.set(-intakePower);
+          intakeMotor.set(intakePower);
       }
     public void stopIntake(){
         intakeMotor.set(0);
@@ -103,6 +99,12 @@ public class Transfer extends SubsystemBase {
                 shooting = true;
             }
         }
+        public void pollenBlocked(){
+            pollenBlocker.setPosition(pollenBlocked);
+        }
+    public void pollenUnblocked(){
+        pollenBlocker.setPosition(pollenShooting);
+    }
     public class HumanInputs extends CommandBase {
         GamepadEx operator;
 
@@ -115,10 +117,11 @@ public class Transfer extends SubsystemBase {
         public void execute() {
             if (operator.getLeftY() > 0.1){
                 runIntake();
-            }
-            else if (operator.getLeftY() < -0.1){
+            } else if (operator.getLeftY() < -0.1){
                 reverseIntake();
-            }
+            } else{
+                 stopIntake();
+             }
         }
     }
 }
