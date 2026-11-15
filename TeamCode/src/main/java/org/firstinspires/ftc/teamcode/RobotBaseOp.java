@@ -280,8 +280,8 @@ public abstract class RobotBaseOp extends OpMode {
             transfer.setCrashBarNothing(); // TODO confirm this is what we want to do
         }
         @Override
-        public void execute(){
-            if (state == ShootState.WAIT_SHOOT){
+        public void execute() {
+            if (state == ShootState.WAIT_SHOOT) {
 
                 //fixme: Add turret aim method here
                 if (readyToShoot()) {
@@ -290,10 +290,10 @@ public abstract class RobotBaseOp extends OpMode {
                     transfer.pollenUnblocked();
                     feedTimer.reset();
                     state = ShootState.SHOOT;
-
-            } else if (state == ShootState.SHOOT){
-                if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
-                    state = ShootState.DONE;
+                } else if (state == ShootState.SHOOT){
+                    if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
+                        state = ShootState.DONE;
+                    }
                 }
             }
         }
@@ -316,7 +316,6 @@ public abstract class RobotBaseOp extends OpMode {
     public boolean readyToShoot(){
         //fixme: write isReady() in the turret class
         return shooter.isAtSpeed(RPM_TOLERANCE) && turret.isReady();
-        }
     }
 
     public class TriggerHeld extends Trigger {
