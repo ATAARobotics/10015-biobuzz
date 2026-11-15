@@ -35,7 +35,7 @@ public abstract class Auto extends RobotBaseOp {
     double yOffset = 8.649;
     boolean noFarSide = false;
     boolean pushToPark = false;
-    boolean noGarden = false;
+    boolean doubleCheck = false;
     boolean basicNearAuto = true;
     private final Pose startNear = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
@@ -60,7 +60,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose parkFar = p.of(13.0, 115.3, 270);
     private final Pose controlPointParkFar = p.of(63.5, 99.35, 270);
 
-    //no garden(with partner, meet 1) poses
+    //meet 1, doublecheck auto poses
     private final Pose startNoGarden = p.of(19 - xOffset, 39 - yOffset, 0);
     private final Pose doubleCheckPartner = p.of(58.37, 22.98, 270);
     private final Pose shootInCase = p.of(58.37, 22, 90);
@@ -160,7 +160,7 @@ public abstract class Auto extends RobotBaseOp {
     private Command autoRoutineNear() {
         SequentialCommandGroup auto = new SequentialCommandGroup();
         auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
-        if (noGarden) {
+        if (doubleCheck) {
             auto.addCommands(new FollowPathCommand(drive.follower, startToDoubleCheck()));
             auto.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
             if (TipDetector.TippedSide.UNKNOWN) {
@@ -265,15 +265,15 @@ public abstract class Auto extends RobotBaseOp {
             pushToPark = false;
         }
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
-            noGarden = true;
+            doubleCheck = true;
         }
         if (operator.wasJustPressed(GamepadKeys.Button.Y)){
-            noGarden = false;
+            doubleCheck = false;
         }
 
         telemetry.addData("Don't shoot on the other side (when near) \n Dpad up to turn on, b to turn off", noFarSide);
         telemetry.addData("Push partner. Dpad down to enable, A to Disable", pushToPark);
-        telemetry.addData("Meet 1 with partner. DPAD LEFT to enable, Y to disable.", noGarden);
+        telemetry.addData("Meet 1 with partner. DPAD LEFT to enable, Y to disable.", doubleCheck);
 
         telemetry.update();
     }
