@@ -20,6 +20,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
 //import org.firstinspires.ftc.vision.opencv.Circle;
 //import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
@@ -97,8 +98,15 @@ public abstract class RobotBaseOp extends OpMode {
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
+        tags = new AprilTagProcessor.Builder().build();
+
+        portal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .addProcessor(tags)
+                .build();
+        tipDetector = new TipDetector(tags, telem, getAlliance(),drive);
+
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto(), telem);
-       // tipDetector = new TipDetector( tags, telemetry, alliance, drive);//FIXME give tip decetor hyper telem instead of telemetry
         shooter = new Shooter(hardwareMap, telem);
         transfer = new Transfer(hardwareMap, telem);
         turret = new Turret(hardwareMap, telem);
@@ -113,7 +121,7 @@ public abstract class RobotBaseOp extends OpMode {
 
 	CommandScheduler.getInstance().registerSubsystem(drive);
     CommandScheduler.getInstance().registerSubsystem(transfer);
-   // CommandScheduler.getInstance().registerSubsystem(tipDetector);
+    CommandScheduler.getInstance().registerSubsystem(tipDetector);
     CommandScheduler.getInstance().registerSubsystem(shooter);
     CommandScheduler.getInstance().registerSubsystem(turret);
 
@@ -149,14 +157,8 @@ public abstract class RobotBaseOp extends OpMode {
             telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates for debugging.
             telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
 
-        tags = new AprilTagProcessor.Builder().build();
-	/*
-        portal = new VisionPortal.Builder()
-	    .setCamera(hardwareMap.get(WebcamName.class, "elp"))
-	    .addProcessor(tags)
-	    .build();
-      //  tipDetector = new TipDetector(tags, telemetry, getAlliance(),drive);
-      */
+
+
         }
 
 

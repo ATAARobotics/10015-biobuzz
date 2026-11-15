@@ -246,12 +246,12 @@ public abstract class Auto extends RobotBaseOp {
         //Scheduler.reset();
         drive.follower = Constants.create(hardwareMap);
         if (getStartZone() == StartZone.NEAR){
-           // drive.follower.setPose(startNear);
+            drive.follower.setPose(startNear);
         }
         else if(getStartZone() == StartZone.FAR){
-          //  drive.follower.setPose(startFar);
+            drive.follower.setPose(startFar);
         }
-        drive.follower.setPose(testStart);
+        //drive.follower.setPose(testStart);
     }
     @Override
     public void init_loop() {
@@ -287,13 +287,12 @@ public abstract class Auto extends RobotBaseOp {
     public void start() {
         OpmodeStorage.autoRan=true;
         if(getStartZone() == StartZone.NEAR){
-
-           // CommandScheduler.getInstance().schedule(autoRoutineNear());
+            CommandScheduler.getInstance().schedule(autoRoutineNear());
         }
         else if(getStartZone() == StartZone.FAR){
-           // CommandScheduler.getInstance().schedule(autoRoutineFar());
+            CommandScheduler.getInstance().schedule(autoRoutineFar());
         }
-        CommandScheduler.getInstance().schedule(test());
+      //  CommandScheduler.getInstance().schedule(test());
     }
 
     @Override
