@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.bylazar.gamepad.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
@@ -163,16 +164,21 @@ public abstract class Auto extends RobotBaseOp {
         if (doubleCheck) {
             auto.addCommands(new FollowPathCommand(drive.follower, startToDoubleCheck()));
             auto.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
-            if (TipDetector.TippedSide.UNKNOWN) {
-                auto.addCommands(new FollowPathCommand(drive.follower, doubleCheckToShootNear()));
-                auto.addCommands(new Delay(2.0)); //add shooting here
-                auto.addCommands(new FollowPathCommand(drive.follower, shootNearToDoubleCheck()));
-            } else {
-                auto.addCommands(new FollowPathCommand(drive.follower, doubleChecktoShootFar()));
-                auto.addCommands(new Delay(2.0)); //add shooting here
-                auto.addCommands(new FollowPathCommand(drive.follower, shootFarToPark()));
-            }
-            return auto;
+            SequentialCommandGroup tipped = new SequentialCommandGroup();
+            tipped.addCommands(
+                    new FollowPathCommand(drive.follower, doubleCheckToShootNear()),
+                    new Delay(2.0),
+                    new FollowPathCommand(drive.follower, shootNearToDoubleCheck())
+            );
+            SequentialCommandGroup notTipped = new SequentialCommandGroup();
+            tipped.addCommands(
+                    new FollowPathCommand(drive.follower, doubleChecktoShootFar()),
+                    new Delay(2.0),
+                    new FollowPathCommand(drive.follower, shootFarToPark())
+            );
+            auto.addCommands(
+                    new ConditionalCommand(tipped, notTipped, () -> {return (tipDetector.tip() == TipDetector.TippedSide.UNKNOWN);})
+            );
         }
         if (basicNearAuto) {
 
@@ -205,8 +211,8 @@ public abstract class Auto extends RobotBaseOp {
                 //   auto.addCommands(turnLightGreen());
                 auto.addCommands(new FollowPathCommand(drive.follower, parkFromFarShoot()));
             }
-            return auto;
         }
+        return auto;
     }
     private Command autoRoutineFar(){
         SequentialCommandGroup autoFar = new SequentialCommandGroup();
