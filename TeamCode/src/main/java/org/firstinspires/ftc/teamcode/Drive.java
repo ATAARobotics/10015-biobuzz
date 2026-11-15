@@ -173,7 +173,7 @@ public class Drive extends SubsystemBase {
         } else{
             powers = ManualDrive.headingLock(follower, headingLock, powers, targetAngle);
         }
-        ManualDrive.driveOrHold(follower, powers);
+   //     ManualDrive.driveOrHold(follower, powers);
         follower.update();
         drivebase.setMaxSpeed(MAX_SPEED);
 

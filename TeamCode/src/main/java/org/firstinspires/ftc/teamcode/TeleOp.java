@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
@@ -24,7 +25,7 @@ public abstract class TeleOp extends RobotBaseOp {
         TriggerHeld driverLeft = new TriggerHeld(driver, GamepadKeys.Trigger.LEFT_TRIGGER);
         driverLeft.whenActive(new StartAutoIntake(), true);
         driverLeft.whenInactive(new StopAutoIntake(), true);
-        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed((new AutoShoot()));
+        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed((new InstantCommand(this::toggleAutoShoot)));
     }
 
     protected void bindOperatorControls() {

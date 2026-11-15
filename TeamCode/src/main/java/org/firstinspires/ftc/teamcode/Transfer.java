@@ -28,7 +28,7 @@ public class Transfer extends SubsystemBase {
 
     private IntakeMode mode = IntakeMode.IDLE;
     private double intakePower = 1;
-    private double transferPower = 1;//0.29;
+    public static double transferPower = 0.5;//0.29;
     //The value of the two crash bars for each position MUST ADD UP TO ONE.
     private final double crashOneStart = 0;
     private final double crashTwoStart = 1;

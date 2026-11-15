@@ -32,7 +32,8 @@ public class Shooter extends SubsystemBase {
     SimpleMotorFeedforward rpmFeedforward;
 
     public static double RPM_DROP = 150.0;
-    public static double FF = 0.000171; //November 8 2026
+    public static double FF = 0.0002; //November 15 2026
+    public static double KS = 0.1;
     public static double P = 0.0011; //November 8 2026
     public static double I = 0.00012; //November 8 2026
     public static double D = 0.0;
@@ -44,9 +45,9 @@ public class Shooter extends SubsystemBase {
     MotorEx motor;
     MotorEx motor2;
     double targetRpm = 0.0;
-    public static double SHOOT_RPM = 2225;
+    public static double SHOOT_RPM = 2600;
     private boolean shooting = false;
-    double operatorTweak = 50;
+    double operatorTweak = 0;
     int shotCounter = 0;
     boolean shotCounterReady = true;
     double rpmBeforeShot = 0.0;
@@ -57,11 +58,12 @@ public class Shooter extends SubsystemBase {
     boolean firstShot = true;
     HyperTelemetry telem;
     int loopCounter = 0;
+    public static double RPM_TOLERANCE = 200;
 
     public Shooter(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
         rpmController = new PIDController(P, I, D);
-        rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
+        rpmFeedforward = new SimpleMotorFeedforward(KS, FF);
         motor = new MotorEx(hardwareMap, "shooter"); // port 2 on expansion
         // motor2 = new MotorEx(hardwareMap, "encoder");
         recentVelocity = new LinkedList<Shooter.VelocityData>();
@@ -100,14 +102,14 @@ public class Shooter extends SubsystemBase {
         shooting = false;
     }
 
-    public boolean isAtSpeed(double toleranceRpm) {
+    public boolean isAtSpeed() {
         if (targetRpm <= 0 || recentVelocity.isEmpty()) {
             return false;
         }
 
         double measuredRpm = recentVelocity.getLast().velocity;
 
-        return Math.abs(targetRpm - measuredRpm) <= toleranceRpm;
+        return Math.abs(targetRpm - measuredRpm) <= RPM_TOLERANCE;
     }
 
     @Override

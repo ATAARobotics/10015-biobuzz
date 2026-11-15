@@ -64,10 +64,10 @@ public abstract class RobotBaseOp extends OpMode {
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
     public enum ShootState{WAIT_SHOOT, SHOOT, DONE}
+    public AutoShoot shooting = null;
     public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;
-    public static double RPM_TOLERANCE = 100;
     public static double SHOOT_FEED_SECONDS = 1.5;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
     Servo indicatorLight;
@@ -243,7 +243,7 @@ public abstract class RobotBaseOp extends OpMode {
             transfer.stopIntake();
             transfer.stopTransfer();
             transfer.pollenBlocked();
-            transfer.setCrashBarNothing();
+           // transfer.setCrashBarNothing();
 
         }
     }
@@ -255,7 +255,7 @@ public abstract class RobotBaseOp extends OpMode {
         public void execute(){
             transfer.stopIntake();
             transfer.stopTransfer();
-            transfer.setCrashBarNothing();
+          //  transfer.setCrashBarNothing();
         }
         @Override
         public boolean isFinished(){
@@ -277,45 +277,62 @@ public abstract class RobotBaseOp extends OpMode {
             transfer.stopIntake();
             transfer.pollenBlocked();
             shooter.setRpm();
-            transfer.setCrashBarNothing(); // TODO confirm this is what we want to do
+            //fixme add turret
+           // transfer.setCrashBarNothing(); // TODO confirm this is what we want to do
         }
         @Override
         public void execute() {
             if (state == ShootState.WAIT_SHOOT) {
-
-                //fixme: Add turret aim method here
                 if (readyToShoot()) {
-                    transfer.runTransfer();
-                    transfer.runIntake();
-                    transfer.pollenUnblocked();
-                    feedTimer.reset();
-                    state = ShootState.SHOOT;
-                } else if (state == ShootState.SHOOT){
-                    if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
-                        state = ShootState.DONE;
-                    }
+                        transfer.runTransfer();
+                        transfer.runIntake();
+                        transfer.pollenUnblocked();
+                        feedTimer.reset();
+                        state = ShootState.SHOOT;
                 }
             }
+            else if (state == ShootState.SHOOT) {
+                if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
+                    //state = ShootState.DONE;
+                    //stopEverything();
+                }
+            }
+        }
+        public void userCancel(){
+            state = ShootState.DONE;
+            stopEverything();
         }
 
        @Override
         public boolean isFinished(){
             return state == ShootState.DONE;
         }
+        public void stopEverything(){
+            shooter.stopRpm();
+            //fixme: turret stop tracking
+            transfer.stopTransfer();
+            transfer.stopIntake();
+            transfer.pollenBlocked();
+        }
 
         @Override
         public void end(boolean interrupted) {
-                shooter.stopRpm();
-                //fixme: turret stop tracking
-                transfer.stopTransfer();
-                transfer.stopIntake();
-                transfer.pollenBlocked();
-
+            //    stopEverything();
+        }
+    }
+    public void toggleAutoShoot(){
+        if (shooting != null){
+           // CommandScheduler.getInstance().cancel(shooting);
+            shooting.userCancel();
+            shooting = null;
+        } else{
+            shooting = new AutoShoot();
+            CommandScheduler.getInstance().schedule(false,shooting);
         }
     }
     public boolean readyToShoot(){
         //fixme: write isReady() in the turret class
-        return shooter.isAtSpeed(RPM_TOLERANCE) && turret.isReady();
+        return shooter.isAtSpeed() && turret.isReady();
     }
 
     public class TriggerHeld extends Trigger {
@@ -335,6 +352,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     @Override
     public void loop() {
+        telem.logBoth("shooting", shooting==null);
         loops++;
         clearCache();
         readControls();
