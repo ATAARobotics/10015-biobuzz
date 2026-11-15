@@ -274,7 +274,7 @@ public abstract class RobotBaseOp extends OpMode {
                     transfer.pollenUnblocked();
                     feedTimer.reset();
                     state = ShootState.SHOOT;
-                }
+
             } else if (state == ShootState.SHOOT){
                 if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
                     state = ShootState.DONE;
