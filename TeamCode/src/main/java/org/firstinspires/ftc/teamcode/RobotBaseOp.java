@@ -227,13 +227,24 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void execute() {
+            transfer.setCrashBarPollen();
             transfer.pollenBlocked();
             transfer.runIntake();
             transfer.runTransfer();
         }
         @Override
         public boolean isFinished(){
-            return true;
+
+            return false; // Until cancelled; later check if magazine is full
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            transfer.stopIntake();
+            transfer.stopTransfer();
+            transfer.pollenBlocked();
+            transfer.setCrashBarNothing();
+
         }
     }
     public class StopAutoIntake extends CommandBase{
@@ -262,11 +273,16 @@ public abstract class RobotBaseOp extends OpMode {
         @Override
         public void initialize(){
             state = ShootState.WAIT_SHOOT;
+            transfer.stopTransfer();
+            transfer.stopIntake();
+            transfer.pollenBlocked();
+            shooter.setRpm();
+            transfer.setCrashBarNothing(); // TODO confirm this is what we want to do
         }
         @Override
         public void execute(){
             if (state == ShootState.WAIT_SHOOT){
-                shooter.setRpm();
+
                 //fixme: Add turret aim method here
                 if (readyToShoot()) {
                     transfer.runTransfer();
@@ -281,17 +297,20 @@ public abstract class RobotBaseOp extends OpMode {
                 }
             }
         }
+
+       @Override
         public boolean isFinished(){
             return state == ShootState.DONE;
         }
-        public void end(boolean interrupted){
-            if (!interrupted){
+
+        @Override
+        public void end(boolean interrupted) {
                 shooter.stopRpm();
                 //fixme: turret stop tracking
                 transfer.stopTransfer();
                 transfer.stopIntake();
                 transfer.pollenBlocked();
-            }
+
         }
     }
     public boolean readyToShoot(){
