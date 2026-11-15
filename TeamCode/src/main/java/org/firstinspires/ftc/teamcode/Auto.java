@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.gamepad.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -34,7 +35,8 @@ public abstract class Auto extends RobotBaseOp {
     double yOffset = 8.649;
     boolean noFarSide = false;
     boolean pushToPark = false;
-
+    boolean noGarden = false;
+    boolean basicNearAuto = true;
     private final Pose startNear = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
     private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
@@ -57,6 +59,14 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose flowerIntakeFar = p.of(47.13, 126, 90);
     private final Pose parkFar = p.of(13.0, 115.3, 270);
     private final Pose controlPointParkFar = p.of(63.5, 99.35, 270);
+
+    //no garden(with partner, meet 1) poses
+    private final Pose startNoGarden = p.of(19 - xOffset, 39 - yOffset, 0);
+    private final Pose doubleCheckPartner = p.of(58.37, 22.98, 270);
+    private final Pose shootInCase = p.of(58.37, 22, 90);
+    private final Pose shootOtherBasket = p.of(58.71, 125, 270);
+    private final Pose parkNoGarden = p.of(9.65, 117.57, 0);
+    private final Pose controlPointParkNoGarden = p.of(40.49, 94.98, 0);
 
     class Delay extends CommandBase {
         double seconds;
@@ -128,40 +138,75 @@ public abstract class Auto extends RobotBaseOp {
         return curve(generalShootingPositionFar, controlPointParkFar, parkFar).linear(generalShootingPositionFar, parkFar);
     }
 
+    private Path startToDoubleCheck(){
+        return line(startNoGarden, doubleCheckPartner).linear(startNoGarden, doubleCheckPartner);
+    }
+    private Path doubleCheckToShootNear(){
+        return line(doubleCheckPartner, shootInCase).linear(doubleCheckPartner, shootInCase);
+    }
+    private Path shootNearToDoubleCheck(){
+        return line(shootInCase, doubleCheckPartner).linear(shootInCase, doubleCheckPartner);
+    }
+
+    private Path doubleChecktoShootFar(){
+        return line(doubleCheckPartner, shootOtherBasket).linear(doubleCheckPartner, shootOtherBasket);
+    }
+
+    private Path shootFarToPark(){
+        return curve(shootOtherBasket, controlPointParkNoGarden, parkNoGarden).linear(shootOtherBasket, parkNoGarden);
+    }
+
+
     private Command autoRoutineNear() {
-	SequentialCommandGroup auto = new SequentialCommandGroup();
-    auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
-	//Shoot preloads first from starting position
-   // auto.addCommands(turnLightGreen());
-	auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
-	//run intake
- //   auto.addCommands(turnLightRed());
-    if(noFarSide){
-        auto.addCommands(new FollowPathCommand(drive.follower, parkFromGarden()));
-    }
-    else {
-        if(pushToPark){
-            auto.addCommands(new FollowPathCommand(drive.follower,prepareToPush()));
-            //add delay here?
-            auto.addCommands(new FollowPathCommand(drive.follower,pushPartner()));
-            auto.addCommands(new FollowPathCommand(drive.follower,bumpToShoot())); //Going from parking to far shoot
-        }else {
-            auto.addCommands(new FollowPathCommand(drive.follower, goToFarShoot())); //Going from garden to far shoot
-            auto.addCommands(new Delay(1.0));
+        SequentialCommandGroup auto = new SequentialCommandGroup();
+        auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
+        if (noGarden) {
+            auto.addCommands(new FollowPathCommand(drive.follower, startToDoubleCheck()));
+            auto.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
+            if (TipDetector.TippedSide.UNKNOWN) {
+                auto.addCommands(new FollowPathCommand(drive.follower, doubleCheckToShootNear()));
+                auto.addCommands(new Delay(2.0)); //add shooting here
+                auto.addCommands(new FollowPathCommand(drive.follower, shootNearToDoubleCheck()));
+            } else {
+                auto.addCommands(new FollowPathCommand(drive.follower, doubleChecktoShootFar()));
+                auto.addCommands(new Delay(2.0)); //add shooting here
+                auto.addCommands(new FollowPathCommand(drive.follower, shootFarToPark()));
+            }
+            return auto;
         }
-        //Shoot
-    //    auto.addCommands(turnLightGreen());
-        auto.addCommands(new FollowPathCommand(drive.follower, turnToFlower()));
-        auto.addCommands(new FollowPathCommand(drive.follower, pickUpFarFlower()));
-        auto.addCommands(new Delay(1));
-        //intake flower
-      //  auto.addCommands(turnLightRed());
-        auto.addCommands(new FollowPathCommand(drive.follower, shootFromFarFlower()));
-        //shoot
-     //   auto.addCommands(turnLightGreen());
-        auto.addCommands(new FollowPathCommand(drive.follower, parkFromFarShoot()));
-    }
-        return auto;
+        if (basicNearAuto) {
+
+            //Shoot preloads first from starting position
+            // auto.addCommands(turnLightGreen());
+            auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
+            //run intake
+            //   auto.addCommands(turnLightRed());
+            if (noFarSide) {
+                auto.addCommands(new FollowPathCommand(drive.follower, parkFromGarden()));
+            } else {
+                if (pushToPark) {
+                    auto.addCommands(new FollowPathCommand(drive.follower, prepareToPush()));
+                    //add delay here?
+                    auto.addCommands(new FollowPathCommand(drive.follower, pushPartner()));
+                    auto.addCommands(new FollowPathCommand(drive.follower, bumpToShoot())); //Going from parking to far shoot
+                } else {
+                    auto.addCommands(new FollowPathCommand(drive.follower, goToFarShoot())); //Going from garden to far shoot
+                    auto.addCommands(new Delay(1.0));
+                }
+                //Shoot
+                //    auto.addCommands(turnLightGreen());
+                auto.addCommands(new FollowPathCommand(drive.follower, turnToFlower()));
+                auto.addCommands(new FollowPathCommand(drive.follower, pickUpFarFlower()));
+                auto.addCommands(new Delay(1));
+                //intake flower
+                //  auto.addCommands(turnLightRed());
+                auto.addCommands(new FollowPathCommand(drive.follower, shootFromFarFlower()));
+                //shoot
+                //   auto.addCommands(turnLightGreen());
+                auto.addCommands(new FollowPathCommand(drive.follower, parkFromFarShoot()));
+            }
+            return auto;
+        }
     }
     private Command autoRoutineFar(){
         SequentialCommandGroup autoFar = new SequentialCommandGroup();
@@ -219,9 +264,16 @@ public abstract class Auto extends RobotBaseOp {
         } else if(operator.wasJustPressed(GamepadKeys.Button.A)){
             pushToPark = false;
         }
+        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
+            noGarden = true;
+        }
+        if (operator.wasJustPressed(GamepadKeys.Button.Y)){
+            noGarden = false;
+        }
 
         telemetry.addData("Don't shoot on the other side (when near) \n Dpad up to turn on, b to turn off", noFarSide);
         telemetry.addData("Push partner. Dpad down to enable, A to Disable", pushToPark);
+        telemetry.addData("Meet 1 with partner. DPAD LEFT to enable, Y to disable.", noGarden);
 
         telemetry.update();
     }
