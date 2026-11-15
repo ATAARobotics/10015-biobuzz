@@ -66,7 +66,6 @@ public class Shooter extends SubsystemBase {
     boolean lastDpadRight = false;
     HyperTelemetry telem;
     int loopCounter = 0;
-    Servo turret;
 
     public Shooter(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
@@ -74,7 +73,6 @@ public class Shooter extends SubsystemBase {
         rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
         motor = new MotorEx(hardwareMap, "shooter"); // port 2 on expansion
        // motor2 = new MotorEx(hardwareMap, "encoder");
-        turret = hardwareMap.get(Servo.class, "turret");// servo port 0 on expansion
         recentVelocity = new LinkedList<Shooter.VelocityData>();
 
         timeSinceStart = new Timing.Stopwatch();
@@ -100,6 +98,7 @@ public class Shooter extends SubsystemBase {
             shooting = true;
         }
     }
+
 
 
     @Override

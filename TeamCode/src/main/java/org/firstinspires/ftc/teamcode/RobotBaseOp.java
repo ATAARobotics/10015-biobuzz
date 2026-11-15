@@ -4,7 +4,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.button.Trigger;
@@ -53,8 +52,8 @@ public abstract class RobotBaseOp extends OpMode {
 
     Drive drive;
     Transfer transfer;
-    Transfer.CrashBarMode crashMode;
     Shooter shooter;
+    Turret turret;
     double frameCenter;
 
     PollenDetector pollenDetector;
@@ -98,6 +97,8 @@ public abstract class RobotBaseOp extends OpMode {
        // tipDetector = new TipDetector( tags, telemetry, alliance, drive);//FIXME give tip decetor hyper telem instead of telemetry
         shooter = new Shooter(hardwareMap, telem);
         transfer = new Transfer(hardwareMap, telem);
+        turret = new Turret(hardwareMap, telem);
+
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
 	//        indicatorLight = hardwareMap.get(Servo.class, "indicator");
@@ -110,6 +111,7 @@ public abstract class RobotBaseOp extends OpMode {
     CommandScheduler.getInstance().registerSubsystem(transfer);
    // CommandScheduler.getInstance().registerSubsystem(tipDetector);
     CommandScheduler.getInstance().registerSubsystem(shooter);
+    CommandScheduler.getInstance().registerSubsystem(turret);
 
         // set up controls
         bindOperatorControls();
@@ -184,9 +186,6 @@ public abstract class RobotBaseOp extends OpMode {
 	double seconds = runtime.deltaTime() / 1000.0;
         double fps = loops / seconds;
 	telem.logBoth("fps", fps);
-
-
-
         telem.update();
     }
 
@@ -218,6 +217,37 @@ public abstract class RobotBaseOp extends OpMode {
     public void init_loop() {
         clearCache();
     }
+    public class StartAutoIntake extends CommandBase{
+        public StartAutoIntake(){
+            addRequirements(transfer);
+        }
+        @Override
+        public void execute() {
+            transfer.pollenBlocked();
+            transfer.runIntake();
+            transfer.runTransfer();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+    public class StopAutoIntake extends CommandBase{
+        public StopAutoIntake(){
+            addRequirements(transfer);
+        }
+        @Override
+        public void execute(){
+            transfer.stopIntake();
+            transfer.stopTransfer();
+            transfer.setCrashBarNothing();
+        }
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+
     public class TriggerHeld extends Trigger {
         GamepadEx pad;
         GamepadKeys.Trigger trigger;
