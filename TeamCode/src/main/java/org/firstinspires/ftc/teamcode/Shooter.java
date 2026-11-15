@@ -100,6 +100,15 @@ public class Shooter extends SubsystemBase {
         shooting = false;
     }
 
+    public boolean isAtSpeed(double toleranceRpm) {
+        if (targetRpm <= 0 || recentVelocity.isEmpty()) {
+            return false;
+        }
+
+        double measuredRpm = recentVelocity.getLast().velocity;
+
+        return Math.abs(targetRpm - measuredRpm) <= toleranceRpm;
+    }
 
     @Override
     public void periodic() {

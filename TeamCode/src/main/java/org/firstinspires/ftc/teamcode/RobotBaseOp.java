@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.button.Trigger;
@@ -67,6 +68,7 @@ public abstract class RobotBaseOp extends OpMode {
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;
     public static double RPM_TOLERANCE = 100;
+    public static double SHOOT_FEED_SECONDS = 1.5;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
     Servo indicatorLight;
     double RED = 0.28;
@@ -251,6 +253,7 @@ public abstract class RobotBaseOp extends OpMode {
     }
     public class AutoShoot extends CommandBase{
         private ShootState state;
+        private final ElapsedTime feedTimer = new ElapsedTime();
         public AutoShoot() {
             addRequirements(shooter);
             addRequirements(transfer);
@@ -266,13 +269,16 @@ public abstract class RobotBaseOp extends OpMode {
                 shooter.setRpm();
                 //fixme: Add turret aim method here
                 if (readyToShoot()) {
-                    state = ShootState.SHOOT;
                     transfer.runTransfer();
                     transfer.runIntake();
                     transfer.pollenUnblocked();
+                    feedTimer.reset();
+                    state = ShootState.SHOOT;
                 }
             } else if (state == ShootState.SHOOT){
-                state = ShootState.DONE;
+                if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
+                    state = ShootState.DONE;
+                }
             }
         }
         public boolean isFinished(){
@@ -289,12 +295,8 @@ public abstract class RobotBaseOp extends OpMode {
         }
     }
     public boolean readyToShoot(){
-        //fixme: make it so turret has to be at position too
-        if (shooter.targetRpm - shooter.recentVelocity.getLast().velocity <= RPM_TOLERANCE ||
-            shooter.targetRpm - shooter.recentVelocity.getLast().velocity >= RPM_TOLERANCE){
-            return true;
-        } else{
-            return false;
+        //fixme: write isReady() in the turret class
+        return shooter.isAtSpeed(RPM_TOLERANCE) && turret.isReady();
         }
     }
 

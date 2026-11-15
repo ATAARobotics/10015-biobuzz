@@ -18,4 +18,9 @@ public class Turret extends SubsystemBase {
         turret = hardwareMap.get(Servo.class, "turret");// servo port 0 on expansion
     }
 
+    public boolean isReady() {
+        // TODO: Check turret alignment.
+        return true;
+    }
+
 }
