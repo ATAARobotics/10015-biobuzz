@@ -100,13 +100,12 @@ public abstract class RobotBaseOp extends OpMode {
 
         tags = new AprilTagProcessor.Builder().build();
 
+        drive = new Drive(hardwareMap, isRedAlliance(), isAuto(), telem);
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessor(tags)
                 .build();
         tipDetector = new TipDetector(tags, telem, getAlliance(),drive);
-
-        drive = new Drive(hardwareMap, isRedAlliance(), isAuto(), telem);
         shooter = new Shooter(hardwareMap, telem);
         transfer = new Transfer(hardwareMap, telem);
         turret = new Turret(hardwareMap, telem);
@@ -237,16 +236,11 @@ public abstract class RobotBaseOp extends OpMode {
         @Override
         public boolean isFinished(){
 
-            return false; // Until cancelled; later check if magazine is full
+            return true; // Until cancelled; later check if magazine is full
         }
 
         @Override
         public void end(boolean interrupted) {
-            transfer.stopIntake();
-            transfer.stopTransfer();
-            transfer.pollenBlocked();
-           // transfer.setCrashBarNothing();
-
         }
     }
     public class StopAutoIntake extends CommandBase{
@@ -257,7 +251,7 @@ public abstract class RobotBaseOp extends OpMode {
         public void execute(){
             transfer.stopIntake();
             transfer.stopTransfer();
-          //  transfer.setCrashBarNothing();
+            transfer.pollenBlocked();
         }
         @Override
         public boolean isFinished(){

@@ -30,7 +30,7 @@ public class Turret extends SubsystemBase {
         this.telem = telem;
         turret = hardwareMap.get(Servo.class, "turret"); // servo port 0 on expansion
         turretHeadingControl = new PIDController(turretP, turretI, turretD);
-        revEncoder = hardwareMap.get(DcMotor.class, "turretEncoder");
+        revEncoder = hardwareMap.get(DcMotor.class, "intake");//reuse intake encoder wire. Port 0 expansion hub
     }
 
     public boolean isReady() {
