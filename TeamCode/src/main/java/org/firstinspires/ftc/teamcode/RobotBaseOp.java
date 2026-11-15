@@ -62,9 +62,11 @@ public abstract class RobotBaseOp extends OpMode {
     public enum StartZone {NEAR, FAR}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
+    public enum ShootState{WAIT_SHOOT, SHOOT, DONE}
     public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;
+    public static double RPM_TOLERANCE = 100;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
     Servo indicatorLight;
     double RED = 0.28;
@@ -247,8 +249,53 @@ public abstract class RobotBaseOp extends OpMode {
             return true;
         }
     }
-    public class Shoot extends CommandBase{
-        public Shoot
+    public class AutoShoot extends CommandBase{
+        private ShootState state;
+        public AutoShoot() {
+            addRequirements(shooter);
+            addRequirements(transfer);
+            addRequirements(turret);
+        }
+        @Override
+        public void initialize(){
+            state = ShootState.WAIT_SHOOT;
+        }
+        @Override
+        public void execute(){
+            if (state == ShootState.WAIT_SHOOT){
+                shooter.setRpm();
+                //fixme: Add turret aim method here
+                if (readyToShoot()) {
+                    state = ShootState.SHOOT;
+                    transfer.runTransfer();
+                    transfer.runIntake();
+                    transfer.pollenUnblocked();
+                }
+            } else if (state == ShootState.SHOOT){
+                state = ShootState.DONE;
+            }
+        }
+        public boolean isFinished(){
+            return state == ShootState.DONE;
+        }
+        public void end(boolean interrupted){
+            if (!interrupted){
+                shooter.stopRpm();
+                //fixme: turret stop tracking
+                transfer.stopTransfer();
+                transfer.stopIntake();
+                transfer.pollenBlocked();
+            }
+        }
+    }
+    public boolean readyToShoot(){
+        //fixme: make it so turret has to be at position too
+        if (shooter.targetRpm - shooter.recentVelocity.getLast().velocity <= RPM_TOLERANCE ||
+            shooter.targetRpm - shooter.recentVelocity.getLast().velocity >= RPM_TOLERANCE){
+            return true;
+        } else{
+            return false;
+        }
     }
 
     public class TriggerHeld extends Trigger {

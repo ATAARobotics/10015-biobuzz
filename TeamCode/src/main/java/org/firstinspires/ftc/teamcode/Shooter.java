@@ -91,6 +91,14 @@ public class Shooter extends SubsystemBase {
             shooting = true;
         }
     }
+    public void setRpm(){
+        targetRpm = SHOOT_RPM + operatorTweak;
+        shooting = true;
+    }
+    public void stopRpm(){
+        targetRpm =0;
+        shooting = false;
+    }
 
 
     @Override
@@ -100,6 +108,7 @@ public class Shooter extends SubsystemBase {
         //telem.logBoth("feedforward", FF);
 
         double v = motor.getVelocity() / 28 * 60; //this gives us rpm
+        double time = timeSinceStart.elapsedTime();
         recentVelocity.addLast(new VelocityData(time, v)); //recent rpm
         while (recentVelocity.size() > dataPoints) {
             recentVelocity.removeFirst();

@@ -102,6 +102,9 @@ public class Transfer extends SubsystemBase {
         public void pollenBlocked(){
             pollenBlocker.setPosition(pollenBlocked);
         }
+    public void pollenUnblocked(){
+        pollenBlocker.setPosition(pollenShooting);
+    }
     public class HumanInputs extends CommandBase {
         GamepadEx operator;
 
