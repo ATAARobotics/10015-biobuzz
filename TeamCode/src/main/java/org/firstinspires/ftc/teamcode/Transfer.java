@@ -50,6 +50,7 @@ public class Transfer extends SubsystemBase {
         //nectarBlocker = hardwareMap.get(Servo.class, "nectarBlocker"); Commented out bc we don't need until next comp
         crashBarServo1 = hardwareMap.get(Servo.class, "crashBar1");
         crashBarServo2 = hardwareMap.get(Servo.class, "crashBar2");
+        // beam break is analog 0 control hub
     }
 
       public void runIntake(){
