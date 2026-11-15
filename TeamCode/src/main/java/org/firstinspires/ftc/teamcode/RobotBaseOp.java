@@ -247,6 +247,9 @@ public abstract class RobotBaseOp extends OpMode {
             return true;
         }
     }
+    public class Shoot extends CommandBase{
+        public Shoot
+    }
 
     public class TriggerHeld extends Trigger {
         GamepadEx pad;
