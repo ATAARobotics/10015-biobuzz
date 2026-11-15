@@ -193,7 +193,7 @@ public abstract class Auto extends RobotBaseOp {
 		new FollowPathCommand(drive.follower, doubleCheckToShootNear()),
 		new AutoShoot(),
 		new Delay(0.5),
-		new FollowPathCommand(drive.follower, shootNearToDoubleCheck())
+		new FollowPathCommand(drive.follower, shootNearToPark())
 	);
 	auto.addCommands(
 		new ConditionalCommand(tipped, notTipped, () -> {return (tipDetector.tip() == TipDetector.TippedSide.UNKNOWN);})
