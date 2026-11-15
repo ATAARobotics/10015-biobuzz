@@ -36,8 +36,8 @@ public abstract class Auto extends RobotBaseOp {
     double yOffset = 8.649;
     boolean noFarSide = false;
     boolean pushToPark = false;
-    boolean doubleCheck = false;
-    boolean basicNearAuto = true;
+    boolean doubleCheck = true;
+    boolean basicNearAuto = false;
     private final Pose startNear = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
     private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
@@ -68,6 +68,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose shootOtherBasket = p.of(58.71, 125, 270);
     private final Pose parkNoGarden = p.of(9.65, 117.57, 0);
     private final Pose controlPointParkNoGarden = p.of(40.49, 94.98, 0);
+    private final Pose controlPointLongPark = p.of(22.32, 23.61, 0);
 
     class Delay extends CommandBase {
         double seconds;
@@ -139,6 +140,9 @@ public abstract class Auto extends RobotBaseOp {
         return curve(generalShootingPositionFar, controlPointParkFar, parkFar).linear(generalShootingPositionFar, parkFar);
     }
 
+    private Path gardenToDoubleCheck(){
+        return line(garden, doubleCheckPartner).linear(garden, doubleCheckPartner);
+    }
     private Path startToDoubleCheck(){
         return line(startNoGarden, doubleCheckPartner).linear(startNoGarden, doubleCheckPartner);
     }
@@ -157,31 +161,49 @@ public abstract class Auto extends RobotBaseOp {
         return curve(shootOtherBasket, controlPointParkNoGarden, parkNoGarden).linear(shootOtherBasket, parkNoGarden);
     }
 
+    private Path shootNearToPark(){
+        return curve(doubleCheckPartner, controlPointLongPark, parkNoGarden).linear(doubleCheckPartner, parkNoGarden);
+    }
+
 
     private Command autoRoutineNear() {
         SequentialCommandGroup auto = new SequentialCommandGroup();
         auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
-        if (doubleCheck) {
-            auto.addCommands(new FollowPathCommand(drive.follower, startToDoubleCheck()));
-            auto.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
-            SequentialCommandGroup tipped = new SequentialCommandGroup();
-            tipped.addCommands(
-                    new FollowPathCommand(drive.follower, doubleCheckToShootNear()),
-                    new Delay(2.0),
-                    new FollowPathCommand(drive.follower, shootNearToDoubleCheck())
-            );
-            SequentialCommandGroup notTipped = new SequentialCommandGroup();
-            tipped.addCommands(
-                    new FollowPathCommand(drive.follower, doubleChecktoShootFar()),
-                    new Delay(2.0),
-                    new FollowPathCommand(drive.follower, shootFarToPark())
-            );
-            auto.addCommands(
-                    new ConditionalCommand(tipped, notTipped, () -> {return (tipDetector.tip() == TipDetector.TippedSide.UNKNOWN);})
-            );
-        }
-        if (basicNearAuto) {
+	auto.addCommands(new AutoShoot());
 
+	auto.addCommands(new StartAutoIntake());
+	auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
+	auto.addCommands(new Delay(2.0));
+	auto.addCommands(new StopAutoIntake());
+	auto.addCommands(new FollowPathCommand(drive.follower, gardenToDoubleCheck()));
+
+	// once at double-check location we decide whether to shoot
+	// from here, or drive to other side
+	SequentialCommandGroup tipped = new SequentialCommandGroup();
+	tipped.addCommands(
+		new FollowPathCommand(drive.follower, doubleChecktoShootFar()),
+		// should we also wait here??
+		//new WaitForTip(TipDetector.TippedSide.SCORING),
+		new AutoShoot(),
+		new Delay(0.5),
+		new FollowPathCommand(drive.follower, shootFarToPark())
+	);
+	SequentialCommandGroup notTipped = new SequentialCommandGroup();
+	notTipped.addCommands(
+		new FollowPathCommand(drive.follower, doubleCheckToShootNear()),
+		new AutoShoot(),
+		new Delay(0.5),
+		new FollowPathCommand(drive.follower, shootNearToPark())
+	);
+	auto.addCommands(
+		new ConditionalCommand(tipped, notTipped, () -> {return (tipDetector.tip() == TipDetector.TippedSide.UNKNOWN);})
+	);
+	return auto;
+    }
+
+    public Command oldNearAuto() {
+        SequentialCommandGroup auto = new SequentialCommandGroup();
+        if (false) {///basicNearAuto) {
             //Shoot preloads first from starting position
             // auto.addCommands(turnLightGreen());
             auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
@@ -214,6 +236,7 @@ public abstract class Auto extends RobotBaseOp {
         }
         return auto;
     }
+
     private Command autoRoutineFar(){
         SequentialCommandGroup autoFar = new SequentialCommandGroup();
         autoFar.addCommands(new InstantCommand(transfer::setCrashBarPollen));
