@@ -318,12 +318,12 @@ public abstract class RobotBaseOp extends OpMode {
     }
     public void toggleAutoShoot(){
         if (shooting != null){
-           // CommandScheduler.getInstance().cancel(shooting);
+	    // CommandScheduler.getInstance().cancel(shooting);
             shooting.userCancel();
             shooting = null;
         } else{
             shooting = new AutoShoot();
-            CommandScheduler.getInstance().schedule(false,shooting);
+            CommandScheduler.getInstance().schedule(false, shooting);
         }
     }
     public boolean readyToShoot(){
