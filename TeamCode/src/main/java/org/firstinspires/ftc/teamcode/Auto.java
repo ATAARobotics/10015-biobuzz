@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.bylazar.gamepad.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
@@ -11,7 +10,6 @@ import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import static com.pedropathing.api.Paths.curve;
 import static com.pedropathing.api.Paths.line;
-import static com.pedropathing.ivy.commands.Commands.waitMs;
 //import static com.pedropathing.ivy.Scheduler.schedule;
 //import static com.pedropathing.ivy.groups.Groups.sequential;
 //import static com.pedropathing.ivy.pedro.PedroCommands.follow;
@@ -38,7 +36,7 @@ public abstract class Auto extends RobotBaseOp {
     boolean pushToPark = false;
     boolean doubleCheck = true;
     boolean basicNearAuto = false;
-    private final Pose startNear = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
+    private final Pose startUp = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
     private final Pose shootNear = p.of(47 + xOffset, yOffset+5, 90);
     private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
@@ -54,7 +52,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose bumpPartner = p.of(10.25,96.33,180); //Push partner into park position
 
     //far auto poses
-    private final Pose startFar = p.of(72 - xOffset, 141 - yOffset, 270);
+    private final Pose startDown = p.of(72 - xOffset, 141 - yOffset, 270);
     private final Pose checkAprilTag = p.of(72-xOffset, (141 - yOffset) + 0.2, 270);
     private final Pose generalShootingPositionFar = p.of(60.96, 132.4, 270);
     private final Pose controlPointSharedBetweenShootAndFlower = p.of(52, 85, 270);
@@ -64,9 +62,9 @@ public abstract class Auto extends RobotBaseOp {
 
     //meet 1, doublecheck auto poses
     private final Pose startNoGarden = p.of(19 - xOffset, 39 - yOffset, 0);
-    private final Pose doubleCheckPartner = p.of(35.3, 37, 270);
+    private final Pose doubleCheckPartner = p.of(58 + xOffset, yOffset + 5.1, 270);
     private final Pose shootInCase = p.of(58.37, 22, 90);
-    private final Pose shootOtherBasket = p.of(58.71, 115, 270);
+    private final Pose shootOtherBasket = p.of(59.71, 115, 270);
     private final Pose parkNoGarden = p.of(9.65+5, 117.57, 0);
     private final Pose controlPointParkNoGarden = p.of(40.49, 94.98, 0);
     private final Pose controlPointLongPark = p.of(22.32, 23.61, 0);
@@ -95,7 +93,7 @@ public abstract class Auto extends RobotBaseOp {
         }
     }
     private Path goToNearShoot(){
-        return line(startNear, shootNear).linear(startNear, shootNear);
+        return line(startUp, shootNear).linear(startUp, shootNear);
     }
     private Path gardenPickUp() {
         return curve(shootNear, controlGarden, garden).linear(shootNear, garden);
@@ -129,7 +127,7 @@ public abstract class Auto extends RobotBaseOp {
     }
     //basic far auto paths
     private Path startToAprilTags(){
-        return line(startFar, checkAprilTag).linear(startFar, checkAprilTag);
+        return line(startDown, checkAprilTag).linear(startDown, checkAprilTag);
     }
     private Path aprilTagToShoot(){
         return line(checkAprilTag, generalShootingPositionFar).linear(checkAprilTag, generalShootingPositionFar);
@@ -172,7 +170,7 @@ public abstract class Auto extends RobotBaseOp {
     private Path gardenIntakePath(){
         return line(garden,gardenIntakeCorner).linear(garden,gardenIntakeCorner);
     }
-    private Command autoRoutineNear() {
+    private Command autoRoutineUp() {
         SequentialCommandGroup auto = new SequentialCommandGroup();
         auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
         auto.addCommands(new FollowPathCommand(drive.follower, goToNearShoot()));
@@ -209,9 +207,9 @@ public abstract class Auto extends RobotBaseOp {
 	return auto;
     }
 
-    public Command oldNearAuto() {
+    public Command oldUpAuto() {
         SequentialCommandGroup auto = new SequentialCommandGroup();
-        if (false) {///basicNearAuto) {
+        if (false) {///basicUpAuto) {
             //Shoot preloads first from starting position
             // auto.addCommands(turnLightGreen());
             auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
@@ -245,19 +243,19 @@ public abstract class Auto extends RobotBaseOp {
         return auto;
     }
 
-    private Command autoRoutineFar(){
-        SequentialCommandGroup autoFar = new SequentialCommandGroup();
-        autoFar.addCommands(new InstantCommand(transfer::setCrashBarPollen));
+    private Command autoRoutineDown(){
+        SequentialCommandGroup autoDown = new SequentialCommandGroup();
+        autoDown.addCommands(new InstantCommand(transfer::setCrashBarPollen));
 
         //basic far auto commands
-        autoFar.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
-        autoFar.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
-        autoFar.addCommands(new FollowPathCommand(drive.follower, aprilTagToShoot()));
-        autoFar.addCommands(new FollowPathCommand(drive.follower, shootToFlowerIntake()));
-        autoFar.addCommands(new FollowPathCommand(drive.follower, flowerToShoot()));
-        autoFar.addCommands(new FollowPathCommand(drive.follower, shootToPark()));
+        autoDown.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
+        autoDown.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
+        autoDown.addCommands(new FollowPathCommand(drive.follower, aprilTagToShoot()));
+        autoDown.addCommands(new FollowPathCommand(drive.follower, shootToFlowerIntake()));
+        autoDown.addCommands(new FollowPathCommand(drive.follower, flowerToShoot()));
+        autoDown.addCommands(new FollowPathCommand(drive.follower, shootToPark()));
 
-        return autoFar;
+        return autoDown;
     }
 
     private final Pose testStart = p.of(73-xOffset, yOffset, 90);
@@ -276,11 +274,11 @@ public abstract class Auto extends RobotBaseOp {
         super.init();
         //Scheduler.reset();
         drive.follower = Constants.create(hardwareMap);
-        if (getStartZone() == StartZone.NEAR){
-            drive.follower.setPose(startNear);
+        if (getStartZone() == StartZone.UP){
+            drive.follower.setPose(startUp);
         }
-        else if(getStartZone() == StartZone.FAR){
-            drive.follower.setPose(startFar);
+        else if(getStartZone() == StartZone.DOWN){
+            drive.follower.setPose(startDown);
         }
         //drive.follower.setPose(testStart);
     }
@@ -308,7 +306,7 @@ public abstract class Auto extends RobotBaseOp {
             doubleCheck = false;
         }
 
-        telemetry.addData("Don't shoot on the other side (when near) \n Dpad up to turn on, b to turn off", noFarSide);
+        telemetry.addData("Don't shoot on the other side (when upside) \n Dpad up to turn on, b to turn off", noFarSide);
         telemetry.addData("Push partner. Dpad down to enable, A to Disable", pushToPark);
         telemetry.addData("Meet 1 with partner. DPAD LEFT to enable, Y to disable.", doubleCheck);
 
@@ -317,11 +315,11 @@ public abstract class Auto extends RobotBaseOp {
     @Override
     public void start() {
         OpmodeStorage.autoRan=true;
-        if(getStartZone() == StartZone.NEAR){
-            CommandScheduler.getInstance().schedule(autoRoutineNear());
+        if(getStartZone() == StartZone.UP){
+            CommandScheduler.getInstance().schedule(autoRoutineUp());
         }
-        else if(getStartZone() == StartZone.FAR){
-            CommandScheduler.getInstance().schedule(autoRoutineFar());
+        else if(getStartZone() == StartZone.DOWN){
+            CommandScheduler.getInstance().schedule(autoRoutineDown());
         }
       //  CommandScheduler.getInstance().schedule(test());
     }

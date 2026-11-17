@@ -130,13 +130,9 @@ public class Drive extends SubsystemBase {
         @Override
         public void execute() {
             // Run wheels in POV mode: use the Right stick to go forward & strafe, the Left stick to rotate left & right.
-            if (isRedAlliance) {
                 strafe = driver.getRightX();
                 forward = -driver.getRightY();
-            } else {
-                strafe = -driver.getRightX();
-                forward = driver.getRightY();
-            }
+
             if (Math.abs(driver.getLeftX()) > 0.1){
                 driverTurn = true;
             }
@@ -150,10 +146,6 @@ public class Drive extends SubsystemBase {
             } else{
                 turbo = false;
             }
-
-            // if we're holding left trigger _currently_, we go to
-            // Turbo -- otherwise to non-Turbo
-            ////turbo(driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5);
         }
     }
 
@@ -182,7 +174,7 @@ public class Drive extends SubsystemBase {
         } else{
             powers = ManualDrive.headingLock(follower, headingLock, powers, targetAngle);
         }
-   //     ManualDrive.driveOrHold(follower, powers);
+        ManualDrive.driveOrHold(follower, powers);
 
         drivebase.setMaxSpeed(turbo ? TURBO_SPEED: MAX_SPEED);
         follower.update();

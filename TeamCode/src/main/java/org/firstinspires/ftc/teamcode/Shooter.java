@@ -32,9 +32,9 @@ public class Shooter extends SubsystemBase {
     SimpleMotorFeedforward rpmFeedforward;
 
     public static double RPM_DROP = 150.0;
-    public static double FF = 0.0002; //November 15 2026
+    public static double FF = 0.00033; //November 16 2026
     public static double KS = 0.1;
-    public static double P = 0.0011; //November 8 2026
+    public static double P = 0.0014; //November 16 2026
     public static double I = 0.00012; //November 8 2026
     public static double D = 0.0;
     public static double AVERAGE_EXPONENT = 1.2;
@@ -45,7 +45,7 @@ public class Shooter extends SubsystemBase {
     MotorEx motor;
     MotorEx motor2;
     double targetRpm = 0.0;
-    public static double SHOOT_RPM = 2600;
+    public static double SHOOT_RPM = 2400; // nov 16
     private boolean shooting = false;
     double operatorTweak = 0;
     int shotCounter = 0;

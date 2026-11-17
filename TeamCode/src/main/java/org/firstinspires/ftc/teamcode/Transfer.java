@@ -18,7 +18,7 @@ public class Transfer extends SubsystemBase {
     private Servo pollenBlocker;
     public static double POLLEN_SHOOT = 0.0;
     public static double POLLEN_BLOCK = 0.2;
-    public static double TRANSFER_TIME = 1.0;  // seconds
+    public static double TRANSFER_TIME = 1.5;  // seconds
     
     public enum IntakeMode {IDLE, IN, OUT}
     public enum TransferMode {IDLE, SHOOT, REJECT}
@@ -41,8 +41,8 @@ public class Transfer extends SubsystemBase {
     private double currentIntakePower = 0.0;
     private double shootStartTime = 0.0;
     
-    public static double minTransferPower = 0.5;//0.29;
-    public static double maxTransferPower = 0.7;//0.29;
+    public static double minTransferPower = 0.45;//0.29;
+    public static double maxTransferPower = 0.8;//0.29;
     //The value of the two crash bars for each position MUST ADD UP TO ONE.
     private final double crashOneStart = 0;
     private final double crashTwoStart = 1;
@@ -60,7 +60,7 @@ public class Transfer extends SubsystemBase {
            transferMotor = new MotorEx(hardwareMap, "transfer");//port 1 expansion
             transferMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // magazineServo = hardwareMap.get(Servo.class, "magazine"); Commented out bc we don't need until next comp
-          pollenBlocker = hardwareMap.get(Servo.class, "pollenBlocker");
+          pollenBlocker = hardwareMap.get(Servo.class, "pollenBlocker"); // port 5 control hub
         //nectarBlocker = hardwareMap.get(Servo.class, "nectarBlocker"); Commented out bc we don't need until next comp
         crashBarServo1 = hardwareMap.get(Servo.class, "crashBar1");
         crashBarServo2 = hardwareMap.get(Servo.class, "crashBar2");
@@ -164,10 +164,10 @@ public class Transfer extends SubsystemBase {
         case IDLE:
             break;
         case IN:
-            intakePower = 0.9;
+            intakePower = -0.9;
             break;
         case OUT:
-            intakePower = -0.9;
+            intakePower = 0.9;
             break;
         }
         intakeMotor.set(intakePower);
@@ -189,6 +189,7 @@ public class Transfer extends SubsystemBase {
             transferPower = -minTransferPower;
             break;
         }
+        telem.log("transfer-power", transferPower);
         transferMotor.set(transferPower);
 
         // crash-bar servos. IMPORTANT: the two values should sum to 1!
@@ -222,13 +223,13 @@ public class Transfer extends SubsystemBase {
 
         @Override
         public void execute() {
-            if (operator.getLeftY() > 0.1){
+          /* if (operator.getLeftY() > 0.1){
                 runIntake();
             } else if (operator.getLeftY() < -0.1){
                 reverseIntake();
             } else{
                  stopIntake();
-             }
+             }*/
         }
     }
 }

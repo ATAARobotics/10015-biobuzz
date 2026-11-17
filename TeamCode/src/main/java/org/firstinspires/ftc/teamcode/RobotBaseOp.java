@@ -61,7 +61,7 @@ public abstract class RobotBaseOp extends OpMode {
     PollenDetector pollenDetector;
     VisionPortal portal;
 
-    public enum StartZone {NEAR, FAR}
+    public enum StartZone {UP, DOWN}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
     public enum ShootState{WAIT_SHOOT, SHOOT, DONE}
@@ -69,7 +69,7 @@ public abstract class RobotBaseOp extends OpMode {
     public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;
-    public static double SHOOT_FEED_SECONDS = 1.5;
+    public static double SHOOT_FEED_SECONDS = 2.8;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
     Servo indicatorLight;
     double RED = 0.28;
@@ -80,7 +80,7 @@ public abstract class RobotBaseOp extends OpMode {
     // we don't actually "know" in teleop, and also shouldn't care, so
     // we provide a default implementation
     public StartZone getStartZone() {
-        return StartZone.NEAR;
+        return StartZone.UP;
     }
 
     public abstract boolean isAuto();
@@ -209,9 +209,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         else{
             if (!isAuto()) {
-            drive.follower.setPose(new Pose(isRedAlliance() ? drive.blueXToRedX(141.5 - yOffset) : 141.5 - yOffset,
-                    isRedAlliance() ? drive.blueYToRedY(47.5 + xOffset) : 47.5 + xOffset,
-                    isRedAlliance() ? Math.toRadians(drive.blueHeadingToRedHeading(180)) : Math.toRadians(180)));
+            drive.follower.setPose(new Pose( 47.5 + xOffset, yOffset, Math.toRadians(90)));
             }
         }
         drive.follower.update();
@@ -291,6 +289,7 @@ public abstract class RobotBaseOp extends OpMode {
                 if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
                     state = ShootState.DONE;
                     stopEverything();
+
                 }
             }
         }

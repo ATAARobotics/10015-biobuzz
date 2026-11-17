@@ -13,6 +13,7 @@ public abstract class TeleOp extends RobotBaseOp {
     @Override
     public void start(){
         super.start();
+        transfer.setCrashBarPollen();
         OpmodeStorage.autoRan=false;
     }
     public boolean isAuto(){
