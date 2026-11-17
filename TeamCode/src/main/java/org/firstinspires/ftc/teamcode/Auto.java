@@ -40,6 +40,7 @@ public abstract class Auto extends RobotBaseOp {
     boolean basicNearAuto = false;
     private final Pose startNear = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
+    private final Pose shootNear = p.of(47 + xOffset, yOffset+5, 90);
     private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
     private final Pose shootFar = p.of(58,118,270);//Shoot at the far side
     private final Pose shootFarControlPoint = p.of(32.1,135.8,270); // control point when driving from garden to far shoot
@@ -63,12 +64,13 @@ public abstract class Auto extends RobotBaseOp {
 
     //meet 1, doublecheck auto poses
     private final Pose startNoGarden = p.of(19 - xOffset, 39 - yOffset, 0);
-    private final Pose doubleCheckPartner = p.of(58.37, 22.98, 270);
+    private final Pose doubleCheckPartner = p.of(35.3, 37, 270);
     private final Pose shootInCase = p.of(58.37, 22, 90);
-    private final Pose shootOtherBasket = p.of(58.71, 125, 270);
-    private final Pose parkNoGarden = p.of(9.65, 117.57, 0);
+    private final Pose shootOtherBasket = p.of(58.71, 115, 270);
+    private final Pose parkNoGarden = p.of(9.65+5, 117.57, 0);
     private final Pose controlPointParkNoGarden = p.of(40.49, 94.98, 0);
     private final Pose controlPointLongPark = p.of(22.32, 23.61, 0);
+    private final Pose gardenIntakeCorner = p.of(8.0,8,270);
 
     class Delay extends CommandBase {
         double seconds;
@@ -92,9 +94,11 @@ public abstract class Auto extends RobotBaseOp {
             return tipDetector.tip() == target;
         }
     }
-
+    private Path goToNearShoot(){
+        return line(startNear, shootNear).linear(startNear, shootNear);
+    }
     private Path gardenPickUp() {
-        return curve(startNear, controlGarden, garden).linear(startNear, garden);
+        return curve(shootNear, controlGarden, garden).linear(shootNear, garden);
     }
     private Path goToFarShoot() {
         return curve(garden, shootFarControlPoint, shootFar).linear(garden, shootFar);
@@ -141,7 +145,7 @@ public abstract class Auto extends RobotBaseOp {
     }
 
     private Path gardenToDoubleCheck(){
-        return line(garden, doubleCheckPartner).linear(garden, doubleCheckPartner);
+        return line(gardenIntakeCorner, doubleCheckPartner).linear(gardenIntakeCorner, doubleCheckPartner);
     }
     private Path startToDoubleCheck(){
         return line(startNoGarden, doubleCheckPartner).linear(startNoGarden, doubleCheckPartner);
@@ -165,14 +169,18 @@ public abstract class Auto extends RobotBaseOp {
         return curve(doubleCheckPartner, controlPointLongPark, parkNoGarden).linear(doubleCheckPartner, parkNoGarden);
     }
 
-
+    private Path gardenIntakePath(){
+        return line(garden,gardenIntakeCorner).linear(garden,gardenIntakeCorner);
+    }
     private Command autoRoutineNear() {
         SequentialCommandGroup auto = new SequentialCommandGroup();
         auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
+        auto.addCommands(new FollowPathCommand(drive.follower, goToNearShoot()));
 	auto.addCommands(new AutoShoot());
-
 	auto.addCommands(new StartAutoIntake());
 	auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
+    auto.addCommands(new Delay(1.0));
+        auto.addCommands(new FollowPathCommand(drive.follower, gardenIntakePath()));
 	auto.addCommands(new Delay(2.0));
 	auto.addCommands(new StopAutoIntake());
 	auto.addCommands(new FollowPathCommand(drive.follower, gardenToDoubleCheck()));
