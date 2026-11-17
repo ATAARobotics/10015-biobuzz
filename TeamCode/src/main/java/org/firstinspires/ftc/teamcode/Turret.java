@@ -18,21 +18,22 @@ public class Turret extends SubsystemBase {
     DcMotor mellonEncoder;
     
     public PIDController control;
-    public static double turretP = 0.011;
+    public static double turretP = 0.01; //turret tuned nov 16
     public static double turretI = 0.0001;
-    public static double turretD = 0;
+    public static double turretD = 0.0005;
     public static double turretF = 0.10;
 
     public static double overridePower = 0.0;
 
     // fixme not static
-    public static double targetAngle = 0.0;
+    public static double targetAngle = -90;
     double servoPower;
     double turretAngle;
     public static final double GEAR_RATIO = 0.4231;
     private static final double TICKS_PER_REV =  4096;
     double error;
     double ticksMoved;
+    double initialTicks;
     double encoderRevs;
     public static double START_ANGLE = -90;
 
@@ -43,6 +44,9 @@ public class Turret extends SubsystemBase {
         mellonEncoder = hardwareMap.get(DcMotor.class, "intake");//reuse intake encoder wire. Port 0 expansion hub
     }
 
+    public void start(){
+        initialTicks = mellonEncoder.getCurrentPosition();
+    }
     public boolean isReady() {
         // TODO: Check turret alignment.
         return true;
@@ -59,7 +63,7 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic(){
         control.setPID(turretP, turretI, turretD);
-        ticksMoved = mellonEncoder.getCurrentPosition();
+        ticksMoved = mellonEncoder.getCurrentPosition() - initialTicks;
         encoderRevs = ticksMoved / TICKS_PER_REV;
         turretAngle = START_ANGLE + encoderRevs * 360 * GEAR_RATIO;
         error = targetAngle - turretAngle;
@@ -93,7 +97,7 @@ public class Turret extends SubsystemBase {
 	    servoPower = 0.0;
 	}
 
-       // turret.set(servoPower);
+        turret.set(servoPower);
     }
 
 }

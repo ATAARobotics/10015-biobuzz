@@ -215,6 +215,7 @@ public abstract class RobotBaseOp extends OpMode {
         drive.follower.update();
         loops = 0;
 	runtime.start();
+    turret.start();
 	//  shooter.start();
     }
 
