@@ -135,16 +135,16 @@ public class Transfer extends SubsystemBase {
 
     public void shoot() {
         shootStartTime = time;
-        transfer.runTransfer();
-        transfer.runIntake();
-        transfer.pollenUnblocked();
+        runTransfer();
+        runIntake();
+        pollenUnblocked();
     }
 
     // opposite of "shoot"
     public void idle() {
-        transfer.stopTransfer();
-        transfer.stopIntake();
-        transfer.pollenBlocked();
+        stopTransfer();
+        stopIntake();
+        pollenBlocked();
     }
     
 

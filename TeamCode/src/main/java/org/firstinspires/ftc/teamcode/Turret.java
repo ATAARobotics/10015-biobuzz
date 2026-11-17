@@ -93,7 +93,7 @@ public class Turret extends SubsystemBase {
 	    servoPower = 0.0;
 	}
 
-        turret.set(servoPower);
+       // turret.set(servoPower);
     }
 
 }
