@@ -22,6 +22,7 @@ public class Turret extends SubsystemBase {
     public static double turretI = 0.0001;
     public static double turretD = 0;
     public static double turretF = 0.10;
+
     public static double overridePower = 0.0;
 
     // fixme not static
@@ -85,10 +86,13 @@ public class Turret extends SubsystemBase {
         // additionally: if we're trying to move "the wrong way" past
         // a soft limit, stop it
         // we use positive servo power to move towards NEGATIVE angles
+	if (servoPower > 0.0 && turretAngle < -100) {
+	    servoPower = 0.0;
+	}
+	if (servoPower < 0.0 && turretAngle > 100) {
+	    servoPower = 0.0;
+	}
 
-        // for debugging
-        if (servoPower > 0.5) servoPower = 0.5;
-        if (servoPower < -0.5) servoPower = -0.5;
         turret.set(servoPower);
     }
 
