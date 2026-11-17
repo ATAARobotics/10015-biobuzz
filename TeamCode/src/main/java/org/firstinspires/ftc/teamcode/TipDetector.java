@@ -38,10 +38,10 @@ public class TipDetector extends SubsystemBase {
                     AprilTagClusterDetection cluster = (AprilTagClusterDetection) tag;
                     telem.log("Cluster", cluster.metadata.name);
                     if (cluster.metadata.name.startsWith("B") && alliance == RobotBaseOp.Alliance.BLUE) {
-                        if (drive.getPosition().getY(DistanceUnit.INCH) < 48 && cluster.metadata.shortName.contains("AUDIENCE")) {
+                        if (drive.getPosition().getY(DistanceUnit.INCH) < 48 && cluster.metadata.shortName.contains("SCORING")) {
+                            tippedSide = TippedSide.SCORING; //Backwards from red side because we are saying blue near side is diagonal from red
+                        } else if (drive.getPosition().getY(DistanceUnit.INCH) > 96 && cluster.metadata.shortName.contains("AUDIENCE")) {
                             tippedSide = TippedSide.AUDIENCE;
-                        } else if (drive.getPosition().getY(DistanceUnit.INCH) > 96 && cluster.metadata.shortName.contains("SCORING")) {
-                            tippedSide = TippedSide.SCORING;
                         }
                     } else if (cluster.metadata.name.startsWith("R") && alliance == RobotBaseOp.Alliance.RED) {
                         if (drive.getPosition().getY(DistanceUnit.INCH) < 48 && cluster.metadata.shortName.contains("AUDIENCE")) {
@@ -50,9 +50,9 @@ public class TipDetector extends SubsystemBase {
                             tippedSide = TippedSide.SCORING;
                         }
                     }
-                    telem.logBoth("Tipped Side:", tippedSide);
                 }
             }
+            telem.logBoth("Tipped Side:", tippedSide);
         }
     }
 

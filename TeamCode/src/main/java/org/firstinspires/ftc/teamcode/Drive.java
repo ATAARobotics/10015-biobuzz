@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.drivebase.MecanumDrive;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -21,7 +22,9 @@ import com.pedropathing.controllers.Controller;
 
 @Configurable
 public class Drive extends SubsystemBase {
-    public static double MAX_SPEED = 0.75;
+    public static double MAX_SPEED = 0.7;
+    public static double TURBO_SPEED = 0.9;
+    boolean turbo = false;
     MecanumDrive drivebase;
     GoBildaPinpointDriver pinpoint;
     Follower follower;
@@ -142,6 +145,12 @@ public class Drive extends SubsystemBase {
             }
             turn = driver.getLeftX();
 
+            if (driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5){
+                turbo = true;
+            } else{
+                turbo = false;
+            }
+
             // if we're holding left trigger _currently_, we go to
             // Turbo -- otherwise to non-Turbo
             ////turbo(driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5);
@@ -174,9 +183,9 @@ public class Drive extends SubsystemBase {
             powers = ManualDrive.headingLock(follower, headingLock, powers, targetAngle);
         }
    //     ManualDrive.driveOrHold(follower, powers);
-        follower.update();
-        drivebase.setMaxSpeed(MAX_SPEED);
 
+        drivebase.setMaxSpeed(turbo ? TURBO_SPEED: MAX_SPEED);
+        follower.update();
         //drivebase.driveFieldCentric(strafe, forward, autoTurn, currentPosition.getHeading(AngleUnit.DEGREES), false);
     }
 }
