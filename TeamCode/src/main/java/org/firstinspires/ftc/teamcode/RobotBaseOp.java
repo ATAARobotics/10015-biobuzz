@@ -163,6 +163,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     protected void readSensors() {
         drive.readSensors(time);
+	transfer.readSensors(time);
     }
 
     protected void readControls() {
@@ -187,6 +188,7 @@ public abstract class RobotBaseOp extends OpMode {
         telem.logBoth("Heading:", drive.currentPosition.getHeading(AngleUnit.DEGREES));
         telem.logBoth("TargetAngle", drive.targetAngle);
         telem.logBoth("currentAngle", drive.currentPosition.getHeading(AngleUnit.DEGREES));
+        telem.logBoth("shooting", shooting==null);
 
 	double seconds = runtime.deltaTime() / 1000.0;
         double fps = loops / seconds;
@@ -228,6 +230,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void execute() {
+	    // todo: move to method in Transfer
             transfer.setCrashBarPollen();
             transfer.pollenBlocked();
             transfer.runIntake();
@@ -249,6 +252,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void execute(){
+	    // todo: move to method in Transfer
             transfer.stopIntake();
             transfer.stopTransfer();
             transfer.pollenBlocked();
@@ -269,9 +273,7 @@ public abstract class RobotBaseOp extends OpMode {
         @Override
         public void initialize(){
             state = ShootState.WAIT_SHOOT;
-            transfer.stopTransfer();
-            transfer.stopIntake();
-            transfer.pollenBlocked();
+	    transfer.idle();
             shooter.setRpm();
             //fixme add turret
            // transfer.setCrashBarNothing(); // TODO confirm this is what we want to do
@@ -280,9 +282,7 @@ public abstract class RobotBaseOp extends OpMode {
         public void execute() {
             if (state == ShootState.WAIT_SHOOT) {
                 if (readyToShoot()) {
-		    transfer.runTransfer();
-		    transfer.runIntake();
-		    transfer.pollenUnblocked();
+		    transfer.shoot();
 		    feedTimer.reset();
 		    state = ShootState.SHOOT;
                 }
@@ -306,9 +306,7 @@ public abstract class RobotBaseOp extends OpMode {
         public void stopEverything(){
             shooter.stopRpm();
             //fixme: turret stop tracking
-            transfer.stopTransfer();
-            transfer.stopIntake();
-            transfer.pollenBlocked();
+	    transfer.idle();
         }
 
         @Override
@@ -348,7 +346,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     @Override
     public void loop() {
-        telem.logBoth("shooting", shooting==null);
+
         loops++;
         clearCache();
         readControls();
