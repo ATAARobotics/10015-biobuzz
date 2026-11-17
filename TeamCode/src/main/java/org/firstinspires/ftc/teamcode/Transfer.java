@@ -16,19 +16,33 @@ public class Transfer extends SubsystemBase {
     private MotorEx intakeMotor;
     private MotorEx transferMotor;
     private Servo pollenBlocker;
-    public static double pollenShooting = 0;
-    public static double pollenBlocked = 0.2;
-    private boolean shooting = false;
+    public static double POLLEN_SHOOT = 0.0;
+    public static double POLLEN_BLOCK = 0.2;
+    public static double TRANSFER_TIME = 1.0;  // seconds
+    
+    public enum IntakeMode {IDLE, IN, OUT}
+    public enum TransferMode {IDLE, SHOOT, REJECT}
+    public enum CrashBarMode {START, NECTAR, POLLEN, NOTHING}
+
     private Servo magazineServo;
     private Servo crashBarServo1;//port 0 control hub
     private Servo crashBarServo2;//port 5 expansion hub
     private Servo nectarBlocker;
 
-    public enum IntakeMode {IN, IDLE}
+    // state of sensors we read
+    private double time;
 
-    private IntakeMode mode = IntakeMode.IDLE;
-    private double intakePower = 1;
-    public static double transferPower = 0.5;//0.29;
+    // the state of things we _want_ which will be set in periodic
+    private boolean shooting = false;
+    private double accelStartTime;
+    private IntakeMode intakeMode = IntakeMode.IDLE;
+    private TransferMode transferMode = TransferMode.IDLE;
+    private CrashBarMode crashMode = CrashBarMode.START;
+    private double currentIntakePower = 0.0;
+    private double shootStartTime = 0.0;
+    
+    public static double minTransferPower = 0.5;//0.29;
+    public static double maxTransferPower = 0.7;//0.29;
     //The value of the two crash bars for each position MUST ADD UP TO ONE.
     private final double crashOneStart = 0;
     private final double crashTwoStart = 1;
@@ -53,59 +67,151 @@ public class Transfer extends SubsystemBase {
         // beam break is analog 0 control hub
     }
 
-      public void runIntake(){
-          intakeMotor.set(-intakePower);
-      }
-      public void reverseIntake(){
-          intakeMotor.set(intakePower);
-      }
+    public void readSensors(double time) {
+        this.time = time;
+    }
+
+    public void runIntake(){
+        intakeMode = IntakeMode.IN;
+    }
+
+    public void reverseIntake(){
+        intakeMode = IntakeMode.OUT;
+    }
+    
     public void stopIntake(){
-        intakeMotor.set(0);
+        intakeMode = IntakeMode.IDLE;
     }
-      public void runTransfer(){
-          transferMotor.set(transferPower);
-      }
-      public void reverseTransfer(){
-          transferMotor.set(-transferPower);
-      }
-      public void stopTransfer(){
-        transferMotor.set(0);
-      }
+
+    public void runTransfer(){
+        transferMode = TransferMode.SHOOT;
+    }
+    
+    public void reverseTransfer(){
+        transferMode = TransferMode.REJECT;
+    }
+
+    public void stopTransfer(){
+        transferMode = TransferMode.IDLE;
+    }
+
     public void setCrashBarNothing() {
-            crashBarServo1.setPosition(crashOneNothing);
-            crashBarServo2.setPosition(crashTwoNothing);
+        crashMode = CrashBarMode.NOTHING;
     }
+    //       crashBarServo1.setPosition(crashOneNothing);
+    //      crashBarServo2.setPosition(crashTwoNothing);
 
     public void setCrashBarNectar() {
+        crashMode = CrashBarMode.NECTAR;
+    }
+    //crashBarServo1.setPosition(crashOneNectar);
+    //crashBarServo2.setPosition(crashTwoNectar);
+
+    public void setCrashBarPollen() {
+        crashMode = CrashBarMode.POLLEN;
+    }
+
+    //crashBarServo1.setPosition(crashOnePollen);
+    //crashBarServo2.setPosition(crashTwoPollen);
+
+    public void setCrashBarStart() {
+        crashMode = CrashBarMode.START;
+    }
+
+    //crashBarServo1.setPosition(crashOneStart);
+    //crashBarServo2.setPosition(crashTwoStart);
+
+    public void togglePollenBlocker() {
+        shooting = !shooting;
+    }
+    
+    public void pollenBlocked() {
+        shooting = false;
+    }
+    
+    public void pollenUnblocked(){
+        shooting = true;
+    }
+
+    public void shoot() {
+        shootStartTime = time;
+        transfer.runTransfer();
+        transfer.runIntake();
+        transfer.pollenUnblocked();
+    }
+
+    // opposite of "shoot"
+    public void idle() {
+        transfer.stopTransfer();
+        transfer.stopIntake();
+        transfer.pollenBlocked();
+    }
+    
+
+    // set motors and servos properly in here (only)
+    @Override
+    public void periodic() {
+        // shot-blocker servo
+        if (shooting) {
+            pollenBlocker.setPosition(POLLEN_SHOOT);
+        } else {
+            pollenBlocker.setPosition(POLLEN_BLOCK);
+        }
+
+        // intake motor
+        double intakePower = 0.0;
+        switch (intakeMode) {
+        case IDLE:
+            break;
+        case IN:
+            intakePower = 0.9;
+            break;
+        case OUT:
+            intakePower = -0.9;
+            break;
+        }
+        intakeMotor.set(intakePower);
+
+        // transfer
+        double transferPower = 0.0;
+        // figure out how far we are between start-time and end-time of transfer
+        double percentTransfer = (time - shootStartTime) / TRANSFER_TIME;
+        if (percentTransfer < 0.0) percentTransfer = 0.0;
+        if (percentTransfer > 1.0) percentTransfer = 1.0;
+
+        switch (transferMode) {
+        case IDLE:
+            break;
+        case SHOOT:
+            transferPower = minTransferPower + (percentTransfer * (maxTransferPower - minTransferPower));
+            break;
+        case REJECT:
+            transferPower = -minTransferPower;
+            break;
+        }
+        transferMotor.set(transferPower);
+
+        // crash-bar servos. IMPORTANT: the two values should sum to 1!
+        switch (crashMode) {
+        case START:
+            crashBarServo1.setPosition(crashOneStart);
+            crashBarServo2.setPosition(crashTwoStart);
+            break;
+        case NECTAR:
             crashBarServo1.setPosition(crashOneNectar);
             crashBarServo2.setPosition(crashTwoNectar);
+            break;
+        case POLLEN:
+            crashBarServo1.setPosition(crashOnePollen);
+            crashBarServo2.setPosition(crashTwoPollen);
+            break;
+        case NOTHING:
+            crashBarServo1.setPosition(crashOneNothing);
+            crashBarServo2.setPosition(crashTwoNothing);
+            break;
+        }
     }
-        public void setCrashBarPollen() {
-                crashBarServo1.setPosition(crashOnePollen);
-                crashBarServo2.setPosition(crashTwoPollen);
 
-        }
-        public void setCrashBarStart() {
-                crashBarServo1.setPosition(crashOneStart);
-                crashBarServo2.setPosition(crashTwoStart);
-        }
-
-        public void togglePollenBlocker(){
-            if (shooting){
-                pollenBlocker.setPosition(pollenBlocked);
-                shooting = false;
-            }
-            else{
-                pollenBlocker.setPosition(pollenShooting);
-                shooting = true;
-            }
-        }
-        public void pollenBlocked(){
-            pollenBlocker.setPosition(pollenBlocked);
-        }
-    public void pollenUnblocked(){
-        pollenBlocker.setPosition(pollenShooting);
-    }
     public class HumanInputs extends CommandBase {
         GamepadEx operator;
 

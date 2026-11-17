@@ -163,6 +163,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     protected void readSensors() {
         drive.readSensors(time);
+	transfer.readSensors(time);
     }
 
     protected void readControls() {
@@ -228,6 +229,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void execute() {
+	    // todo: move to method in Transfer
             transfer.setCrashBarPollen();
             transfer.pollenBlocked();
             transfer.runIntake();
@@ -249,6 +251,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void execute(){
+	    // todo: move to method in Transfer
             transfer.stopIntake();
             transfer.stopTransfer();
             transfer.pollenBlocked();
@@ -269,9 +272,7 @@ public abstract class RobotBaseOp extends OpMode {
         @Override
         public void initialize(){
             state = ShootState.WAIT_SHOOT;
-            transfer.stopTransfer();
-            transfer.stopIntake();
-            transfer.pollenBlocked();
+	    transfer.idle();
             shooter.setRpm();
             //fixme add turret
            // transfer.setCrashBarNothing(); // TODO confirm this is what we want to do
@@ -280,9 +281,7 @@ public abstract class RobotBaseOp extends OpMode {
         public void execute() {
             if (state == ShootState.WAIT_SHOOT) {
                 if (readyToShoot()) {
-		    transfer.runTransfer();
-		    transfer.runIntake();
-		    transfer.pollenUnblocked();
+		    transfer.shoot();
 		    feedTimer.reset();
 		    state = ShootState.SHOOT;
                 }
@@ -306,9 +305,7 @@ public abstract class RobotBaseOp extends OpMode {
         public void stopEverything(){
             shooter.stopRpm();
             //fixme: turret stop tracking
-            transfer.stopTransfer();
-            transfer.stopIntake();
-            transfer.pollenBlocked();
+	    transfer.idle();
         }
 
         @Override
