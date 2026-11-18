@@ -303,8 +303,8 @@ public abstract class RobotBaseOp extends OpMode {
             return state == ShootState.DONE;
         }
         public void stopEverything(){
-            shooter.stopRpm();
-            //fixme: turret stop tracking
+	    shooter.stopRpm();
+	    turret.faceRobotAngle(-90.0);
 	    transfer.idle();
         }
 
