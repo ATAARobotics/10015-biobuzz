@@ -64,12 +64,13 @@ public abstract class RobotBaseOp extends OpMode {
     public enum StartZone {UP, DOWN}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
-    public enum ShootState{WAIT_SHOOT, SHOOT, DONE}
+    public enum ShootState{WAIT_SHOOT, SHOOT, REJECT, DONE}
     public AutoShoot shooting = null;
     public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;
     public static double SHOOT_FEED_SECONDS = 2.8;
+    public static double REJECT_SECONDS = 0.45;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
     Servo indicatorLight;
     double RED = 0.28;
@@ -264,6 +265,8 @@ public abstract class RobotBaseOp extends OpMode {
     public class AutoShoot extends CommandBase{
         private ShootState state;
         private final ElapsedTime feedTimer = new ElapsedTime();
+        private final ElapsedTime rejectTimer = new ElapsedTime();
+	
         public AutoShoot() {
             addRequirements(shooter);
             addRequirements(transfer);
@@ -274,24 +277,38 @@ public abstract class RobotBaseOp extends OpMode {
             state = ShootState.WAIT_SHOOT;
 	    transfer.idle();
 	    shooter.setRpm();
-            //fixme add turret
+	    //fixme: track target
+	    turret.faceRobotAngle(0.0);
         }
         @Override
         public void execute() {
-            if (state == ShootState.WAIT_SHOOT) {
+	    switch (state) {
+	    case WAIT_SHOOT:
                 if (readyToShoot()) {
 		    transfer.shoot();
 		    feedTimer.reset();
 		    state = ShootState.SHOOT;
                 }
-            }
-            else if (state == ShootState.SHOOT) {
-                if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
-                    state = ShootState.DONE;
-                    stopEverything();
+		break;
 
+	    case SHOOT:
+                if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
+                    state = ShootState.REJECT;
+		    transfer.reverseTransfer();
+		    rejectTimer.reset();
                 }
-            }
+		break;
+
+	    case REJECT:
+		if (rejectTimer.seconds() >= REJECT_SECONDS) {
+		    state = ShootState.DONE;
+		    stopEverything();
+		}
+		break;
+
+	    case DONE:
+		break;
+	    }
         }
         public void userCancel(){
             state = ShootState.DONE;
