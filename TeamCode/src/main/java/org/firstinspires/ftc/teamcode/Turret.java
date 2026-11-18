@@ -22,6 +22,7 @@ public class Turret extends SubsystemBase {
     public static double turretI = 0.0001;
     public static double turretD = 0.0005;
     public static double turretF = 0.10;
+    public static double ALIGNMENT_TOLERANCE = 4.0; // degrees
 
     public static double overridePower = 0.0;
 
@@ -48,8 +49,7 @@ public class Turret extends SubsystemBase {
         initialTicks = mellonEncoder.getCurrentPosition();
     }
     public boolean isReady() {
-        // TODO: Check turret alignment.
-        return true;
+	return (error < ALIGNMENT_TOLERANCE);
     }
     public void faceRobotAngle(double angle) {
         double maxAngle = 160;
