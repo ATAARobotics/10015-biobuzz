@@ -69,8 +69,8 @@ public abstract class RobotBaseOp extends OpMode {
     public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
     public static double POLLEN_D = 0.0001;
-    public static double SHOOT_FEED_SECONDS = 2.8;
-    public static double REJECT_SECONDS = 0.45;
+    public static double SHOOT_FEED_SECONDS = 2.4;
+    public static double REJECT_SECONDS = 0.30;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
     Servo indicatorLight;
     double RED = 0.28;
@@ -332,7 +332,6 @@ public abstract class RobotBaseOp extends OpMode {
     }
 
     public boolean readyToShoot(){
-        //fixme: write isReady() in the turret class
         return shooter.isAtSpeed() && turret.isReady();
     }
 
