@@ -17,7 +17,7 @@ public class Transfer extends SubsystemBase {
     private MotorEx transferMotor;
     private Servo pollenBlocker;
     public static double POLLEN_SHOOT = 0.0;
-    public static double POLLEN_BLOCK = 0.16; // nov 17
+    public static double POLLEN_BLOCK = 0.18; // nov 17
 
     // adjusted november 17
     public static double TRANSFER_TIME = 1.2;  // seconds
