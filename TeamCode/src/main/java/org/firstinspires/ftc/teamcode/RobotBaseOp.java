@@ -273,9 +273,8 @@ public abstract class RobotBaseOp extends OpMode {
         public void initialize(){
             state = ShootState.WAIT_SHOOT;
 	    transfer.idle();
-            shooter.setRpm();
+	    shooter.setRpm();
             //fixme add turret
-           // transfer.setCrashBarNothing(); // TODO confirm this is what we want to do
         }
         @Override
         public void execute() {
@@ -314,16 +313,7 @@ public abstract class RobotBaseOp extends OpMode {
             //    stopEverything();
         }
     }
-    public void toggleAutoShoot(){
-        if (shooting != null){
-	    // CommandScheduler.getInstance().cancel(shooting);
-            shooting.userCancel();
-            shooting = null;
-        } else{
-            shooting = new AutoShoot();
-            CommandScheduler.getInstance().schedule(false, shooting);
-        }
-    }
+
     public boolean readyToShoot(){
         //fixme: write isReady() in the turret class
         return shooter.isAtSpeed() && turret.isReady();

@@ -17,8 +17,12 @@ public class Transfer extends SubsystemBase {
     private MotorEx transferMotor;
     private Servo pollenBlocker;
     public static double POLLEN_SHOOT = 0.0;
-    public static double POLLEN_BLOCK = 0.2;
-    public static double TRANSFER_TIME = 1.5;  // seconds
+    public static double POLLEN_BLOCK = 0.16; // nov 17
+
+    // adjusted november 17
+    public static double TRANSFER_TIME = 1.2;  // seconds
+    public static double MIN_TRANSFER = 0.65;
+    public static double MAX_TRANSFER = 1.0;
     
     public enum IntakeMode {IDLE, IN, OUT}
     public enum TransferMode {IDLE, SHOOT, REJECT}
@@ -41,8 +45,6 @@ public class Transfer extends SubsystemBase {
     private double currentIntakePower = 0.0;
     private double shootStartTime = 0.0;
     
-    public static double minTransferPower = 0.45;//0.29;
-    public static double maxTransferPower = 0.8;//0.29;
     //The value of the two crash bars for each position MUST ADD UP TO ONE.
     private final double crashOneStart = 0;
     private final double crashTwoStart = 1;
@@ -183,10 +185,10 @@ public class Transfer extends SubsystemBase {
         case IDLE:
             break;
         case SHOOT:
-            transferPower = minTransferPower + (percentTransfer * (maxTransferPower - minTransferPower));
+            transferPower = MIN_TRANSFER + (percentTransfer * (MAX_TRANSFER - MIN_TRANSFER));
             break;
         case REJECT:
-            transferPower = -minTransferPower;
+            transferPower = -MIN_TRANSFER;
             break;
         }
         telem.log("transfer-power", transferPower);

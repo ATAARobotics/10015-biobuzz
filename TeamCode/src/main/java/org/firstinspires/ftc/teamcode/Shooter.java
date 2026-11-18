@@ -16,7 +16,7 @@ import java.util.LinkedList;
 
 @Configurable
 public class Shooter extends SubsystemBase {
-    public static int dataPoints = 30;
+    public static int DATA_POINTS = 30;
 
     class VelocityData {
         public double time;
@@ -45,6 +45,7 @@ public class Shooter extends SubsystemBase {
     MotorEx motor;
     MotorEx motor2;
     double targetRpm = 0.0;
+    double averageRpm = 0.0;
     public static double SHOOT_RPM = 2400; // nov 16
     private boolean shooting = false;
     double operatorTweak = 0;
@@ -107,9 +108,11 @@ public class Shooter extends SubsystemBase {
             return false;
         }
 
+        return Math.abs(targetRpm - averageRpm) <= RPM_TOLERANCE;
+	/*	
         double measuredRpm = recentVelocity.getLast().velocity;
-
         return Math.abs(targetRpm - measuredRpm) <= RPM_TOLERANCE;
+	*/
     }
 
     @Override
@@ -121,7 +124,7 @@ public class Shooter extends SubsystemBase {
         double v = motor.getVelocity() / 28 * 60; //this gives us rpm
         double time = timeSinceStart.elapsedTime();
         recentVelocity.addLast(new VelocityData(time, v)); //recent rpm
-        while (recentVelocity.size() > dataPoints) {
+        while (recentVelocity.size() > DATA_POINTS) {
             recentVelocity.removeFirst();
         }
         double total = 0.0;
@@ -133,6 +136,9 @@ public class Shooter extends SubsystemBase {
             amount *= AVERAGE_EXPONENT; //1.0 is equal to normal average, more than that
             //creates an exponential graph
         }
+
+	averageRpm = total / totalAmount;
+	
         rpmHistory.add(recentVelocity.getLast().velocity);
         while (rpmHistory.size() > MAX_SAMPLES) {
             rpmHistory.removeFirst();
@@ -174,8 +180,9 @@ public class Shooter extends SubsystemBase {
             motor.set(motorPower);
 
             telem.log("shooter-motorPower", motorPower);
-            telem.logBoth("RPM", v);
-            telem.logBoth("targetRpm", targetRpm);
+            telem.logBoth("shooter-rpm-instant", v);
+            telem.logBoth("shooter-rpm-average", averageRpm);
+            telem.logBoth("shooter-rpm-target", targetRpm);
         }
     }
 }
