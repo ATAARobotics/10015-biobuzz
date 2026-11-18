@@ -119,7 +119,6 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         rpmController.setPID(P, I, D);
         rpmFeedforward = new SimpleMotorFeedforward(0.0, FF);
-        //telem.logBoth("feedforward", FF);
 
         double v = motor.getVelocity() / 28 * 60; //this gives us rpm
         double time = timeSinceStart.elapsedTime();
@@ -180,9 +179,9 @@ public class Shooter extends SubsystemBase {
             motor.set(motorPower);
 
             telem.log("shooter-motorPower", motorPower);
-            telem.logBoth("shooter-rpm-instant", v);
-            telem.logBoth("shooter-rpm-average", averageRpm);
-            telem.logBoth("shooter-rpm-target", targetRpm);
+            telem.log("shooter-rpm-instant", v);
+            telem.log("shooter-rpm-average", averageRpm);
+            telem.log("shooter-rpm-target", targetRpm);
         }
     }
 }

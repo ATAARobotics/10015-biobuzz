@@ -20,8 +20,9 @@ public class Transfer extends SubsystemBase {
     public static double POLLEN_BLOCK = 0.18; // nov 17
 
     // adjusted november 17
-    public static double TRANSFER_TIME = 1.2;  // seconds
-    public static double MIN_TRANSFER = 0.65;
+    public static double TRANSFER_TIME = 1.0;  // seconds
+    public static double RAMP_START = 0.70;
+    public static double MIN_TRANSFER = 0.66;
     public static double MAX_TRANSFER = 1.0;
     
     public enum IntakeMode {IDLE, IN, OUT}
@@ -177,15 +178,21 @@ public class Transfer extends SubsystemBase {
         // transfer
         double transferPower = 0.0;
         // figure out how far we are between start-time and end-time of transfer
-        double percentTransfer = (time - shootStartTime) / TRANSFER_TIME;
-        if (percentTransfer < 0.0) percentTransfer = 0.0;
-        if (percentTransfer > 1.0) percentTransfer = 1.0;
+	double elapsed = time - shootStartTime;
 
         switch (transferMode) {
         case IDLE:
             break;
         case SHOOT:
-            transferPower = MIN_TRANSFER + (percentTransfer * (MAX_TRANSFER - MIN_TRANSFER));
+	    if (elapsed < RAMP_START) {
+		transferPower = MIN_TRANSFER;
+	    } else {
+		// what % we are through the ramp -> end
+		double percentTransfer = (elapsed - RAMP_START) / (TRANSFER_TIME - RAMP_START);
+		if (percentTransfer < 0.0) percentTransfer = 0.0;
+		if (percentTransfer > 1.0) percentTransfer = 1.0;
+		transferPower = MIN_TRANSFER + (percentTransfer * (MAX_TRANSFER - MIN_TRANSFER));
+	    }
             break;
         case REJECT:
             transferPower = -MIN_TRANSFER;

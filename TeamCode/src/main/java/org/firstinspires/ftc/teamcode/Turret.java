@@ -77,9 +77,9 @@ public class Turret extends SubsystemBase {
             servoPower += Math.signum(servoPower) * turretF;
         }
         
-        telem.logBoth("turret-angle", turretAngle);
-        telem.logBoth("turret-error", error);
-        telem.logBoth("turret-power", servoPower);
+        telem.log("turret-angle", turretAngle);
+        telem.log("turret-error", error);
+        telem.log("turret-power", servoPower);
 
         if (overridePower != 0) servoPower = overridePower;
 

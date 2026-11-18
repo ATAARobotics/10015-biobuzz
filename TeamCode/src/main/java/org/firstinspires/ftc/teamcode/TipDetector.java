@@ -52,7 +52,7 @@ public class TipDetector extends SubsystemBase {
                     }
                 }
             }
-            telem.logBoth("Tipped Side:", tippedSide);
+            telem.log("tip-side", tippedSide);
         }
     }
 
