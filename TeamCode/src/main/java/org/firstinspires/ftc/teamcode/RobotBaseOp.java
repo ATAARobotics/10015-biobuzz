@@ -116,7 +116,7 @@ public abstract class RobotBaseOp extends OpMode {
         tipDetector = new TipDetector(tags, telem, getAlliance(),drive);
         shooter = new Shooter(hardwareMap, telem);
         transfer = new Transfer(hardwareMap, telem);
-        turret = new Turret(hardwareMap, telem);
+        turret = new Turret(hardwareMap, telem, drive);
 
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
@@ -356,6 +356,13 @@ public abstract class RobotBaseOp extends OpMode {
 
     @Override
     public void loop() {
+
+
+        loops++;
+        clearCache();
+        readControls();
+        readSensors();
+
         double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
         double robotX = drive.getPosition().getX(DistanceUnit.INCH);
         double robotY = drive.getPosition().getY(DistanceUnit.INCH);
@@ -375,12 +382,7 @@ public abstract class RobotBaseOp extends OpMode {
 
 
 
-        loops++;
-        clearCache();
-        readControls();
-        readSensors();
-
-	// subsystems can log things
+        // subsystems can log things
 	logTelemetry();
 
 	// let the command scheduler do stuff

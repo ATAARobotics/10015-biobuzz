@@ -39,8 +39,9 @@ public class Turret extends SubsystemBase {
     double operatorOffset;
     double OPERATOR_INCREMENT = 1;
 
-    public Turret(HardwareMap hardwareMap, HyperTelemetry telem){
+    public Turret(HardwareMap hardwareMap, HyperTelemetry telem, Drive drive){
         this.telem = telem;
+        this.drive = drive;
         turret = new CRServo(hardwareMap, "turret"); // servo port 0 on expansion
         control = new PIDController(turretP, turretI, turretD);
         melonEncoder = hardwareMap.get(DcMotor.class, "intake");//reuse intake encoder wire. Port 0 expansion hub
@@ -50,7 +51,7 @@ public class Turret extends SubsystemBase {
         initialTicks = melonEncoder.getCurrentPosition();
     }
     public boolean isReady() {
-	return (error < ALIGNMENT_TOLERANCE);
+	return (Math.abs(error) < ALIGNMENT_TOLERANCE);
     }
     public void faceRobotAngle(double angle) {
         double maxAngle = 160;
