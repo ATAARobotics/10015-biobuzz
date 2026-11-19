@@ -1,21 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.hardware.motors.CRServo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
-import com.seattlesolvers.solverslib.controller.PIDFController;
-import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Configurable
 public class Turret extends SubsystemBase {
     HyperTelemetry telem;
-
+    Drive drive;
     CRServo turret;
-    DcMotor mellonEncoder;
+    DcMotor melonEncoder;
     
     public PIDController control;
     public static double turretP = 0.01; //turret tuned nov 16
@@ -27,7 +26,7 @@ public class Turret extends SubsystemBase {
     public static double overridePower = 0.0;
 
     // fixme not static
-    public static double targetAngle = -90;
+    public static double targetHeading = -90;
     double servoPower;
     double turretAngle;
     public static final double GEAR_RATIO = 0.4231;
@@ -37,16 +36,18 @@ public class Turret extends SubsystemBase {
     double initialTicks;
     double encoderRevs;
     public static double START_ANGLE = -90;
+    double operatorOffset;
+    double OPERATOR_INCREMENT = 1;
 
     public Turret(HardwareMap hardwareMap, HyperTelemetry telem){
         this.telem = telem;
         turret = new CRServo(hardwareMap, "turret"); // servo port 0 on expansion
         control = new PIDController(turretP, turretI, turretD);
-        mellonEncoder = hardwareMap.get(DcMotor.class, "intake");//reuse intake encoder wire. Port 0 expansion hub
+        melonEncoder = hardwareMap.get(DcMotor.class, "intake");//reuse intake encoder wire. Port 0 expansion hub
     }
 
     public void start(){
-        initialTicks = mellonEncoder.getCurrentPosition();
+        initialTicks = melonEncoder.getCurrentPosition();
     }
     public boolean isReady() {
 	return (error < ALIGNMENT_TOLERANCE);
@@ -55,18 +56,47 @@ public class Turret extends SubsystemBase {
         double maxAngle = 160;
         if (angle < -maxAngle) angle = -maxAngle;
         if (angle > maxAngle) angle = maxAngle;
-        targetAngle = angle;
+        targetHeading = angle;
         // "set point" is always zero and we compute the error ourselves
         control.setSetPoint(0);
+    }
+    public static double wrapAngle(double angleError) {
+        angleError %= 360; // limit angle between -360 and +360
+        if (angleError > 180)
+            angleError -= 360;
+        else if (angleError <= -180)
+            angleError += 360;
+        return angleError;
+    }
+    public void faceFieldAngle(double fieldAngleDeg) {
+        double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
+        double robotRelative = fieldAngleDeg + operatorOffset - robotHeading;
+        robotRelative = wrapAngle(robotRelative);
+
+        if (robotRelative == 0.0) {
+            // way too late to figure this massive weirdness out -- if
+            // we call faceRobotAngle() with EXACTLY 0.0 then it wants
+            // to go to 21.something degress (!!!??? what) fixme: Code from last year. figure out why?
+            robotRelative = 0.000001;
+        }
+
+        // Reuse existing robot-relative method
+        faceRobotAngle(robotRelative);
+    }
+    public void plusOperatorTweak(){
+        operatorOffset += OPERATOR_INCREMENT;
+    }
+    public void minusOperatorTweak(){
+        operatorOffset -= OPERATOR_INCREMENT;
     }
 
     @Override
     public void periodic(){
         control.setPID(turretP, turretI, turretD);
-        ticksMoved = mellonEncoder.getCurrentPosition() - initialTicks;
+        ticksMoved = melonEncoder.getCurrentPosition() - initialTicks;
         encoderRevs = ticksMoved / TICKS_PER_REV;
         turretAngle = START_ANGLE + encoderRevs * 360 * GEAR_RATIO;
-        error = targetAngle - turretAngle;
+        error = targetHeading - turretAngle;
 
         servoPower = control.calculate(error);
 

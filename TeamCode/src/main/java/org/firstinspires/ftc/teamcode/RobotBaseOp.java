@@ -42,6 +42,13 @@ import java.util.List;
 public abstract class RobotBaseOp extends OpMode {
     double xOffset = 8.124;
     double yOffset = 8.649;
+    public static double TARGET_X = 57.0; // Nov 18
+    public static double TARGET_Y_UPSIDE = 52.17; //Nov 18
+    public static double TARGET_Y_DOWNSIDE;
+    double ROBOT_CENTER_TO_TURRET = 6.4; //fixme actually get this number from CAD, this is a guess
+    public double turretX;
+    public double turretY;
+    double geometricTargetHeading;
     HyperTelemetry telem;
     GamepadEx driver;
     GamepadEx operator;
@@ -271,14 +278,14 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void initialize(){
-            state = ShootState.WAIT_SHOOT;
+        state = ShootState.WAIT_SHOOT;
 	    transfer.idle();
 	    shooter.setRpm();
-	    //fixme: track target
-	    turret.faceRobotAngle(0.0);
+	    turret.faceFieldAngle(geometricTargetHeading);
         }
         @Override
         public void execute() {
+        turret.faceFieldAngle(geometricTargetHeading);
 	    switch (state) {
 	    case WAIT_SHOOT:
                 if (readyToShoot()) {
@@ -349,6 +356,24 @@ public abstract class RobotBaseOp extends OpMode {
 
     @Override
     public void loop() {
+        double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
+        double robotX = drive.getPosition().getX(DistanceUnit.INCH);
+        double robotY = drive.getPosition().getY(DistanceUnit.INCH);
+
+        double targetY;
+        TARGET_Y_DOWNSIDE = 141.5 - TARGET_Y_UPSIDE;
+        if (drive.getPosition().getY(DistanceUnit.INCH) > 70.75){
+            targetY = TARGET_Y_DOWNSIDE;
+        } else{
+            targetY = TARGET_Y_UPSIDE;
+        }
+
+        turretX = robotX - (ROBOT_CENTER_TO_TURRET * Math.cos(robotHeading));
+        turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.sin(robotHeading));
+
+        geometricTargetHeading = Math.toDegrees(Math.atan2(targetY - turretY, TARGET_X - turretX));
+
+
 
         loops++;
         clearCache();
