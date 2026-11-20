@@ -38,7 +38,7 @@ public abstract class Auto extends RobotBaseOp {
     boolean basicNearAuto = false;
     private final Pose startUp = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
-    private final Pose shootNear = p.of(47 + xOffset, yOffset+5, 90);
+    private final Pose shootNear = p.of(47 + xOffset, yOffset+3, 90);
     private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
     private final Pose shootFar = p.of(58,118,270);//Shoot at the far side
     private final Pose shootFarControlPoint = p.of(32.1,135.8,270); // control point when driving from garden to far shoot
@@ -63,9 +63,9 @@ public abstract class Auto extends RobotBaseOp {
     //meet 1, doublecheck auto poses
     private final Pose startNoGarden = p.of(19 - xOffset, 39 - yOffset, 0);
     private final Pose doubleCheckPartner = p.of(58 + xOffset, yOffset + 5.1, 270);
-    private final Pose shootInCase = p.of(58.37, 22, 90);
+    private final Pose shootInCase = p.of(58.37, 17, 90);
     private final Pose shootOtherBasket = p.of(59.71, 115, 270);
-    private final Pose parkNoGarden = p.of(9.65+5, 117.57, 0);
+    private final Pose parkNoGarden = p.of(9.65+8, 117.57, 0);
     private final Pose controlPointParkNoGarden = p.of(40.49, 94.98, 0);
     private final Pose controlPointLongPark = p.of(22.32, 23.61, 0);
     private final Pose gardenIntakeCorner = p.of(8.0,8,270);
@@ -149,10 +149,10 @@ public abstract class Auto extends RobotBaseOp {
         return line(startNoGarden, doubleCheckPartner).linear(startNoGarden, doubleCheckPartner);
     }
     private Path doubleCheckToShootNear(){
-        return line(doubleCheckPartner, shootInCase).linear(doubleCheckPartner, shootInCase);
+        return line(doubleCheckPartner, shootNear).linear(doubleCheckPartner, shootNear);
     }
     private Path shootNearToDoubleCheck(){
-        return line(shootInCase, doubleCheckPartner).linear(shootInCase, doubleCheckPartner);
+        return line(shootNear, doubleCheckPartner).linear(shootNear, doubleCheckPartner);
     }
 
     private Path doubleChecktoShootFar(){
@@ -181,7 +181,9 @@ public abstract class Auto extends RobotBaseOp {
         auto.addCommands(new FollowPathCommand(drive.follower, gardenIntakePath()));
 	auto.addCommands(new Delay(2.0));
 	auto.addCommands(new StopAutoIntake());
+    auto.addCommands(new InstantCommand(transfer::setCrashBarNothing));
 	auto.addCommands(new FollowPathCommand(drive.follower, gardenToDoubleCheck()));
+    auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
 
 	// once at double-check location we decide whether to shoot
 	// from here, or drive to other side
