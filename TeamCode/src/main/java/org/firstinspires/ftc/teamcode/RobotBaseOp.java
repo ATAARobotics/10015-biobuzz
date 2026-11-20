@@ -295,16 +295,12 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void execute() {
-            if (!isAuto()) {
                 if (turretAutoAim) {
                     turret.faceFieldAngle(geometricTargetHeading);
                 }
-            } else{
-                turret.faceRobotAngle(0);
-            }
 	    switch (state) {
 	    case WAIT_SHOOT:
-                if (readyToShoot()) {
+                if (readyToShoot() || driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
 		    transfer.shoot();
 		    feedTimer.reset();
 		    state = ShootState.SHOOT;
