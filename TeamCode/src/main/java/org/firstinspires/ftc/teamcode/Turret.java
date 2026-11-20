@@ -71,7 +71,7 @@ public class Turret extends SubsystemBase {
     }
     public void faceFieldAngle(double fieldAngleDeg) {
         double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
-        double robotRelative = fieldAngleDeg + operatorOffset - robotHeading;
+        double robotRelative = fieldAngleDeg - robotHeading;
         //robotRelative = wrapAngle(robotRelative);
 
         // Reuse existing robot-relative method
@@ -90,7 +90,7 @@ public class Turret extends SubsystemBase {
         ticksMoved = melonEncoder.getCurrentPosition() - initialTicks;
         encoderRevs = ticksMoved / TICKS_PER_REV;
         turretAngle = START_ANGLE + encoderRevs * 360 * GEAR_RATIO;
-        error = targetHeading - turretAngle;
+        error = targetHeading + operatorOffset - turretAngle;
 
         servoPower = control.calculate(error);
 
