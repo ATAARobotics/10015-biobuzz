@@ -46,6 +46,6 @@ public abstract class TeleOp extends RobotBaseOp {
         operator.getGamepadButton(GamepadKeys.Button.B).whenPressed(new InstantCommand(() -> {turret.faceRobotAngle(-90);}));
         operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(new InstantCommand(() -> {turret.faceRobotAngle(0);}));
         operator.getGamepadButton(GamepadKeys.Button.X).whenPressed(new InstantCommand(() -> {turret.faceRobotAngle(90);}));
-        CommandScheduler.getInstance().setDefaultCommand(transfer, transfer.new HumanInputs(operator));
+        CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator));
     }
 }
