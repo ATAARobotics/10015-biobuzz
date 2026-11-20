@@ -117,7 +117,7 @@ public abstract class RobotBaseOp extends OpMode {
         tipDetector = new TipDetector(tags, telem, getAlliance(),drive);
         shooter = new Shooter(hardwareMap, telem);
         transfer = new Transfer(hardwareMap, telem);
-        turret = new Turret(hardwareMap, telem, drive);
+        turret = new Turret(hardwareMap, telem, drive, isAuto());
 
 
         battery = hardwareMap.voltageSensor.get("Control Hub");

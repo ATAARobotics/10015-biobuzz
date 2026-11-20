@@ -33,22 +33,24 @@ public class Turret extends SubsystemBase {
     private static final double TICKS_PER_REV =  4096;
     double error;
     double ticksMoved;
-    double initialTicks;
     double encoderRevs;
     public static double START_ANGLE = -90;
     double operatorOffset;
     double OPERATOR_INCREMENT = 1;
 
-    public Turret(HardwareMap hardwareMap, HyperTelemetry telem, Drive drive){
+    public Turret(HardwareMap hardwareMap, HyperTelemetry telem, Drive drive, boolean isAuto){
         this.telem = telem;
         this.drive = drive;
         turret = new CRServo(hardwareMap, "turret"); // servo port 0 on expansion
         control = new PIDController(turretP, turretI, turretD);
         melonEncoder = hardwareMap.get(DcMotor.class, "intake");//reuse intake encoder wire. Port 0 expansion hub
+        if(isAuto || !OpmodeStorage.autoRan){
+            melonEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+        melonEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void start(){
-        initialTicks = melonEncoder.getCurrentPosition();
     }
     public boolean isReady() {
 	return (Math.abs(error) < ALIGNMENT_TOLERANCE);
@@ -87,7 +89,7 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic(){
         control.setPID(turretP, turretI, turretD);
-        ticksMoved = melonEncoder.getCurrentPosition() - initialTicks;
+        ticksMoved = melonEncoder.getCurrentPosition();
         encoderRevs = ticksMoved / TICKS_PER_REV;
         turretAngle = START_ANGLE + encoderRevs * 360 * GEAR_RATIO;
         error = targetHeading + operatorOffset - turretAngle;
@@ -104,7 +106,6 @@ public class Turret extends SubsystemBase {
         telem.log("turret-angle", turretAngle);
         telem.log("turret-error", error);
         telem.log("turret-power", servoPower);
-        telem.log("turret-initial-ticks", initialTicks);
 
         if (overridePower != 0) servoPower = overridePower;
 
