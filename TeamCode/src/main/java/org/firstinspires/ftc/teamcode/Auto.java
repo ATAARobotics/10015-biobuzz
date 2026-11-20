@@ -345,6 +345,7 @@ public abstract class Auto extends RobotBaseOp {
     }
     @Override
     public void start() {
+        super.start();
         OpmodeStorage.autoRan=true;
         if(getStartZone() == StartZone.UP){
             CommandScheduler.getInstance().schedule(autoRoutineUp());

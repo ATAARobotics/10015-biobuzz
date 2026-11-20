@@ -195,6 +195,9 @@ public abstract class RobotBaseOp extends OpMode {
         telem.logBoth("X:", drive.currentPosition.getX(DistanceUnit.INCH));
         telem.logBoth("Y:", drive.currentPosition.getY(DistanceUnit.INCH));
         telem.logBoth("Heading:", drive.currentPosition.getHeading(AngleUnit.DEGREES));
+        telem.logBoth("Operator rpm tweak:", shooter.operatorTweak);
+        telem.logBoth("Operator turret tweak: ", turret.operatorOffset);
+        telem.logBoth("Auto Aim:", turretAutoAim);
 
 	double seconds = runtime.deltaTime() / 1000.0;
         double fps = loops / seconds;
@@ -282,15 +285,23 @@ public abstract class RobotBaseOp extends OpMode {
         state = ShootState.WAIT_SHOOT;
 	    transfer.idle();
 	    shooter.setRpm();
-        if (turretAutoAim) {
-            turret.faceFieldAngle(geometricTargetHeading);
+        if (!isAuto()) {
+            if (turretAutoAim) {
+                turret.faceFieldAngle(geometricTargetHeading);
+            }
+        } else{
+            turret.faceRobotAngle(0);
         }
         }
         @Override
         public void execute() {
-        if(turretAutoAim) {
-            turret.faceFieldAngle(geometricTargetHeading);
-        }
+            if (!isAuto()) {
+                if (turretAutoAim) {
+                    turret.faceFieldAngle(geometricTargetHeading);
+                }
+            } else{
+                turret.faceRobotAngle(0);
+            }
 	    switch (state) {
 	    case WAIT_SHOOT:
                 if (readyToShoot()) {
