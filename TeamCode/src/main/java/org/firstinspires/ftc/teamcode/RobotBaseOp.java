@@ -81,8 +81,8 @@ public abstract class RobotBaseOp extends OpMode {
     public static double REJECT_SECONDS = 0.30;
     private final PIDController pollenTurnPID = new PIDController(POLLEN_P, POLLEN_I, POLLEN_D);
     Servo indicatorLight;
-    double RED = 0.28;
-    double GREEN = 0.5;
+    public static double GREEN = 0.5;
+
     AprilTagProcessor tags;
     TipDetector tipDetector;
     Alliance alliance;
@@ -103,6 +103,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     @Override
     public void init() {
+
         telem =  new HyperTelemetry(telemetry);
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
@@ -119,9 +120,8 @@ public abstract class RobotBaseOp extends OpMode {
         transfer = new Transfer(hardwareMap, telem);
         turret = new Turret(hardwareMap, telem, drive, isAuto());
 
-
+        indicatorLight = hardwareMap.get(Servo.class, "indicator");//port 2 expansion
         battery = hardwareMap.voltageSensor.get("Control Hub");
-	//        indicatorLight = hardwareMap.get(Servo.class, "indicator");
 
         // (Do not remove this, we absolutely have problems without cancelling this)
         // Cancel all previous commands
@@ -304,6 +304,9 @@ public abstract class RobotBaseOp extends OpMode {
 		    transfer.shoot();
 		    feedTimer.reset();
 		    state = ShootState.SHOOT;
+            indicatorLight.setPosition(GREEN);
+                } else {
+                    indicatorLight.setPosition(0);
                 }
 		break;
 

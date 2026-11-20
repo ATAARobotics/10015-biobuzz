@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.CommandBase;
@@ -9,6 +10,8 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+
+import java.util.LinkedList;
 
 @Configurable
 public class Transfer extends SubsystemBase {
@@ -55,7 +58,10 @@ public class Transfer extends SubsystemBase {
     private final double crashTwoNectar = 0.15;
     private final double crashOnePollen = 1;
     private final double crashTwoPollen = 0;
-
+    AnalogInput beamBreak;
+    double beamBreakVoltage;
+    public static double BEAM_BLOCKED_VOLTS = 1;
+    boolean blocked;
     public Transfer(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
          intakeMotor = new MotorEx(hardwareMap, "intake");//port 0 expansion
@@ -67,7 +73,8 @@ public class Transfer extends SubsystemBase {
         //nectarBlocker = hardwareMap.get(Servo.class, "nectarBlocker"); Commented out bc we don't need until next comp
         crashBarServo1 = hardwareMap.get(Servo.class, "crashBar1");
         crashBarServo2 = hardwareMap.get(Servo.class, "crashBar2");
-        // beam break is analog 0 control hub
+        beamBreak = hardwareMap.analogInput.get("beam_break"); // beam break is analog 0 control hub
+
     }
 
     public void readSensors(double time) {
@@ -149,6 +156,20 @@ public class Transfer extends SubsystemBase {
         stopIntake();
         pollenBlocked();
     }
+    public void updateBeamBreak(){
+        beamBreakVoltage = (beamBreak.getVoltage());
+        blocked = beamBreakVoltage < BEAM_BLOCKED_VOLTS;
+     /*   if (blocked){
+            blockedSamples ++;
+            clearSamples = 0;
+            if (blockedSamples > DBOUNCE_SAMPLES){
+                magazineFull = true;
+            } else{
+                clearSamples ++;
+
+            }
+        }*/
+    }
     
 
     // set motors and servos properly in here (only)
@@ -199,6 +220,8 @@ public class Transfer extends SubsystemBase {
             break;
         }
         telem.log("transfer-power", transferPower);
+        telem.log("transfer-beambreak", beamBreakVoltage);
+        telem.log("transfer-full", blocked);
         transferMotor.set(transferPower);
 
         // crash-bar servos. IMPORTANT: the two values should sum to 1!
