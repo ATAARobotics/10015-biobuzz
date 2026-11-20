@@ -36,6 +36,7 @@ public abstract class Auto extends RobotBaseOp {
     boolean pushToPark = false;
     boolean doubleCheck = true;
     boolean basicNearAuto = false;
+    boolean pushIntoZone = false;
     private final Pose startUp = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
     private final Pose shootNear = p.of(47 + xOffset, yOffset+3, 90);
@@ -65,10 +66,11 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose doubleCheckPartner = p.of(58 + xOffset, yOffset + 5.1, 270);
     private final Pose shootInCase = p.of(58.37, 17, 90);
     private final Pose shootOtherBasket = p.of(59.71, 115, 270);
-    private final Pose parkNoGarden = p.of(9.65+8, 117.57, 0);
-    private final Pose controlPointParkNoGarden = p.of(40.49, 94.98, 0);
+    private final Pose parkMeet1 = p.of(9.65+8, 117.57, 0);
+    private final Pose controlPointParkMeet1 = p.of(40.49, 94.98, 0);
     private final Pose controlPointLongPark = p.of(22.32, 23.61, 0);
     private final Pose gardenIntakeCorner = p.of(8.0,8,270);
+    private final Pose parkMeet1Close = p.of(9.65+8, 105, 0);
 
     class Delay extends CommandBase {
         double seconds;
@@ -160,15 +162,21 @@ public abstract class Auto extends RobotBaseOp {
     }
 
     private Path shootFarToPark(){
-        return curve(shootOtherBasket, controlPointParkNoGarden, parkNoGarden).linear(shootOtherBasket, parkNoGarden);
+        return curve(shootOtherBasket, controlPointParkMeet1, parkMeet1).linear(shootOtherBasket, parkMeet1);
     }
 
     private Path shootNearToPark(){
-        return curve(doubleCheckPartner, controlPointLongPark, parkNoGarden).linear(doubleCheckPartner, parkNoGarden);
+        return curve(doubleCheckPartner, controlPointLongPark, parkMeet1Close).linear(doubleCheckPartner, parkMeet1Close);
     }
 
     private Path gardenIntakePath(){
         return line(garden,gardenIntakeCorner).linear(garden,gardenIntakeCorner);
+    }
+    private Path shootNearToPreparePush(){
+        return line(shootNear,prepareToBumpPartner).linear(shootNear,prepareToBumpPartner);
+    }
+    private Path pushToPark(){
+        return line(prepareToBumpPartner, bumpPartner).linear(prepareToBumpPartner,bumpPartner);
     }
     private Command autoRoutineUp() {
         SequentialCommandGroup auto = new SequentialCommandGroup();
@@ -200,9 +208,21 @@ public abstract class Auto extends RobotBaseOp {
 	notTipped.addCommands(
 		new FollowPathCommand(drive.follower, doubleCheckToShootNear()),
 		new AutoShoot(),
-		new Delay(0.5),
-		new FollowPathCommand(drive.follower, shootNearToPark())
-	);
+		new Delay(0.5)
+    );
+
+    if(pushIntoZone){
+        notTipped.addCommands(
+		new FollowPathCommand(drive.follower, shootNearToPreparePush()),
+            new FollowPathCommand(drive.follower, pushPartner()),
+        new FollowPathCommand(drive.follower, pushToPark())
+            );
+        }
+    else{
+        notTipped.addCommands(
+            new FollowPathCommand(drive.follower, shootNearToPark())
+            );
+        }
 	auto.addCommands(
 		new ConditionalCommand(tipped, notTipped, () -> {return (tipDetector.tip() == TipDetector.TippedSide.UNKNOWN);})
 	);
@@ -296,10 +316,18 @@ public abstract class Auto extends RobotBaseOp {
             noFarSide = false;
         }// figure out how to make it toggle!
         //Bump the partner into the parking zone, then continue default path
-        if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
+   /*     if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
             pushToPark = true;
         } else if(operator.wasJustPressed(GamepadKeys.Button.A)){
             pushToPark = false;
+        }
+
+    */
+        if(operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
+            pushIntoZone = true;
+        }
+        if(operator.wasJustPressed(GamepadKeys.Button.A)){
+            pushIntoZone = false;
         }
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)){
             doubleCheck = true;
@@ -309,8 +337,9 @@ public abstract class Auto extends RobotBaseOp {
         }
 
         telemetry.addData("Don't shoot on the other side (when upside) \n Dpad up to turn on, b to turn off", noFarSide);
-        telemetry.addData("Push partner. Dpad down to enable, A to Disable", pushToPark);
+       // telemetry.addData("Push partner. DPAD DOWN to enable, A to disable", pushToPark);
         telemetry.addData("Meet 1 with partner. DPAD LEFT to enable, Y to disable.", doubleCheck);
+        telemetry.addData("Push partner. DPAD DOWN to enable, A to disable", pushIntoZone);
 
         telemetry.update();
     }
