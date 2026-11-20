@@ -388,8 +388,8 @@ public abstract class RobotBaseOp extends OpMode {
             targetY = TARGET_Y_UPSIDE;
         }
 
-        turretX = robotX - (ROBOT_CENTER_TO_TURRET * Math.toDegrees(Math.cos(robotHeading)));
-        turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.toDegrees(Math.sin(robotHeading)));
+        turretX = robotX - (ROBOT_CENTER_TO_TURRET * Math.cos(Math.toRadians(robotHeading)));
+        turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.sin(Math.toRadians(robotHeading)));
 
         geometricTargetHeading = Math.toDegrees(Math.atan2(targetY - turretY, TARGET_X - turretX));
 

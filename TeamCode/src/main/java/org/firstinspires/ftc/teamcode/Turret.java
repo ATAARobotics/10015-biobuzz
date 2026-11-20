@@ -54,7 +54,7 @@ public class Turret extends SubsystemBase {
 	return (Math.abs(error) < ALIGNMENT_TOLERANCE);
     }
     public void faceRobotAngle(double angle) {
-        double maxAngle = 160;
+        double maxAngle = 90;
         if (angle < -maxAngle) angle = -maxAngle;
         if (angle > maxAngle) angle = maxAngle;
         targetHeading = angle;
@@ -72,14 +72,7 @@ public class Turret extends SubsystemBase {
     public void faceFieldAngle(double fieldAngleDeg) {
         double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
         double robotRelative = fieldAngleDeg + operatorOffset - robotHeading;
-        robotRelative = wrapAngle(robotRelative);
-
-        if (robotRelative == 0.0) {
-            // way too late to figure this massive weirdness out -- if
-            // we call faceRobotAngle() with EXACTLY 0.0 then it wants
-            // to go to 21.something degress (!!!??? what) fixme: Code from last year. figure out why?
-            robotRelative = 0.000001;
-        }
+        //robotRelative = wrapAngle(robotRelative);
 
         // Reuse existing robot-relative method
         faceRobotAngle(robotRelative);
@@ -111,6 +104,7 @@ public class Turret extends SubsystemBase {
         telem.log("turret-angle", turretAngle);
         telem.log("turret-error", error);
         telem.log("turret-power", servoPower);
+        telem.log("turret-initial-ticks", initialTicks);
 
         if (overridePower != 0) servoPower = overridePower;
 
