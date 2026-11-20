@@ -26,7 +26,7 @@ public abstract class TeleOp extends RobotBaseOp {
         TriggerHeld driverLeft = new TriggerHeld(driver, GamepadKeys.Trigger.LEFT_TRIGGER);
         driverLeft.whenActive(new StartAutoIntake(), true);
         driverLeft.whenInactive(new StopAutoIntake(), true);
-        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new AutoShoot());
+        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new AutoShoot());
     }
 
     protected void bindOperatorControls() {
@@ -42,8 +42,10 @@ public abstract class TeleOp extends RobotBaseOp {
         operator.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new InstantCommand(shooter::rpmDown));
         operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new InstantCommand(shooter::toggleRpm, shooter));
         operator.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new InstantCommand(transfer::togglePollenBlocker));
-        operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(new InstantCommand(turret::plusOperatorTweak, turret));
-        operator.getGamepadButton(GamepadKeys.Button.A).whenPressed(new InstantCommand(turret::minusOperatorTweak, turret));
+        operator.getGamepadButton(GamepadKeys.Button.A).whenPressed(new InstantCommand(this::toggleAutoAim));
+        operator.getGamepadButton(GamepadKeys.Button.B).whenPressed(new InstantCommand(() -> {turret.faceRobotAngle(-90);}));
+        operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(new InstantCommand(() -> {turret.faceRobotAngle(0);}));
+        operator.getGamepadButton(GamepadKeys.Button.X).whenPressed(new InstantCommand(() -> {turret.faceRobotAngle(90);}));
         CommandScheduler.getInstance().setDefaultCommand(transfer, transfer.new HumanInputs(operator));
     }
 }

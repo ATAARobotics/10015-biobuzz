@@ -45,9 +45,10 @@ public abstract class RobotBaseOp extends OpMode {
     public static double TARGET_X = 57.0; // Nov 18
     public static double TARGET_Y_UPSIDE = 52.17; //Nov 18
     public static double TARGET_Y_DOWNSIDE;
-    double ROBOT_CENTER_TO_TURRET = 6.4; //fixme actually get this number from CAD, this is a guess
+    double ROBOT_CENTER_TO_TURRET = 6.07;
     public double turretX;
     public double turretY;
+    boolean turretAutoAim = true;
     double geometricTargetHeading;
     HyperTelemetry telem;
     GamepadEx driver;
@@ -281,11 +282,15 @@ public abstract class RobotBaseOp extends OpMode {
         state = ShootState.WAIT_SHOOT;
 	    transfer.idle();
 	    shooter.setRpm();
-	    turret.faceFieldAngle(geometricTargetHeading);
+        if (turretAutoAim) {
+            turret.faceFieldAngle(geometricTargetHeading);
+        }
         }
         @Override
         public void execute() {
-        turret.faceFieldAngle(geometricTargetHeading);
+        if(turretAutoAim) {
+            turret.faceFieldAngle(geometricTargetHeading);
+        }
 	    switch (state) {
 	    case WAIT_SHOOT:
                 if (readyToShoot()) {
@@ -334,6 +339,14 @@ public abstract class RobotBaseOp extends OpMode {
             //    stopEverything();
         }
     }
+    public void toggleAutoAim(){
+        if (turretAutoAim){
+            turretAutoAim = false;
+        }
+        else{
+            turretAutoAim = true;
+        }
+    }
 
     public boolean readyToShoot(){
         return shooter.isAtSpeed() && turret.isReady();
@@ -375,8 +388,8 @@ public abstract class RobotBaseOp extends OpMode {
             targetY = TARGET_Y_UPSIDE;
         }
 
-        turretX = robotX - (ROBOT_CENTER_TO_TURRET * Math.cos(robotHeading));
-        turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.sin(robotHeading));
+        turretX = robotX - (ROBOT_CENTER_TO_TURRET * Math.toDegrees(Math.cos(robotHeading)));
+        turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.toDegrees(Math.sin(robotHeading)));
 
         geometricTargetHeading = Math.toDegrees(Math.atan2(targetY - turretY, TARGET_X - turretX));
 
