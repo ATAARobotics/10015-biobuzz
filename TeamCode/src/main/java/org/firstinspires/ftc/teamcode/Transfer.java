@@ -62,6 +62,11 @@ public class Transfer extends SubsystemBase {
     double beamBreakVoltage;
     public static double BEAM_BLOCKED_VOLTS = 1;
     boolean blocked;
+    int blockedSamples = 0;
+    int clearSamples = 0;
+    int DEBOUNCE_SAMPLES = 3;
+    boolean magazineFull = false;
+
     public Transfer(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
          intakeMotor = new MotorEx(hardwareMap, "intake");//port 0 expansion
@@ -159,22 +164,30 @@ public class Transfer extends SubsystemBase {
     public void updateBeamBreak(){
         beamBreakVoltage = (beamBreak.getVoltage());
         blocked = beamBreakVoltage < BEAM_BLOCKED_VOLTS;
-     /*   if (blocked){
+        if (blocked){
             blockedSamples ++;
             clearSamples = 0;
-            if (blockedSamples > DBOUNCE_SAMPLES){
+            if (blockedSamples > DEBOUNCE_SAMPLES){
                 magazineFull = true;
-            } else{
-                clearSamples ++;
-
             }
-        }*/
+        }
+        else{
+                clearSamples ++;
+                if(clearSamples > DEBOUNCE_SAMPLES) {
+                   magazineFull = false;
+                }
+
+         }
+    }
+    public boolean isMagazineFull(){
+        return magazineFull;
     }
     
 
     // set motors and servos properly in here (only)
     @Override
     public void periodic() {
+        updateBeamBreak();
         // shot-blocker servo
         if (shooting) {
             pollenBlocker.setPosition(POLLEN_SHOOT);
@@ -220,8 +233,8 @@ public class Transfer extends SubsystemBase {
             break;
         }
         telem.log("transfer-power", transferPower);
-        telem.log("transfer-beambreak", beamBreakVoltage);
-        telem.log("transfer-full", blocked);
+      //  telem.log("transfer-beambreak", beamBreakVoltage);
+      //  telem.log("transfer-full", blocked);
         transferMotor.set(transferPower);
 
         // crash-bar servos. IMPORTANT: the two values should sum to 1!
