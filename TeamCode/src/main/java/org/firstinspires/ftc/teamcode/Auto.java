@@ -54,8 +54,8 @@ public abstract class Auto extends RobotBaseOp {
 
     //far auto poses
     private final Pose startDown = p.of(72 - xOffset, 141 - yOffset, 270);
-    private final Pose checkAprilTag = p.of(72-xOffset, (141 - yOffset) + 0.2, 270);
-    private final Pose generalShootingPositionFar = p.of(60.96, 132.4, 270);
+    private final Pose checkAprilTag = p.of(72-xOffset, 127, 90);
+    private final Pose generalShootingPositionFar = p.of(60.96, 125, 270);
     private final Pose controlPointSharedBetweenShootAndFlower = p.of(52, 85, 270);
     private final Pose flowerIntakeFar = p.of(47.13, 126, 90);
     private final Pose parkFar = p.of(13.0, 115.3, 270);
@@ -178,6 +178,13 @@ public abstract class Auto extends RobotBaseOp {
     private Path pushToPark(){
         return line(prepareToBumpPartner, bumpPartner).linear(prepareToBumpPartner,bumpPartner);
     }
+
+    private Path aprilTagToshootPreloads(){
+        return line(checkAprilTag, generalShootingPositionFar).linear(checkAprilTag,generalShootingPositionFar);
+    }
+    private Path shootPreloadsToPark(){
+        return line(generalShootingPositionFar, parkFar).linear(generalShootingPositionFar,parkFar);
+    }
     private Command autoRoutineUp() {
         SequentialCommandGroup auto = new SequentialCommandGroup();
         auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
@@ -187,6 +194,7 @@ public abstract class Auto extends RobotBaseOp {
 	auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
     auto.addCommands(new Delay(1.0));
         auto.addCommands(new FollowPathCommand(drive.follower, gardenIntakePath()));
+	auto.addCommands(new Delay(2.0));
 	auto.addCommands(new Delay(2.0));
 	auto.addCommands(new StopAutoIntake());
     auto.addCommands(new InstantCommand(transfer::setCrashBarNothing));
@@ -266,10 +274,28 @@ public abstract class Auto extends RobotBaseOp {
     }
 
     private Command autoRoutineDown(){
+
+        //down auto for meet 1
         SequentialCommandGroup autoDown = new SequentialCommandGroup();
         autoDown.addCommands(new InstantCommand(transfer::setCrashBarPollen));
 
-        //basic far auto commands
+        autoDown.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
+        TipDetector.TippedSide target = TipDetector.TippedSide.SCORING;
+        if(isRedAlliance()){
+            target = TipDetector.TippedSide.AUDIENCE;
+        }
+        else if(!isRedAlliance()){
+            target = TipDetector.TippedSide.SCORING;
+        }
+        autoDown.addCommands(new WaitForTip(target).withTimeout(20000));
+        autoDown.addCommands(new FollowPathCommand(drive.follower, aprilTagToshootPreloads()));
+        autoDown.addCommands(new AutoShoot());
+        autoDown.addCommands(new FollowPathCommand(drive.follower, shootPreloadsToPark()));
+
+        return autoDown;
+
+        /*
+        //TODO:Desired outcome for far auto, uses flowers as well
         autoDown.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
         autoDown.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
         autoDown.addCommands(new FollowPathCommand(drive.follower, aprilTagToShoot()));
@@ -278,6 +304,8 @@ public abstract class Auto extends RobotBaseOp {
         autoDown.addCommands(new FollowPathCommand(drive.follower, shootToPark()));
 
         return autoDown;
+
+         */
     }
 
     private final Pose testStart = p.of(73-xOffset, yOffset, 90);
@@ -336,10 +364,10 @@ public abstract class Auto extends RobotBaseOp {
             doubleCheck = false;
         }
 
-        telemetry.addData("Don't shoot on the other side (when upside) \n Dpad up to turn on, b to turn off", noFarSide);
+      //  telemetry.addData("Don't shoot on the other side (when upside) \n Dpad up to turn on, b to turn off", noFarSide);
        // telemetry.addData("Push partner. DPAD DOWN to enable, A to disable", pushToPark);
-        telemetry.addData("Meet 1 with partner. DPAD LEFT to enable, Y to disable.", doubleCheck);
-        telemetry.addData("Push partner. DPAD DOWN to enable, A to disable", pushIntoZone);
+     //   telemetry.addData("Meet 1 with partner. DPAD LEFT to enable, Y to disable.", doubleCheck);
+        telemetry.addData("Meet 1 Push partner. DPAD DOWN to enable, A to disable", pushIntoZone);
 
         telemetry.update();
     }
