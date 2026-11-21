@@ -3,10 +3,14 @@ package org.firstinspires.ftc.teamcode;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.seattlesolvers.solverslib.command.CommandBase;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.motors.CRServo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Configurable
@@ -22,7 +26,7 @@ public class Turret extends SubsystemBase {
     public static double turretD = 0.00035;
     public static double turretF = 0.11;
     public static double ALIGNMENT_TOLERANCE = 4.0; // degrees
-
+    public static double MANUAL_DIVISOR = 10;
     public static double overridePower = 0.0;
 
     // fixme not static
@@ -33,28 +37,33 @@ public class Turret extends SubsystemBase {
     private static final double TICKS_PER_REV =  4096;
     double error;
     double ticksMoved;
-    double initialTicks;
     double encoderRevs;
     public static double START_ANGLE = -90;
     double operatorOffset;
     double OPERATOR_INCREMENT = 1;
-
-    public Turret(HardwareMap hardwareMap, HyperTelemetry telem, Drive drive){
+    public enum Mode {Auto, Manual}
+    public Mode mode = Mode.Auto;
+    double manualPower;
+    public Turret(HardwareMap hardwareMap, HyperTelemetry telem, Drive drive, boolean isAuto){
         this.telem = telem;
         this.drive = drive;
         turret = new CRServo(hardwareMap, "turret"); // servo port 0 on expansion
         control = new PIDController(turretP, turretI, turretD);
         melonEncoder = hardwareMap.get(DcMotor.class, "intake");//reuse intake encoder wire. Port 0 expansion hub
+        if(isAuto || !OpmodeStorage.autoRan){
+            melonEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+        melonEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void start(){
-        initialTicks = melonEncoder.getCurrentPosition();
+        mode = Mode.Auto;
     }
     public boolean isReady() {
 	return (Math.abs(error) < ALIGNMENT_TOLERANCE);
     }
     public void faceRobotAngle(double angle) {
-        double maxAngle = 160;
+        double maxAngle = 90;
         if (angle < -maxAngle) angle = -maxAngle;
         if (angle > maxAngle) angle = maxAngle;
         targetHeading = angle;
@@ -71,15 +80,8 @@ public class Turret extends SubsystemBase {
     }
     public void faceFieldAngle(double fieldAngleDeg) {
         double robotHeading = drive.getPosition().getHeading(AngleUnit.DEGREES);
-        double robotRelative = fieldAngleDeg + operatorOffset - robotHeading;
-        robotRelative = wrapAngle(robotRelative);
-
-        if (robotRelative == 0.0) {
-            // way too late to figure this massive weirdness out -- if
-            // we call faceRobotAngle() with EXACTLY 0.0 then it wants
-            // to go to 21.something degress (!!!??? what) fixme: Code from last year. figure out why?
-            robotRelative = 0.000001;
-        }
+        double robotRelative = fieldAngleDeg - robotHeading;
+        //robotRelative = wrapAngle(robotRelative);
 
         // Reuse existing robot-relative method
         faceRobotAngle(robotRelative);
@@ -90,16 +92,21 @@ public class Turret extends SubsystemBase {
     public void minusOperatorTweak(){
         operatorOffset -= OPERATOR_INCREMENT;
     }
-
+    public void reset() {
+        turretAngle = START_ANGLE;
+        targetHeading = START_ANGLE;
+        melonEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        melonEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
     @Override
     public void periodic(){
         control.setPID(turretP, turretI, turretD);
-        ticksMoved = melonEncoder.getCurrentPosition() - initialTicks;
+        ticksMoved = melonEncoder.getCurrentPosition();
         encoderRevs = ticksMoved / TICKS_PER_REV;
         turretAngle = START_ANGLE + encoderRevs * 360 * GEAR_RATIO;
-        error = targetHeading - turretAngle;
-
-        servoPower = control.calculate(error);
+        error = targetHeading + operatorOffset - turretAngle;
+        if(mode == Mode.Manual)
+            servoPower = control.calculate(error);
 
         // we just want a simple "static friction" style F and our
         // setpoint is always 0 so the solverslib one doesn't do the
@@ -130,5 +137,30 @@ public class Turret extends SubsystemBase {
 
         turret.set(servoPower);
     }
+    public class HumanInputs extends CommandBase {
+        GamepadEx operator;
+        public HumanInputs(GamepadEx operator) {
+            this.operator = operator;
+            addRequirements(Turret.this);
+        }
 
+        @Override
+        public void execute() {
+            manualPower = operator.getLeftX()/ MANUAL_DIVISOR;
+            if (operator.isDown(GamepadKeys.Button.LEFT_STICK_BUTTON)){
+                mode = Mode.Manual;
+            }
+            else{
+                if (mode == Mode.Manual){
+                    mode = Mode.Auto;
+                    reset();
+
+
+        }
+
+    }
+
+            }
+
+    }
 }

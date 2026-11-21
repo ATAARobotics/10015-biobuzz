@@ -32,20 +32,20 @@ public abstract class TeleOp extends RobotBaseOp {
     protected void bindOperatorControls() {
         TriggerHeld operatorLeft = new TriggerHeld(operator, GamepadKeys.Trigger.LEFT_TRIGGER);
         TriggerHeld operatorRight = new TriggerHeld(operator, GamepadKeys.Trigger.RIGHT_TRIGGER);
-        operatorRight.whenActive(new InstantCommand(transfer::runTransfer, transfer));
-        operatorLeft.whenActive(new InstantCommand(transfer::reverseTransfer, transfer));
-        operatorRight.whenInactive(new InstantCommand(transfer::stopTransfer, transfer));
-        operatorLeft.whenInactive(new InstantCommand(transfer::stopTransfer, transfer));
-        operator.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(transfer::setCrashBarNothing, transfer));
-        operator.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(new InstantCommand(transfer::setCrashBarPollen, transfer));
+        operatorRight.whenActive(new InstantCommand(() -> {transfer.runTransfer(); transfer.runIntake();}));
+        operatorLeft.whenActive(new InstantCommand(() -> {transfer.reverseTransfer(); transfer.reverseIntake();}));
+        operatorRight.whenInactive(new InstantCommand(() -> {transfer.stopTransfer(); transfer.stopIntake();}));
+        operatorLeft.whenInactive(new InstantCommand(() -> {transfer.stopTransfer(); transfer.stopIntake();}));
+        operator.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(turret::plusOperatorTweak));
+        operator.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(new InstantCommand(turret::minusOperatorTweak));
         operator.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(new InstantCommand(shooter::rpmUp));
         operator.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new InstantCommand(shooter::rpmDown));
-        operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new InstantCommand(shooter::toggleRpm, shooter));
-        operator.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new InstantCommand(transfer::togglePollenBlocker));
+        operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new InstantCommand(transfer::setCrashBarPollen, transfer));
+        operator.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new InstantCommand(transfer::setCrashBarNothing, transfer));
         operator.getGamepadButton(GamepadKeys.Button.A).whenPressed(new InstantCommand(this::toggleAutoAim));
         operator.getGamepadButton(GamepadKeys.Button.B).whenPressed(new InstantCommand(() -> {turret.faceRobotAngle(-90);}));
         operator.getGamepadButton(GamepadKeys.Button.Y).whenPressed(new InstantCommand(() -> {turret.faceRobotAngle(0);}));
         operator.getGamepadButton(GamepadKeys.Button.X).whenPressed(new InstantCommand(() -> {turret.faceRobotAngle(90);}));
-        CommandScheduler.getInstance().setDefaultCommand(transfer, transfer.new HumanInputs(operator));
+        CommandScheduler.getInstance().setDefaultCommand(turret, turret.new HumanInputs(operator));
     }
 }

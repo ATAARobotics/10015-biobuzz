@@ -117,7 +117,7 @@ public abstract class RobotBaseOp extends OpMode {
         tipDetector = new TipDetector(tags, telem, getAlliance(),drive);
         shooter = new Shooter(hardwareMap, telem);
         transfer = new Transfer(hardwareMap, telem);
-        turret = new Turret(hardwareMap, telem, drive);
+        turret = new Turret(hardwareMap, telem, drive, isAuto());
 
 
         battery = hardwareMap.voltageSensor.get("Control Hub");
@@ -195,6 +195,9 @@ public abstract class RobotBaseOp extends OpMode {
         telem.logBoth("X:", drive.currentPosition.getX(DistanceUnit.INCH));
         telem.logBoth("Y:", drive.currentPosition.getY(DistanceUnit.INCH));
         telem.logBoth("Heading:", drive.currentPosition.getHeading(AngleUnit.DEGREES));
+        telem.logBoth("Operator rpm tweak:", shooter.operatorTweak);
+        telem.logBoth("Operator turret tweak: ", turret.operatorOffset);
+        telem.logBoth("Auto Aim:", turretAutoAim);
 
 	double seconds = runtime.deltaTime() / 1000.0;
         double fps = loops / seconds;
@@ -282,18 +285,22 @@ public abstract class RobotBaseOp extends OpMode {
         state = ShootState.WAIT_SHOOT;
 	    transfer.idle();
 	    shooter.setRpm();
-        if (turretAutoAim) {
-            turret.faceFieldAngle(geometricTargetHeading);
+        if (!isAuto()) {
+            if (turretAutoAim) {
+                turret.faceFieldAngle(geometricTargetHeading);
+            }
+        } else{
+            turret.faceRobotAngle(0);
         }
         }
         @Override
         public void execute() {
-        if(turretAutoAim) {
-            turret.faceFieldAngle(geometricTargetHeading);
-        }
+                if (turretAutoAim) {
+                    turret.faceFieldAngle(geometricTargetHeading);
+                }
 	    switch (state) {
 	    case WAIT_SHOOT:
-                if (readyToShoot()) {
+                if (readyToShoot() || driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
 		    transfer.shoot();
 		    feedTimer.reset();
 		    state = ShootState.SHOOT;
@@ -388,8 +395,8 @@ public abstract class RobotBaseOp extends OpMode {
             targetY = TARGET_Y_UPSIDE;
         }
 
-        turretX = robotX - (ROBOT_CENTER_TO_TURRET * Math.toDegrees(Math.cos(robotHeading)));
-        turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.toDegrees(Math.sin(robotHeading)));
+        turretX = robotX - (ROBOT_CENTER_TO_TURRET * Math.cos(Math.toRadians(robotHeading)));
+        turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.sin(Math.toRadians(robotHeading)));
 
         geometricTargetHeading = Math.toDegrees(Math.atan2(targetY - turretY, TARGET_X - turretX));
 
