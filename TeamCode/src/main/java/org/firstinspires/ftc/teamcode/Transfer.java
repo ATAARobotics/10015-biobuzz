@@ -78,7 +78,7 @@ public class Transfer extends SubsystemBase {
         //nectarBlocker = hardwareMap.get(Servo.class, "nectarBlocker"); Commented out bc we don't need until next comp
         crashBarServo1 = hardwareMap.get(Servo.class, "crashBar1");
         crashBarServo2 = hardwareMap.get(Servo.class, "crashBar2");
-        beamBreak = hardwareMap.analogInput.get("beam_break"); // beam break is analog 0 control hub
+        beamBreak = hardwareMap.analogInput.get("beam_break"); // beam break is analog 1 control hub
 
     }
 
@@ -173,6 +173,7 @@ public class Transfer extends SubsystemBase {
         }
         else{
                 clearSamples ++;
+                blockedSamples = 0;
                 if(clearSamples > DEBOUNCE_SAMPLES) {
                    magazineFull = false;
                 }
@@ -233,10 +234,14 @@ public class Transfer extends SubsystemBase {
             break;
         }
         telem.log("transfer-power", transferPower);
-      //  telem.log("transfer-beambreak", beamBreakVoltage);
-      //  telem.log("transfer-full", blocked);
+        telem.log("transfer-beambreak", beamBreakVoltage);
+        telem.log("transfer-full", blocked);
         transferMotor.set(transferPower);
 
+        if (intakeMode == IntakeMode.IN && isMagazineFull()){
+            crashMode = CrashBarMode.NOTHING;
+
+        }
         // crash-bar servos. IMPORTANT: the two values should sum to 1!
         switch (crashMode) {
         case START:

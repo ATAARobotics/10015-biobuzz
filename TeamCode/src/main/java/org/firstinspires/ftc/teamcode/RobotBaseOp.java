@@ -344,7 +344,7 @@ public abstract class RobotBaseOp extends OpMode {
 
         @Override
         public void end(boolean interrupted) {
-            //    stopEverything();
+                stopEverything();
         }
     }
     public void toggleAutoAim(){
