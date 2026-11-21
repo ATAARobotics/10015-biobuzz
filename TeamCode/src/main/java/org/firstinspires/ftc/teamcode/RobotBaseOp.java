@@ -274,6 +274,7 @@ public abstract class RobotBaseOp extends OpMode {
         private ShootState state;
         private final ElapsedTime feedTimer = new ElapsedTime();
         private final ElapsedTime rejectTimer = new ElapsedTime();
+        private final ElapsedTime shootTimer = new ElapsedTime();
 	
         public AutoShoot() {
             addRequirements(shooter);
@@ -282,16 +283,13 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void initialize(){
+            shootTimer.reset();
         state = ShootState.WAIT_SHOOT;
 	    transfer.idle();
 	    shooter.setRpm();
-        if (!isAuto()) {
-            if (turretAutoAim) {
+            if (turretAutoAim || isAuto()) {
                 turret.faceFieldAngle(geometricTargetHeading);
             }
-        } else{
-            turret.faceRobotAngle(0);
-        }
         }
         @Override
         public void execute() {
@@ -300,7 +298,7 @@ public abstract class RobotBaseOp extends OpMode {
                 }
 	    switch (state) {
 	    case WAIT_SHOOT:
-                if (readyToShoot() || driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+                if (readyToShoot() || driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)|| shootTimer.seconds() > 1.5) {
 		    transfer.shoot();
 		    feedTimer.reset();
 		    state = ShootState.SHOOT;

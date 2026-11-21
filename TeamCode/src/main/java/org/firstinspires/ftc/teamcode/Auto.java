@@ -65,7 +65,7 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose startNoGarden = p.of(19 - xOffset, 39 - yOffset, 0);
     private final Pose doubleCheckPartner = p.of(58 + xOffset, yOffset + 5.1, 270);
     private final Pose shootInCase = p.of(58.37, 17, 90);
-    private final Pose shootOtherBasket = p.of(59.71, 115, 270);
+    private final Pose shootOtherBasket = p.of(59.71, 141.5 - yOffset - 6, 270);
     private final Pose parkMeet1 = p.of(9.65+8, 117.57, 0);
     private final Pose controlPointParkMeet1 = p.of(40.49, 94.98, 0);
     private final Pose controlPointLongPark = p.of(22.32, 23.61, 0);
@@ -192,10 +192,9 @@ public abstract class Auto extends RobotBaseOp {
 	auto.addCommands(new AutoShoot());
 	auto.addCommands(new StartAutoIntake());
 	auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
-    auto.addCommands(new Delay(1.0));
+    auto.addCommands(new Delay(0.5));
         auto.addCommands(new FollowPathCommand(drive.follower, gardenIntakePath()));
-	auto.addCommands(new Delay(2.0));
-	auto.addCommands(new Delay(2.0));
+	auto.addCommands(new Delay(1.0));
 	auto.addCommands(new StopAutoIntake());
     auto.addCommands(new InstantCommand(transfer::setCrashBarNothing));
 	auto.addCommands(new FollowPathCommand(drive.follower, gardenToDoubleCheck()));
@@ -282,10 +281,10 @@ public abstract class Auto extends RobotBaseOp {
         autoDown.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
         TipDetector.TippedSide target = TipDetector.TippedSide.SCORING;
         if(isRedAlliance()){
-            target = TipDetector.TippedSide.AUDIENCE;
+            target = TipDetector.TippedSide.SCORING;
         }
         else if(!isRedAlliance()){
-            target = TipDetector.TippedSide.SCORING;
+            target = TipDetector.TippedSide.AUDIENCE;
         }
         autoDown.addCommands(new WaitForTip(target).withTimeout(20000));
         autoDown.addCommands(new FollowPathCommand(drive.follower, aprilTagToshootPreloads()));

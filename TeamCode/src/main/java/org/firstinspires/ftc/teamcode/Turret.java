@@ -105,9 +105,11 @@ public class Turret extends SubsystemBase {
         encoderRevs = ticksMoved / TICKS_PER_REV;
         turretAngle = START_ANGLE + encoderRevs * 360 * GEAR_RATIO;
         error = targetHeading + operatorOffset - turretAngle;
-        if(mode == Mode.Manual)
+        if(mode == Mode.Manual) {
+            servoPower = (manualPower)/2.0 + 0.5;
+        } else{
             servoPower = control.calculate(error);
-
+        }
         // we just want a simple "static friction" style F and our
         // setpoint is always 0 so the solverslib one doesn't do the
         // right thing.
@@ -135,7 +137,7 @@ public class Turret extends SubsystemBase {
 	    servoPower = 0.0;
 	}
 
-        turret.set(servoPower);
+        //turret.set(servoPower);
     }
     public class HumanInputs extends CommandBase {
         GamepadEx operator;
@@ -154,13 +156,8 @@ public class Turret extends SubsystemBase {
                 if (mode == Mode.Manual){
                     mode = Mode.Auto;
                     reset();
-
-
-        }
-
-    }
-
+                }
             }
-
+        }
     }
 }
