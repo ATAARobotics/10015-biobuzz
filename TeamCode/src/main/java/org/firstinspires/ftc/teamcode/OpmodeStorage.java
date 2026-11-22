@@ -9,4 +9,6 @@ public class OpmodeStorage {
         autoRan = false;
         autonomousEndPose = new Pose(0, 0, 0);
     }
+    public static boolean panicMode = false;
+
 }

@@ -21,12 +21,12 @@ public class Turret extends SubsystemBase {
     DcMotor melonEncoder;
     
     public PIDController control;
-    public static double turretP = 0.007; //turret tuned nov 19
+    public static double turretP = 0.005; //turret tuned nov 21
     public static double turretI = 0.0;
-    public static double turretD = 0.00035;
-    public static double turretF = 0.11;
+    public static double turretD = 0.0002;
+    public static double turretF = 0.13;
     public static double ALIGNMENT_TOLERANCE = 4.0; // degrees
-    public static double MANUAL_DIVISOR = 10;
+    public static double MANUAL_DIVISOR = 20;
     public static double overridePower = 0.0;
 
     // fixme not static
@@ -137,7 +137,7 @@ public class Turret extends SubsystemBase {
 	    servoPower = 0.0;
 	}
 
-        //turret.set(servoPower);
+        turret.set(servoPower);
     }
     public class HumanInputs extends CommandBase {
         GamepadEx operator;

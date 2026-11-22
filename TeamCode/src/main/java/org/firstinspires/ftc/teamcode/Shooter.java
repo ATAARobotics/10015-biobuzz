@@ -46,7 +46,7 @@ public class Shooter extends SubsystemBase {
     MotorEx motor2;
     double targetRpm = 0.0;
     double averageRpm = 0.0;
-    public static double SHOOT_RPM = 2350; // nov 19
+    public static double SHOOT_RPM = 2350; // nov 21
     private boolean shooting = false;
     double operatorTweak = 0;
     int shotCounter = 0;

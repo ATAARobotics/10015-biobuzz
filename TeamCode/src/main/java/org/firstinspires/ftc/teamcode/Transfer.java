@@ -76,9 +76,9 @@ public class Transfer extends SubsystemBase {
         // magazineServo = hardwareMap.get(Servo.class, "magazine"); Commented out bc we don't need until next comp
           pollenBlocker = hardwareMap.get(Servo.class, "pollenBlocker"); // port 5 control hub
         //nectarBlocker = hardwareMap.get(Servo.class, "nectarBlocker"); Commented out bc we don't need until next comp
-        crashBarServo1 = hardwareMap.get(Servo.class, "crashBar1");
-        crashBarServo2 = hardwareMap.get(Servo.class, "crashBar2");
-        beamBreak = hardwareMap.analogInput.get("beam_break"); // beam break is analog 1 control hub
+        crashBarServo1 = hardwareMap.get(Servo.class, "crashBar1");// 0 on control
+        crashBarServo2 = hardwareMap.get(Servo.class, "crashBar2");//five on expansion
+        beamBreak = hardwareMap.analogInput.get("beam_break"); // beam break is analog 3 control hub
 
     }
 

@@ -39,7 +39,7 @@ public abstract class Auto extends RobotBaseOp {
     boolean pushIntoZone = false;
     private final Pose startUp = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
-    private final Pose shootNear = p.of(47 + xOffset, yOffset+3, 90);
+    private final Pose shootNear = p.of(44 + xOffset, yOffset+3, 90);
     private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
     private final Pose shootFar = p.of(58,118,270);//Shoot at the far side
     private final Pose shootFarControlPoint = p.of(32.1,135.8,270); // control point when driving from garden to far shoot
@@ -63,7 +63,7 @@ public abstract class Auto extends RobotBaseOp {
 
     //meet 1, doublecheck auto poses
     private final Pose startNoGarden = p.of(19 - xOffset, 39 - yOffset, 0);
-    private final Pose doubleCheckPartner = p.of(58 + xOffset, yOffset + 5.1, 270);
+    private final Pose doubleCheckPartner = p.of(53+  xOffset, yOffset + 5.1, 270);
     private final Pose shootInCase = p.of(58.37, 17, 90);
     private final Pose shootOtherBasket = p.of(59.71, 141.5 - yOffset - 6, 270);
     private final Pose parkMeet1 = p.of(9.65+8, 117.57, 0);

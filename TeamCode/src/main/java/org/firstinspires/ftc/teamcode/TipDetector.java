@@ -28,6 +28,9 @@ public class TipDetector extends SubsystemBase {
         return tippedSide;
     }
         public void periodic () {
+        if (tags == null){
+            return;
+        }
             tippedSide = TippedSide.UNKNOWN;
             telem.log("Detections", tags.getDetections().size());
             for (AprilTagDetection tag : tags.getDetections()) {

@@ -108,13 +108,18 @@ public abstract class RobotBaseOp extends OpMode {
         driver = new GamepadEx(gamepad1);
         operator = new GamepadEx(gamepad2);
 
-        tags = new AprilTagProcessor.Builder().build();
+
 
         drive = new Drive(hardwareMap, isRedAlliance(), isAuto(), telem);
-        portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .addProcessor(tags)
-                .build();
+        if (isAuto()){
+            tags = new AprilTagProcessor.Builder().build();
+            portal = new VisionPortal.Builder()
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .addProcessor(tags)
+                    .build();
+        } else{
+            tags = null;
+        }
         tipDetector = new TipDetector(tags, telem, getAlliance(),drive);
         shooter = new Shooter(hardwareMap, telem);
         transfer = new Transfer(hardwareMap, telem);
@@ -214,12 +219,21 @@ public abstract class RobotBaseOp extends OpMode {
               // AngleUnit.DEGREES, isRedAlliance() ? drive.blueHeadingToRedHeading(180) :180));
 
         if(OpmodeStorage.autoRan==true){
-            drive.follower.setPose(OpmodeStorage.autonomousEndPose);
+            if( !OpmodeStorage.panicMode){
+                drive.follower.setPose(OpmodeStorage.autonomousEndPose);
+            }
         }
         else{
-            if (!isAuto()) {
+            if (!isAuto() &&  !OpmodeStorage.panicMode) {
             drive.follower.setPose(new Pose( 47.5 + xOffset, yOffset, Math.toRadians(90)));
             }
+        }
+        if (OpmodeStorage.panicMode){
+            double x = drive.getPosition().getX(DistanceUnit.INCH);
+            double y = drive.getPosition().getY(DistanceUnit.INCH);
+            double heading = drive.getPosition().getHeading(AngleUnit.RADIANS);
+
+            drive.follower.setPose(new Pose(0, 0, Math.toRadians(90)));
         }
         drive.follower.update();
         loops = 0;
@@ -299,12 +313,9 @@ public abstract class RobotBaseOp extends OpMode {
 	    switch (state) {
 	    case WAIT_SHOOT:
                 if (readyToShoot() || driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)|| shootTimer.seconds() > 1.5) {
-		    transfer.shoot();
-		    feedTimer.reset();
-		    state = ShootState.SHOOT;
-            indicatorLight.setPosition(GREEN);
-                } else {
-                    indicatorLight.setPosition(0);
+                    transfer.shoot();
+                    feedTimer.reset();
+                    state = ShootState.SHOOT;
                 }
 		break;
 
@@ -338,7 +349,9 @@ public abstract class RobotBaseOp extends OpMode {
         }
         public void stopEverything(){
 	    shooter.stopRpm();
-	    turret.faceRobotAngle(-90.0);
+        if (turretAutoAim) {
+            turret.faceRobotAngle(-90.0);
+        }
 	    transfer.idle();
         }
 
@@ -377,6 +390,9 @@ public abstract class RobotBaseOp extends OpMode {
 
     @Override
     public void loop() {
+        if(OpmodeStorage.panicMode){
+            telem.logDrivers("PANIC", 1);
+        }
 
 
         loops++;
