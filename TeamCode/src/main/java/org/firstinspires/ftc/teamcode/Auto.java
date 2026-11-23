@@ -39,7 +39,7 @@ public abstract class Auto extends RobotBaseOp {
     boolean pushIntoZone = false;
     private final Pose startUp = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
-    private final Pose shootNear = p.of(44 + xOffset, yOffset+3, 90);
+    private final Pose shootNear = p.of(44 + xOffset, yOffset+3, 90); //general shooting position up side
     private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
     private final Pose shootFar = p.of(58,118,270);//Shoot at the far side
     private final Pose shootFarControlPoint = p.of(32.1,135.8,270); // control point when driving from garden to far shoot
@@ -52,25 +52,24 @@ public abstract class Auto extends RobotBaseOp {
     private final Pose controlPointToPrepareToBumpPartner = p.of(41.09,57.37,90); //Exactly what it sounds like
     private final Pose bumpPartner = p.of(10.25,96.33,180); //Push partner into park position
 
-    //far auto poses
-    private final Pose startDown = p.of(72 - xOffset, 141 - yOffset, 270);
-    private final Pose checkAprilTag = p.of(72-xOffset, 127, 90);
-    private final Pose generalShootingPositionFar = p.of(60.96, 125, 270);
-    private final Pose controlPointSharedBetweenShootAndFlower = p.of(52, 85, 270);
-    private final Pose flowerIntakeFar = p.of(47.13, 126, 90);
-    private final Pose parkFar = p.of(13.0, 115.3, 270);
-    private final Pose controlPointParkFar = p.of(63.5, 99.35, 270);
+    //far auto poses (includes poses for meet 1 and general far auto poses)
+    private final Pose startDown = p.of(72 - xOffset, 141 - yOffset, 270); //starting position on down side
+    private final Pose checkAprilTag = p.of(72-xOffset, 127, 90); //waiting to see april tag (to know if hive has tipped)
+    private final Pose generalShootingPositionFar = p.of(60.96, 125, 270); //shooting position down side
+    private final Pose controlPointSharedBetweenShootAndFlower = p.of(52, 85, 270); //control point between shoot position and flower intake
+    private final Pose flowerIntakeFar = p.of(47.13, 126, 90); //flower intake down side (across from the hive)
+    private final Pose parkFar = p.of(13.0, 115.3, 270); //park down side TODO: parkMeet1 and parkFar can be the same?
+    private final Pose controlPointParkFar = p.of(63.5, 99.35, 270); //control point to park down side
 
-    //meet 1, doublecheck auto poses
-    private final Pose startNoGarden = p.of(19 - xOffset, 39 - yOffset, 0);
-    private final Pose doubleCheckPartner = p.of(53+  xOffset, yOffset + 5.1, 270);
-    private final Pose shootInCase = p.of(58.37, 17, 90);
-    private final Pose shootOtherBasket = p.of(59.71, 141.5 - yOffset - 6, 270);
-    private final Pose parkMeet1 = p.of(9.65+8, 117.57, 0);
-    private final Pose controlPointParkMeet1 = p.of(40.49, 94.98, 0);
-    private final Pose controlPointLongPark = p.of(22.32, 23.61, 0);
-    private final Pose gardenIntakeCorner = p.of(8.0,8,270);
-    private final Pose parkMeet1Close = p.of(9.65+8, 105, 0);
+    //meet 1 auto poses (includes doublechecking partner)
+    private final Pose startMeet1 = p.of(19 - xOffset, 39 - yOffset, 0); //starting position up side
+    private final Pose doubleCheckPartner = p.of(53+  xOffset, yOffset + 5.1, 270); //check if the hive has tipped or not
+    private final Pose shootOtherBasket = p.of(59.71, 141.5 - yOffset - 6, 270); //shoot on the down side
+    private final Pose parkMeet1 = p.of(9.65+8, 117.57, 0); //parking position from down side //TODO: parkMeet1 and parkFar can be the same?
+    private final Pose controlPointParkMeet1 = p.of(40.49, 94.98, 0); //control point for parking from down side
+    private final Pose controlPointLongPark = p.of(22.32, 23.61, 0); //control point for parking from up side
+    private final Pose gardenIntakeCorner = p.of(8.0,8,270); //getting into the corner for efficient garden intake
+    private final Pose parkMeet1Close = p.of(9.65+8, 105, 0); //parking position from up side
 
     class Delay extends CommandBase {
         double seconds;
@@ -148,7 +147,7 @@ public abstract class Auto extends RobotBaseOp {
         return line(gardenIntakeCorner, doubleCheckPartner).linear(gardenIntakeCorner, doubleCheckPartner);
     }
     private Path startToDoubleCheck(){
-        return line(startNoGarden, doubleCheckPartner).linear(startNoGarden, doubleCheckPartner);
+        return line(startMeet1, doubleCheckPartner).linear(startMeet1, doubleCheckPartner);
     }
     private Path doubleCheckToShootNear(){
         return line(doubleCheckPartner, shootNear).linear(doubleCheckPartner, shootNear);
