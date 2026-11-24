@@ -42,8 +42,8 @@ import java.util.List;
 public abstract class RobotBaseOp extends OpMode {
     double xOffset = 8.124;
     double yOffset = 8.649;
-    public static double TARGET_X = 57.0; // Nov 18
-    public static double TARGET_Y_UPSIDE = 52.17; //Nov 18
+    public static double TARGET_X = 58.2;
+    public static double TARGET_Y_UPSIDE = 55.5;//based on field CAD Nov 23
     public static double TARGET_Y_DOWNSIDE;
     double ROBOT_CENTER_TO_TURRET = 6.07;
     public double turretX;
@@ -167,7 +167,7 @@ public abstract class RobotBaseOp extends OpMode {
                                     "Webcam 1"))
                     .build();*/
 
-            telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates for debugging.
+            telemetry.setMsTransmissionInterval(20);   // Speed up telemetry updates for debugging.
             telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
 
 
@@ -416,7 +416,7 @@ public abstract class RobotBaseOp extends OpMode {
         turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.sin(Math.toRadians(robotHeading)));
 
         geometricTargetHeading = Math.toDegrees(Math.atan2(targetY - turretY, TARGET_X - turretX));
-
+        turret.faceFieldAngle(geometricTargetHeading);
 
 
         // subsystems can log things
