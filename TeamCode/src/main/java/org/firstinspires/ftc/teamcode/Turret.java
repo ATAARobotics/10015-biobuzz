@@ -118,6 +118,7 @@ public class Turret extends SubsystemBase {
         }
         
         telem.log("turret-angle", turretAngle);
+        telem.log("turret-target", targetHeading);
         telem.log("turret-error", error);
         telem.log("turret-power", servoPower);
 

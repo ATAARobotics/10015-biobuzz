@@ -114,9 +114,9 @@ public abstract class RobotBaseOp extends OpMode {
         if (isAuto()){
             tags = new AprilTagProcessor.Builder().build();
             portal = new VisionPortal.Builder()
-              .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-              .addProcessor(tags)
-              .build();
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .addProcessor(tags)
+                .build();
         } else{
             tags = null;
         }
@@ -132,11 +132,11 @@ public abstract class RobotBaseOp extends OpMode {
         // Cancel all previous commands
         CommandScheduler.getInstance().reset();
 
-       CommandScheduler.getInstance().registerSubsystem(drive);
-       CommandScheduler.getInstance().registerSubsystem(transfer);
-       CommandScheduler.getInstance().registerSubsystem(tipDetector);
-       CommandScheduler.getInstance().registerSubsystem(shooter);
-       CommandScheduler.getInstance().registerSubsystem(turret);
+        CommandScheduler.getInstance().registerSubsystem(drive);
+        CommandScheduler.getInstance().registerSubsystem(transfer);
+        CommandScheduler.getInstance().registerSubsystem(tipDetector);
+        CommandScheduler.getInstance().registerSubsystem(shooter);
+        CommandScheduler.getInstance().registerSubsystem(turret);
 
         // set up controls
         bindOperatorControls();
@@ -150,25 +150,25 @@ public abstract class RobotBaseOp extends OpMode {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
         loops = 0;
-       runtime = new Timing.Stopwatch(TimeUnit.MILLISECONDS);
+        runtime = new Timing.Stopwatch(TimeUnit.MILLISECONDS);
 
-       // camera and vision setup
-
-
-       /*pollenDetector = new PollenDetector();
+        // camera and vision setup
 
 
-         portal = new VisionPortal.Builder()
-         .addProcessor(pollenDetector)
-         .setCameraResolution(new Size(640, 480))
-         .setCamera(
-         hardwareMap.get(
-         WebcamName.class,
-         "Webcam 1"))
-         .build();*/
+        /*pollenDetector = new PollenDetector();
 
-       telemetry.setMsTransmissionInterval(20);   // Speed up telemetry updates for debugging.
-       telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+
+          portal = new VisionPortal.Builder()
+          .addProcessor(pollenDetector)
+          .setCameraResolution(new Size(640, 480))
+          .setCamera(
+          hardwareMap.get(
+          WebcamName.class,
+          "Webcam 1"))
+          .build();*/
+
+        telemetry.setMsTransmissionInterval(20);   // Speed up telemetry updates for debugging.
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
 
 
 
@@ -177,7 +177,7 @@ public abstract class RobotBaseOp extends OpMode {
 
     protected void readSensors() {
         drive.readSensors(time);
-       transfer.readSensors(time);
+        transfer.readSensors(time);
     }
 
     protected void readControls() {
@@ -193,7 +193,7 @@ public abstract class RobotBaseOp extends OpMode {
     }
 
     protected void logTelemetry() {
-        //telem.log("elapsed", runtime.seconds());
+        telem.log("elapsed", runtime.elapsedTime());
         telem.log("time", time);
         telem.log("battery", battery.getVoltage());
         telem.log("alliance", getAlliance());
@@ -204,9 +204,9 @@ public abstract class RobotBaseOp extends OpMode {
         telem.logBoth("Operator turret tweak", turret.operatorOffset);
         telem.logBoth("Auto Aim", turretAutoAim);
 
-       double seconds = runtime.deltaTime() / 1000.0;
+        double seconds = runtime.elapsedTime() / 1000.0;
         double fps = loops / seconds;
-       telem.logBoth("fps", fps);
+        telem.logBoth("fps", fps);
         telem.update();
     }
 
@@ -214,8 +214,8 @@ public abstract class RobotBaseOp extends OpMode {
     public void start() {
         // This is right above the loading zone for blue, touching the wall. Red is below the loading zone. Both face the hive.
         //drive.setPosition(new Pose2D(DistanceUnit.INCH, isRedAlliance() ? drive.blueXToRedX(141 - yOffset): 141 - yOffset,
-       //  isRedAlliance() ? drive.blueYToRedY(47 + xOffset):47 + xOffset,
-       // AngleUnit.DEGREES, isRedAlliance() ? drive.blueHeadingToRedHeading(180) :180));
+        //  isRedAlliance() ? drive.blueYToRedY(47 + xOffset):47 + xOffset,
+        // AngleUnit.DEGREES, isRedAlliance() ? drive.blueHeadingToRedHeading(180) :180));
 
         if(OpmodeStorage.autoRan==true){
             if( !OpmodeStorage.panicMode){
@@ -224,7 +224,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         else{
             if (!isAuto() &&  !OpmodeStorage.panicMode) {
-              drive.follower.setPose(new Pose( 47.5 + xOffset, yOffset, Math.toRadians(90)));
+                drive.follower.setPose(new Pose( 47.5 + xOffset, yOffset, Math.toRadians(90)));
             }
         }
         if (OpmodeStorage.panicMode){
@@ -237,9 +237,9 @@ public abstract class RobotBaseOp extends OpMode {
         drive.follower.update();
         loops = 0;
         runtime.reset();
-       runtime.start();
-       turret.start();
-       //  shooter.start();
+        runtime.start();
+        turret.start();
+        //  shooter.start();
     }
 
     @Override
@@ -252,7 +252,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void execute() {
-           // todo: move to method in Transfer
+            // todo: move to method in Transfer
             transfer.setCrashBarPollen();
             transfer.pollenBlocked();
             transfer.runIntake();
@@ -274,7 +274,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         @Override
         public void execute(){
-           // todo: move to method in Transfer
+            // todo: move to method in Transfer
             transfer.stopIntake();
             transfer.stopTransfer();
             transfer.pollenBlocked();
@@ -298,66 +298,66 @@ public abstract class RobotBaseOp extends OpMode {
         @Override
         public void initialize(){
             shootTimer.reset();
-           state = ShootState.WAIT_SHOOT;
-           transfer.idle();
-           shooter.setRpm();
+            state = ShootState.WAIT_SHOOT;
+            transfer.idle();
+            shooter.setRpm();
             if (turretAutoAim || isAuto()) {
                 turret.faceFieldAngle(geometricTargetHeading);
             }
         }
         @Override
         public void execute() {
-           if (turretAutoAim) {
-              turret.faceFieldAngle(geometricTargetHeading);
-           }
-           switch (state) {
-           case WAIT_SHOOT:
+            if (turretAutoAim) {
+                turret.faceFieldAngle(geometricTargetHeading);
+            }
+            switch (state) {
+            case WAIT_SHOOT:
                 if (readyToShoot() || driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)|| shootTimer.seconds() > 1.5) {
                     transfer.shoot();
                     feedTimer.reset();
                     state = ShootState.SHOOT;
                 }
-              break;
+                break;
 
-           case SHOOT:
+            case SHOOT:
                 if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
                     state = ShootState.REJECT;
-                  transfer.reverseTransfer();
-                  rejectTimer.reset();
+                    transfer.reverseTransfer();
+                    rejectTimer.reset();
                 }
-              break;
+                break;
 
-           case REJECT:
-              if (rejectTimer.seconds() >= REJECT_SECONDS) {
-                  state = ShootState.DONE;
-                  stopEverything();
-              }
-              break;
+            case REJECT:
+                if (rejectTimer.seconds() >= REJECT_SECONDS) {
+                    state = ShootState.DONE;
+                    stopEverything();
+                }
+                break;
 
-           case DONE:
-              break;
-           }
+            case DONE:
+                break;
+            }
         }
         public void userCancel(){
             state = ShootState.DONE;
             stopEverything();
         }
 
-       @Override
+        @Override
         public boolean isFinished(){
             return state == ShootState.DONE;
         }
         public void stopEverything(){
-           shooter.stopRpm();
-           if (turretAutoAim) {
-              turret.faceRobotAngle(-90.0);
-           }
-           transfer.idle();
+            shooter.stopRpm();
+            if (turretAutoAim) {
+                turret.faceRobotAngle(-90.0);
+            }
+            transfer.idle();
         }
 
         @Override
         public void end(boolean interrupted) {
-           stopEverything();
+            stopEverything();
         }
     }
     public void toggleAutoAim(){
