@@ -43,7 +43,7 @@ public abstract class RobotBaseOp extends OpMode {
     double xOffset = 8.124;
     double yOffset = 8.649;
     public static double TARGET_X = 58.2;
-    public static double TARGET_Y_UPSIDE = 55.5;//based on field CAD Nov 23
+    public static double TARGET_Y_UPSIDE = 61.5;//Nov 23
     public static double TARGET_Y_DOWNSIDE;
     double ROBOT_CENTER_TO_TURRET = 6.07;
     public double turretX;
@@ -236,7 +236,7 @@ public abstract class RobotBaseOp extends OpMode {
         }
         drive.follower.update();
         loops = 0;
-        runtime.reset();
+       // runtime.reset();
         runtime.start();
         turret.start();
         //  shooter.start();

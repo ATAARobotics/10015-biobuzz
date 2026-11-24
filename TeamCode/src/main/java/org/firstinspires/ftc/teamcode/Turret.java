@@ -26,7 +26,7 @@ public class Turret extends SubsystemBase {
     public static double turretD = 0.0002;
     public static double turretF = 0.13;
     public static double ALIGNMENT_TOLERANCE = 4.0; // degrees
-    public static double MANUAL_DIVISOR = 20;
+    public static double MANUAL_DIVISOR = 15;
     public static double overridePower = 0.0;
 
     // fixme not static
