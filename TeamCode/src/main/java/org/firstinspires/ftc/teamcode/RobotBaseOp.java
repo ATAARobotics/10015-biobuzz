@@ -169,9 +169,6 @@ public abstract class RobotBaseOp extends OpMode {
 
         telemetry.setMsTransmissionInterval(20);   // Speed up telemetry updates for debugging.
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
-
-
-
     }
 
 
@@ -207,7 +204,6 @@ public abstract class RobotBaseOp extends OpMode {
         double seconds = runtime.elapsedTime() / 1000.0;
         double fps = loops / seconds;
         telem.logBoth("fps", fps);
-        telem.update();
     }
 
     @Override
@@ -418,12 +414,14 @@ public abstract class RobotBaseOp extends OpMode {
         geometricTargetHeading = Math.toDegrees(Math.atan2(targetY - turretY, TARGET_X - turretX));
         turret.faceFieldAngle(geometricTargetHeading);
 
-
-        // subsystems can log things
-        logTelemetry();
-
         // let the command scheduler do stuff
         CommandScheduler.getInstance().run();
+
+        // subsystems can log things (.update() must run after
+        // CommandScheduler::run so that anything logged in subsystems
+        // is emitted)
+        logTelemetry();
+        telem.update();
     }
 
     @Override
