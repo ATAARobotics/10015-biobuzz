@@ -106,7 +106,7 @@ public class Turret extends SubsystemBase {
         turretAngle = START_ANGLE + encoderRevs * 360 * GEAR_RATIO;
         error = targetHeading + operatorOffset - turretAngle;
         if(mode == Mode.Manual) {
-            servoPower = (manualPower)/2.0 + 0.5;
+            servoPower = manualPower;
         } else{
             servoPower = control.calculate(error);
         }
@@ -121,6 +121,7 @@ public class Turret extends SubsystemBase {
         telem.log("turret-target", targetHeading);
         telem.log("turret-error", error);
         telem.log("turret-power", servoPower);
+        telem.log("turret-operator-offset", operatorOffset);
 
         if (overridePower != 0) servoPower = overridePower;
 
@@ -149,7 +150,7 @@ public class Turret extends SubsystemBase {
 
         @Override
         public void execute() {
-            manualPower = operator.getLeftX()/ MANUAL_DIVISOR;
+            manualPower = operator.getLeftX() / MANUAL_DIVISOR;
             if (operator.isDown(GamepadKeys.Button.LEFT_STICK_BUTTON)){
                 mode = Mode.Manual;
             }

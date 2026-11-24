@@ -110,8 +110,8 @@ public class Shooter extends SubsystemBase {
 
         return Math.abs(targetRpm - averageRpm) <= RPM_TOLERANCE;
 	/*	
-        double measuredRpm = recentVelocity.getLast().velocity;
-        return Math.abs(targetRpm - measuredRpm) <= RPM_TOLERANCE;
+                double measuredRpm = recentVelocity.getLast().velocity;
+                return Math.abs(targetRpm - measuredRpm) <= RPM_TOLERANCE;
 	*/
     }
 
@@ -178,7 +178,7 @@ public class Shooter extends SubsystemBase {
             motorPower = Math.max(0.0, Math.min(1.0, motorPower));
             motor.set(motorPower);
 
-            telem.log("shooter-motorPower", motorPower);
+            telem.log("shooter-motor-power", motorPower);
             telem.log("shooter-rpm-instant", v);
             telem.log("shooter-rpm-average", averageRpm);
             telem.log("shooter-rpm-target", targetRpm);

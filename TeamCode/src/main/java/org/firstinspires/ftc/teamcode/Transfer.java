@@ -69,12 +69,12 @@ public class Transfer extends SubsystemBase {
 
     public Transfer(HardwareMap hardwareMap, HyperTelemetry telem) {
         this.telem = telem;
-         intakeMotor = new MotorEx(hardwareMap, "intake");//port 0 expansion
-         intakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-           transferMotor = new MotorEx(hardwareMap, "transfer");//port 1 expansion
-            transferMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        intakeMotor = new MotorEx(hardwareMap, "intake");//port 0 expansion
+        intakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        transferMotor = new MotorEx(hardwareMap, "transfer");//port 1 expansion
+        transferMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // magazineServo = hardwareMap.get(Servo.class, "magazine"); Commented out bc we don't need until next comp
-          pollenBlocker = hardwareMap.get(Servo.class, "pollenBlocker"); // port 5 control hub
+        pollenBlocker = hardwareMap.get(Servo.class, "pollenBlocker"); // port 5 control hub
         //nectarBlocker = hardwareMap.get(Servo.class, "nectarBlocker"); Commented out bc we don't need until next comp
         crashBarServo1 = hardwareMap.get(Servo.class, "crashBar1");// 0 on control
         crashBarServo2 = hardwareMap.get(Servo.class, "crashBar2");//five on expansion
@@ -172,13 +172,13 @@ public class Transfer extends SubsystemBase {
             }
         }
         else{
-                clearSamples ++;
-                blockedSamples = 0;
-                if(clearSamples > DEBOUNCE_SAMPLES) {
-                   magazineFull = false;
-                }
+            clearSamples ++;
+            blockedSamples = 0;
+            if(clearSamples > DEBOUNCE_SAMPLES) {
+                magazineFull = false;
+            }
 
-         }
+        }
     }
     public boolean isMagazineFull(){
         return magazineFull;
@@ -233,9 +233,6 @@ public class Transfer extends SubsystemBase {
             transferPower = -MIN_TRANSFER;
             break;
         }
-        telem.log("transfer-power", transferPower);
-        telem.log("transfer-beambreak", beamBreakVoltage);
-        telem.log("transfer-full", blocked);
         transferMotor.set(transferPower);
 
         if (intakeMode == IntakeMode.IN && isMagazineFull()){
@@ -261,25 +258,11 @@ public class Transfer extends SubsystemBase {
             crashBarServo2.setPosition(crashTwoNothing);
             break;
         }
-    }
 
-    public class HumanInputs extends CommandBase {
-        GamepadEx operator;
-
-        public HumanInputs(GamepadEx operator) {
-            this.operator = operator;
-            addRequirements(Transfer.this);
-        }
-
-        @Override
-        public void execute() {
-          /* if (operator.getLeftY() > 0.1){
-                runIntake();
-            } else if (operator.getLeftY() < -0.1){
-                reverseIntake();
-            } else{
-                 stopIntake();
-             }*/
-        }
+        // telem last
+        telem.log("transfer-power", transferPower);
+        telem.log("transfer-beambreak", beamBreakVoltage);
+        telem.log("transfer-full", blocked);
+        telem.log("crash-bar-mode", crashMode);
     }
 }
