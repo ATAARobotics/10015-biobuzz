@@ -410,8 +410,11 @@ public abstract class RobotBaseOp extends OpMode {
 
         turretX = robotX - (ROBOT_CENTER_TO_TURRET * Math.cos(Math.toRadians(robotHeading)));
         turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.sin(Math.toRadians(robotHeading)));
+        telem.log("turret-x", turretX);
+        telem.log("turret-y", turretY);
 
         geometricTargetHeading = Math.toDegrees(Math.atan2(targetY - turretY, TARGET_X - turretX));
+        telem.addData("turret-raw-target", geometricTargetHeading);
         turret.faceFieldAngle(geometricTargetHeading);
 
         // let the command scheduler do stuff
