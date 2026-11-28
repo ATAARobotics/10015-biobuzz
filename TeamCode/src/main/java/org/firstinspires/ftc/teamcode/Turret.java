@@ -21,10 +21,11 @@ public class Turret extends SubsystemBase {
     DcMotor melonEncoder;
     
     public PIDController control;
-    public static double turretP = 0.005; //turret tuned nov 21
+    public static double turretP = 0.007; //turret tuned nov 27
     public static double turretI = 0.0;
     public static double turretD = 0.0002;
-    public static double turretF = 0.13;
+    public static double turretF = 0.115;
+    public static double FRICTION_BOOST_THRESHOLD = 0.0001;
     public static double ALIGNMENT_TOLERANCE = 4.0; // degrees
     public static double MANUAL_DIVISOR = 15;
     public static double overridePower = 0.0;
@@ -113,7 +114,7 @@ public class Turret extends SubsystemBase {
         // we just want a simple "static friction" style F and our
         // setpoint is always 0 so the solverslib one doesn't do the
         // right thing.
-        if (Math.abs(servoPower) > 0.05) {
+        if (Math.abs(servoPower) > FRICTION_BOOST_THRESHOLD) {
             servoPower += Math.signum(servoPower) * turretF;
         }
         

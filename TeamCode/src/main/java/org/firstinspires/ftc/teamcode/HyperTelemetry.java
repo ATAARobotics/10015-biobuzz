@@ -17,6 +17,7 @@ public class HyperTelemetry {
 
     public HyperTelemetry(Telemetry driver_station) {
         PanelsTelemetry pt = PanelsTelemetry.INSTANCE;
+        pt.getTelemetry().setUpdateInterval(40L);
         this.telemetry = new JoinedTelemetry(pt.getFtcTelemetry(), driver_station);
     }
 

@@ -26,7 +26,7 @@ public abstract class TeleOp extends RobotBaseOp {
         TriggerHeld driverLeft = new TriggerHeld(driver, GamepadKeys.Trigger.LEFT_TRIGGER);
         driverLeft.whenActive(new StartAutoIntake(), true);
         driverLeft.whenInactive(new StopAutoIntake(), true);
-        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new AutoShoot());
+        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(new TeleShoot());
     }
 
     protected void bindOperatorControls() {

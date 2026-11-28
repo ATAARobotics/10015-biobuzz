@@ -72,7 +72,7 @@ public abstract class RobotBaseOp extends OpMode {
     public enum StartZone {UP, DOWN}
     public enum Alliance {RED, BLUE}
     public abstract Alliance getAlliance();
-    public enum ShootState{WAIT_SHOOT, SHOOT, REJECT, DONE}
+    public enum ShootState{WAIT_SHOOT, SPIN_UP, SHOOT, REJECT, DONE}
     public AutoShoot shooting = null;
     public static double POLLEN_P = 0.0013;
     public static double POLLEN_I = 0;
@@ -356,6 +356,82 @@ public abstract class RobotBaseOp extends OpMode {
             stopEverything();
         }
     }
+    public class TeleShoot extends CommandBase{
+        private ShootState state;
+        private final ElapsedTime feedTimer = new ElapsedTime();
+        private final ElapsedTime rejectTimer = new ElapsedTime();
+        private final ElapsedTime shootTimer = new ElapsedTime();
+        public TeleShoot() {
+            addRequirements(shooter);
+            addRequirements(transfer);
+            addRequirements(turret);
+        }
+        @Override
+        public void initialize(){
+            state = ShootState.SPIN_UP;
+            shootTimer.reset();
+            transfer.idle();
+            shooter.setRpm();
+            if (turretAutoAim) {
+                turret.faceFieldAngle(geometricTargetHeading);
+            }
+        }
+        @Override
+        public void execute() {
+            if (turretAutoAim) {
+                turret.faceFieldAngle(geometricTargetHeading);
+            }
+            switch (state) {
+                case SPIN_UP:
+                    if (driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+                        state = ShootState.WAIT_SHOOT;
+                    }
+                    break;
+
+                case WAIT_SHOOT:
+                    if (readyToShoot() || driver.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+                        transfer.shoot();
+                        state = ShootState.SHOOT;
+                        feedTimer.reset();
+                    }
+                    break;
+
+                case SHOOT:
+                    if (feedTimer.seconds() >= SHOOT_FEED_SECONDS) {
+                        state = ShootState.REJECT;
+                        transfer.reverseTransfer();
+                        rejectTimer.reset();
+                    }
+                    break;
+
+                case REJECT:
+                    if (rejectTimer.seconds() >= REJECT_SECONDS) {
+                        state = ShootState.DONE;
+                        stopEverything();
+                    }
+                    break;
+
+                case DONE:
+                    break;
+            }
+        }
+        @Override
+        public boolean isFinished(){
+            return state == ShootState.DONE;
+        }
+        public void stopEverything(){
+            shooter.stopRpm();
+            if (turretAutoAim) {
+                turret.faceRobotAngle(-90.0);
+            }
+            transfer.idle();
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            stopEverything();
+        }
+    }
     public void toggleAutoAim(){
         if (turretAutoAim){
             turretAutoAim = false;
@@ -414,8 +490,13 @@ public abstract class RobotBaseOp extends OpMode {
         telem.log("turret-y", turretY);
 
         geometricTargetHeading = Math.toDegrees(Math.atan2(targetY - turretY, TARGET_X - turretX));
-        telem.addData("turret-raw-target", geometricTargetHeading);
+        telem.log("turret-raw-target", geometricTargetHeading);
         turret.faceFieldAngle(geometricTargetHeading);
+
+        double distanceFromTargetX = TARGET_X - turretX;
+        double distanceFromTargetY = targetY - turretY;
+        double distanceFromTarget = Math.sqrt(Math.pow(distanceFromTargetX, 2) + Math.pow(distanceFromTargetY, 2));
+        telem.logBoth("distance-from-target", distanceFromTarget);
 
         // let the command scheduler do stuff
         CommandScheduler.getInstance().run();
