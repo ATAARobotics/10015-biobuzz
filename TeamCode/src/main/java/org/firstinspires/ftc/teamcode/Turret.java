@@ -27,10 +27,10 @@ public class Turret extends SubsystemBase {
     double previousTicks = 32000;
     boolean turretReseting = false;
     public PIDController control;
-    public static double turretP = 0.007; //turret tuned nov 27
+    public static double turretP = 0.006; //turret tuned nov 27
     public static double turretI = 0.0;
     public static double turretD = 0.0002;
-    public static double turretF = 0.115;
+    public static double turretF = 0.1;
     public static double FRICTION_BOOST_THRESHOLD = 0.0001;
     public static double ALIGNMENT_TOLERANCE = 4.0; // degrees
     public static double MANUAL_DIVISOR = 15;
@@ -47,7 +47,7 @@ public class Turret extends SubsystemBase {
     double encoderRevs;
     public static double START_ANGLE = 90;
     double operatorOffset;
-    double OPERATOR_INCREMENT = 1;
+    double OPERATOR_INCREMENT = 2;
     public enum Mode {Auto, Manual}
     public Mode mode = Mode.Auto;
     double manualPower;
