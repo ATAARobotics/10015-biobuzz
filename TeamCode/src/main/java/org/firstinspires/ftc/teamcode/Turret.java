@@ -19,7 +19,7 @@ public class Turret extends SubsystemBase {
     Drive drive;
     CRServo turret;
     DcMotor melonEncoder;
-    public static double HARD_RESET_POWER = 0.01;
+    public static double HARD_RESET_POWER = 0.2;
     double blockedSamples = 0;
     double clearSamples = 0;
     boolean turretStopped;
@@ -105,7 +105,7 @@ public class Turret extends SubsystemBase {
         melonEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         melonEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
-    public boolean turretBlocked() {
+    public void turretBlocked() {
         boolean blocked = !(ticksMoved < previousTicks);
         if (blocked){
             blockedSamples ++;
@@ -122,39 +122,40 @@ public class Turret extends SubsystemBase {
             }
         }
         previousTicks = ticksMoved;
-        return turretStopped;
-    }
-
-    public void turretHardReset(){
-        turretReseting = true;
-        servoPower = HARD_RESET_POWER;
-        if(turretBlocked()){
+        if(turretStopped){
             servoPower = 0;
             reset();
             turretReseting = false;
         }
     }
 
+    public void turretHardReset(){
+        turretReseting = true;
+        servoPower = HARD_RESET_POWER;
+    }
+
     @Override
     public void periodic(){
-        control.setPID(turretP, turretI, turretD);
-        ticksMoved = melonEncoder.getCurrentPosition();
-        encoderRevs = ticksMoved / TICKS_PER_REV;
-        turretAngle = START_ANGLE + encoderRevs * 360 * GEAR_RATIO;
-        error = targetHeading + operatorOffset - turretAngle;
-        if(mode == Mode.Manual) {
-            servoPower = manualPower;
-        } else{
-            servoPower = control.calculate(error);
+        if (!turretReseting) {
+            control.setPID(turretP, turretI, turretD);
+            ticksMoved = melonEncoder.getCurrentPosition();
+            encoderRevs = ticksMoved / TICKS_PER_REV;
+            turretAngle = START_ANGLE + encoderRevs * 360 * GEAR_RATIO;
+            error = targetHeading + operatorOffset - turretAngle;
+            if (mode == Mode.Manual) {
+                servoPower = manualPower;
+            } else {
+                servoPower = control.calculate(error);
+            }
+            // we just want a simple "static friction" style F and our
+            // setpoint is always 0 so the solverslib one doesn't do the
+            // right thing.
+            if (Math.abs(servoPower) > FRICTION_BOOST_THRESHOLD) {
+                servoPower += Math.signum(servoPower) * turretF;
+            }
         }
-        // we just want a simple "static friction" style F and our
-        // setpoint is always 0 so the solverslib one doesn't do the
-        // right thing.
-        if (Math.abs(servoPower) > FRICTION_BOOST_THRESHOLD) {
-            servoPower += Math.signum(servoPower) * turretF;
-        }
-        if (turretReseting){
-            turretBlocked();
+        else{
+           // turretBlocked();
         }
         
         telem.log("turret-angle", turretAngle);

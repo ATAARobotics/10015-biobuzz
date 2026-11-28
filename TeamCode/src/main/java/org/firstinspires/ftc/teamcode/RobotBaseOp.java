@@ -465,7 +465,11 @@ public abstract class RobotBaseOp extends OpMode {
         if(OpmodeStorage.panicMode){
             telem.logDrivers("PANIC", 1);
         }
+        /*if (drive.getPosition().getY(DistanceUnit.INCH) > 70.75){
+            turret.operatorOffset = -turret.operatorOffset;
+        } else{
 
+        }*/
 
         loops++;
         clearCache();
@@ -488,6 +492,7 @@ public abstract class RobotBaseOp extends OpMode {
         turretY = robotY - (ROBOT_CENTER_TO_TURRET * Math.sin(Math.toRadians(robotHeading)));
         telem.log("turret-x", turretX);
         telem.log("turret-y", turretY);
+        telem.log("panic-mode", OpmodeStorage.panicMode);
 
         geometricTargetHeading = Math.toDegrees(Math.atan2(targetY - turretY, TARGET_X - turretX));
         telem.log("turret-raw-target", geometricTargetHeading);

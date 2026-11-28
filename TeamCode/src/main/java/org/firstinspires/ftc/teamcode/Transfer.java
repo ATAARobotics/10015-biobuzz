@@ -25,8 +25,8 @@ public class Transfer extends SubsystemBase {
     // adjusted november 17
     public static double TRANSFER_TIME = 1.0;  // seconds
     public static double RAMP_START = 0.70;
-    public static double MIN_TRANSFER = 0.6;
-    public static double MAX_TRANSFER = 0.6;
+    public static double MIN_TRANSFER = 1;
+    public static double MAX_TRANSFER = 1;
     
     public enum IntakeMode {IDLE, IN, OUT}
     public enum TransferMode {IDLE, SHOOT, REJECT}
