@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
@@ -14,6 +15,7 @@ import static com.pedropathing.api.Paths.line;
 //import static com.pedropathing.ivy.groups.Groups.sequential;
 //import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.api.PoseFactory;
 //import com.pedropathing.ivy.Command;
@@ -21,14 +23,16 @@ import com.pedropathing.api.PoseFactory;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 
+
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+
 
 @Configurable
 public abstract class Auto extends RobotBaseOp {
     protected void bindDriverControls() {}
     protected void bindOperatorControls() {}
     public boolean isAuto() { return true; }
-    
+
     private final PoseFactory p = PoseFactory.degrees();
     double xOffset = 8.124;
     double yOffset = 8.649;
@@ -38,55 +42,42 @@ public abstract class Auto extends RobotBaseOp {
     //boolean basicNearAuto = false;
     boolean pushIntoZone = false;
     //TODO:startposition
-    private final Pose startUp = p.of(47 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up
-    private final Pose startMeet1 = p.of(19 - xOffset, 39 - yOffset, 0); //starting position up side
-    private final Pose startDown = p.of(72 - xOffset, 141 - yOffset, 270); //starting position on down side
+    private final Pose startUp = p.of(23.5 + xOffset, yOffset, 90);//Starting Pose for side where hive is tipped up p.s. sidelength of a tile on the edge is 23.5inch
+    //private final Pose startMeet1 = p.of(19 - xOffset, 39 - yOffset, 0); //starting position up side
+    private final Pose startDown = p.of(47 - xOffset, 141 - yOffset, 270); //starting position on down side
     //TODO:flower
-    /*
-    private final Pose controlPointSharedBetweenShootAndFlower = p.of(52, 85, 270); //control point between shoot position and flower intake
-    private final Pose flowerIntakeFar = p.of(47.13, 126, 90); //flower intake down side (across from the hive)
-    private final Pose farFlowerPickUp = p.of(46.4,122,90);//Pick up the flower at the far side
-    private final Pose pointTowardsFlower = p.of(58,118.1,90); //rotate to point towards flower
-    */
+   /*
+   private final Pose controlPointSharedBetweenShootAndFlower = p.of(52, 85, 270); //control point between shoot position and flower intake
+   private final Pose flowerIntakeFar = p.of(47.13, 126, 90); //flower intake down side (across from the hive)
+   private final Pose farFlowerPickUp = p.of(46.4,122,90);//Pick up the flower at the far side
+   private final Pose pointTowardsFlower = p.of(58,118.1,90); //rotate to point towards flower
+   */
     //TODO:garden
     private final Pose gardenIntakeCorner = p.of(8.0,8,270); //getting into the corner for efficient garden intake
     private final Pose garden = p.of(10.0,9.14,260);//Pose to prepare to intake garden
-    private final Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
+
+
     //TODO:shootposition
     private final Pose doubleCheckPartner = p.of(53+  xOffset, yOffset + 5.1, 270); //check if the hive has tipped or not
-    private final Pose shootNear = p.of(44 + xOffset, yOffset+3, 90); //general shooting position up side
+    private final Pose shootNear = p.of(23.5 + xOffset, yOffset+3, 90); //general shooting position up side
     //private final Pose shootFar = p.of(58,118,270);//Shoot at the far side
-    private final Pose shootOtherBasket = p.of(59.71, 141.5 - yOffset - 6, 270); //shoot on the down side
-    private final Pose shootFarControlPoint = p.of(32.1,135.8,270); // control point when driving from garden to far shoot
+    private final Pose shootOtherBasket = p.of(23.5+xOffset, 141.5 - yOffset - 6, 270); //shoot on the down side
+    //private final Pose shootFarControlPoint = p.of(32.1,135.8,270); // control point when driving from garden to far shoot
     private final Pose checkAprilTag = p.of(72-xOffset, 127, 90); //waiting to see april tag (to know if hive has tipped)
     private final Pose generalShootingPositionFar = p.of(60.96, 125, 270); //shooting position down side
     //TODO:park
-    private final Pose parkMeet1 = p.of(9.65+8, 117.57, 0); //parking position from down side //TODO: parkMeet1 and parkFar can be the same?
-    private final Pose parkFar = p.of(13.0, 115.3, 270); //park down side TODO: parkMeet1 and parkFar can be the same?
-    private final Pose parkMeet1Close = p.of(9.65+8, 105, 0); //parking position from up side
+    private final Pose park = p.of(13.0, 115.3, 270); //park down side TODO: parkMeet1 and parkFar can be the same?
+    //private final Pose parkMeet1 = p.of(9.65+8, 117.57, 0); //parking position from down side //TODO: parkMeet1 and parkFar can be the same?
+    //private final Pose parkMeet1Close = p.of(9.65+8, 105, 0); //parking position from up side
     //private final Pose endParkSolo = p.of(9.64,115,0); //Parking in zone at end alone
     //private final Pose controlParkFromGarden = p.of(41.09, 57.37, 90); //Control point for option where we don't go to other side
     //private final Pose parkOnEdge = p.of(8.25, 96.59,90); //Park closer to the edge to stay out of partner's way
-    private final Pose prepareToBumpPartner = p.of(10.25,69.16,180); //So we don't destroy them
+    private final Pose prepareToBumpPartner = p.of(10.25,69.16,270); //So we don't destroy them
     //private final Pose controlPointToPrepareToBumpPartner = p.of(41.09,57.37,90); //Exactly what it sounds like
-    private final Pose bumpPartner = p.of(10.25,96.33,180); //Push partner into park position
+    private final Pose bumpPartner = p.of(10.25,96.33,270); //Push partner into park position
 
     //far auto poses (includes poses for meet 1 and general far auto poses)
-
-
-
-
-
-
     //meet 1 auto poses (includes doublechecking partner)
-
-
-
-
-    private final Pose controlPointParkMeet1 = p.of(40.49, 94.98, 0); //control point for parking from down side
-    private final Pose controlPointLongPark = p.of(22.32, 23.61, 0); //control point for parking from up side
-
-
 
     class Delay extends CommandBase {
         double seconds;
@@ -114,13 +105,17 @@ public abstract class Auto extends RobotBaseOp {
         return line(startUp, shootNear).linear(startUp, shootNear);
     }
     private Path gardenPickUp() {
+        Pose controlGarden = p.of(35.3, 36.9, 90); //Control point on way to pick up garden
         return curve(shootNear, controlGarden, garden).linear(shootNear, garden);
     }
+
+
 
 
     private Path pushPartner(){
         return line(prepareToBumpPartner, bumpPartner).linear(prepareToBumpPartner, bumpPartner);
     }
+
 
     //basic far auto paths
     private Path startToAprilTags(){
@@ -129,26 +124,38 @@ public abstract class Auto extends RobotBaseOp {
 
 
 
+
+
+
     private Path gardenToDoubleCheck(){
         return line(gardenIntakeCorner, doubleCheckPartner).linear(gardenIntakeCorner, doubleCheckPartner);
     }
+
 
     private Path doubleCheckToShootNear(){
         return line(doubleCheckPartner, shootNear).linear(doubleCheckPartner, shootNear);
     }
 
 
+
+
     private Path doubleChecktoShootFar(){
         return line(doubleCheckPartner, shootOtherBasket).linear(doubleCheckPartner, shootOtherBasket);
     }
 
-    private Path shootFarToPark(){
-        return curve(shootOtherBasket, controlPointParkMeet1, parkMeet1).linear(shootOtherBasket, parkMeet1);
+
+    private Path shootFarToPush(){
+        Pose controlPointParkMeet1 = p.of(47.23, 3.08, 0); //control point for parking from down side
+        Pose controlPointParkMeet2 = p.of(4.38, 23.19, 0);
+        return curve(shootOtherBasket, controlPointParkMeet1,controlPointParkMeet2, park).linear(shootOtherBasket, park);
     }
 
+
     private Path shootNearToPark(){
-        return curve(doubleCheckPartner, controlPointLongPark, parkMeet1Close).linear(doubleCheckPartner, parkMeet1Close);
+        Pose controlPointLongPark = p.of(22.32, 23.61, 0);//control point for parking from up side
+        return curve(doubleCheckPartner, controlPointLongPark, park).linear(doubleCheckPartner, park);
     }
+
 
     private Path gardenIntakePath(){
         return line(garden,gardenIntakeCorner).linear(garden,gardenIntakeCorner);
@@ -160,70 +167,78 @@ public abstract class Auto extends RobotBaseOp {
         return line(prepareToBumpPartner, bumpPartner).linear(prepareToBumpPartner,bumpPartner);
     }
 
+
     private Path aprilTagToshootPreloads(){
         return line(checkAprilTag, generalShootingPositionFar).linear(checkAprilTag,generalShootingPositionFar);
     }
     private Path shootPreloadsToPark(){
-        return line(generalShootingPositionFar, parkFar).linear(generalShootingPositionFar,parkFar);
+        return line(generalShootingPositionFar, park).linear(generalShootingPositionFar,park);
     }
     private Command autoRoutineUp() {
         SequentialCommandGroup auto = new SequentialCommandGroup();
         auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
         auto.addCommands(new FollowPathCommand(drive.follower, goToNearShoot()));
-	auto.addCommands(new AutoShoot());
-	auto.addCommands(new StartAutoIntake());
-	auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
-    auto.addCommands(new Delay(0.5));
+        auto.addCommands(new AutoShoot());
+        auto.addCommands(new StartAutoIntake());
+        auto.addCommands(new FollowPathCommand(drive.follower, gardenPickUp()));
+        auto.addCommands(new Delay(0.5));
         auto.addCommands(new FollowPathCommand(drive.follower, gardenIntakePath()));
-	auto.addCommands(new Delay(1.0));
-	auto.addCommands(new StopAutoIntake());
-    auto.addCommands(new InstantCommand(transfer::setCrashBarNothing));
-	auto.addCommands(new FollowPathCommand(drive.follower, gardenToDoubleCheck()));
-    auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
+        auto.addCommands(new Delay(1.0));
+        auto.addCommands(new StopAutoIntake());
+        auto.addCommands(new InstantCommand(transfer::setCrashBarNothing));
+        auto.addCommands(new FollowPathCommand(drive.follower, gardenToDoubleCheck()));
+        auto.addCommands(new InstantCommand(transfer::setCrashBarPollen));
 
-	// once at double-check location we decide whether to shoot
-	// from here, or drive to other side
-	SequentialCommandGroup tipped = new SequentialCommandGroup();
-	tipped.addCommands(
-		new FollowPathCommand(drive.follower, doubleChecktoShootFar()),
-		// should we also wait here??
-		//new WaitForTip(TipDetector.TippedSide.SCORING),
-		new AutoShoot(),
-		new Delay(0.5),
-		new FollowPathCommand(drive.follower, shootFarToPark())
-	);
-	SequentialCommandGroup notTipped = new SequentialCommandGroup();
-	notTipped.addCommands(
-		new FollowPathCommand(drive.follower, doubleCheckToShootNear()),
-		new AutoShoot(),
-		new Delay(0.5)
-    );
 
-    if(pushIntoZone){
+        // once at double-check location we decide whether to shoot
+        // from here, or drive to other side
+        SequentialCommandGroup tipped = new SequentialCommandGroup();
+        tipped.addCommands(
+                new FollowPathCommand(drive.follower, doubleChecktoShootFar()),
+                // should we also wait here??
+                //new WaitForTip(TipDetector.TippedSide.SCORING),
+                new AutoShoot(),
+                new Delay(0.5),
+                new FollowPathCommand(drive.follower, shootFarToPush())
+        );
+        SequentialCommandGroup notTipped = new SequentialCommandGroup();
         notTipped.addCommands(
-		new FollowPathCommand(drive.follower, shootNearToPreparePush()),
-            new FollowPathCommand(drive.follower, pushPartner()),
-        new FollowPathCommand(drive.follower, pushToPark())
+                new FollowPathCommand(drive.follower, doubleCheckToShootNear()),
+                new AutoShoot(),
+                new Delay(0.5)
+        );
+
+
+        if(pushIntoZone){
+            notTipped.addCommands(
+                    new FollowPathCommand(drive.follower, shootNearToPreparePush()),
+                    new FollowPathCommand(drive.follower, pushPartner()),
+                    new FollowPathCommand(drive.follower, pushToPark())
             );
         }
-    else{
-        notTipped.addCommands(
-            new FollowPathCommand(drive.follower, shootNearToPark())
+        else{
+            notTipped.addCommands(
+                    new FollowPathCommand(drive.follower, shootNearToPark())
             );
         }
-	auto.addCommands(
-		new ConditionalCommand(tipped, notTipped, () -> {return (tipDetector.tip() == TipDetector.TippedSide.UNKNOWN);})
-	);
-	return auto;
+        auto.addCommands(
+                new ConditionalCommand(tipped, notTipped, () -> {return (tipDetector.tip() == TipDetector.TippedSide.UNKNOWN);})
+        );
+        return auto;
     }
+
+
+
 
 
 
     private Command autoRoutineDown(){
 
+
         //down auto for meet 1
         SequentialCommandGroup autoDown = new SequentialCommandGroup();
         autoDown.addCommands(new InstantCommand(transfer::setCrashBarPollen));
+
 
         autoDown.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
         TipDetector.TippedSide target = TipDetector.TippedSide.SCORING;
@@ -238,21 +253,26 @@ public abstract class Auto extends RobotBaseOp {
         autoDown.addCommands(new AutoShoot());
         autoDown.addCommands(new FollowPathCommand(drive.follower, shootPreloadsToPark()));
 
-        return autoDown;
-
-        /*
-        //TODO:Desired outcome for far auto, uses flowers as well
-        autoDown.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
-        autoDown.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
-        autoDown.addCommands(new FollowPathCommand(drive.follower, aprilTagToShoot()));
-        autoDown.addCommands(new FollowPathCommand(drive.follower, shootToFlowerIntake()));
-        autoDown.addCommands(new FollowPathCommand(drive.follower, flowerToShoot()));
-        autoDown.addCommands(new FollowPathCommand(drive.follower, shootToPark()));
 
         return autoDown;
 
-         */
+
+       /*
+       //TODO:Desired outcome for far auto, uses flowers as well
+       autoDown.addCommands(new FollowPathCommand(drive.follower, startToAprilTags()));
+       autoDown.addCommands(new WaitForTip(TipDetector.TippedSide.SCORING));
+       autoDown.addCommands(new FollowPathCommand(drive.follower, aprilTagToShoot()));
+       autoDown.addCommands(new FollowPathCommand(drive.follower, shootToFlowerIntake()));
+       autoDown.addCommands(new FollowPathCommand(drive.follower, flowerToShoot()));
+       autoDown.addCommands(new FollowPathCommand(drive.follower, shootToPark()));
+
+
+       return autoDown;
+
+
+        */
     }
+
 
     private final Pose testStart = p.of(73-xOffset, yOffset, 90);
     private final Pose testEnd = p.of(73-xOffset, 120, 90);
@@ -263,6 +283,7 @@ public abstract class Auto extends RobotBaseOp {
         SequentialCommandGroup testAuto = new SequentialCommandGroup();
         testAuto.addCommands(new FollowPathCommand(drive.follower, testPath()));
         return testAuto;
+
 
     }
     @Override
@@ -283,6 +304,7 @@ public abstract class Auto extends RobotBaseOp {
         super.init_loop();
         readControls();
 
+
         //Stay on the near side during auto
         if (operator.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
             noFarSide = true;
@@ -290,13 +312,14 @@ public abstract class Auto extends RobotBaseOp {
             noFarSide = false;
         }// figure out how to make it toggle!
         //Bump the partner into the parking zone, then continue default path
-   /*     if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
-            pushToPark = true;
-        } else if(operator.wasJustPressed(GamepadKeys.Button.A)){
-            pushToPark = false;
-        }
+  /*     if (operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
+           pushToPark = true;
+       } else if(operator.wasJustPressed(GamepadKeys.Button.A)){
+           pushToPark = false;
+       }
 
-    */
+
+   */
         if(operator.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)){
             pushIntoZone = true;
         }
@@ -310,10 +333,12 @@ public abstract class Auto extends RobotBaseOp {
             doubleCheck = false;
         }
 
-      //  telemetry.addData("Don't shoot on the other side (when upside) \n Dpad up to turn on, b to turn off", noFarSide);
-       // telemetry.addData("Push partner. DPAD DOWN to enable, A to disable", pushToPark);
-     //   telemetry.addData("Meet 1 with partner. DPAD LEFT to enable, Y to disable.", doubleCheck);
+
+        //  telemetry.addData("Don't shoot on the other side (when upside) \n Dpad up to turn on, b to turn off", noFarSide);
+        // telemetry.addData("Push partner. DPAD DOWN to enable, A to disable", pushToPark);
+        //   telemetry.addData("Meet 1 with partner. DPAD LEFT to enable, Y to disable.", doubleCheck);
         telemetry.addData("Meet 1 Push partner. DPAD DOWN to enable, A to disable", pushIntoZone);
+
 
         telemetry.update();
     }
@@ -327,8 +352,9 @@ public abstract class Auto extends RobotBaseOp {
         else if(getStartZone() == StartZone.DOWN){
             CommandScheduler.getInstance().schedule(autoRoutineDown());
         }
-      //  CommandScheduler.getInstance().schedule(test());
+        //  CommandScheduler.getInstance().schedule(test());
     }
+
 
     @Override
     public void loop() {
@@ -336,8 +362,10 @@ public abstract class Auto extends RobotBaseOp {
         drive.follower.update();
     }
 
+
     @Override
     public void stop(){
         OpmodeStorage.autonomousEndPose = drive.follower.pose(); //saves your position in that file
     }
 }
+

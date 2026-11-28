@@ -19,7 +19,13 @@ public class Turret extends SubsystemBase {
     Drive drive;
     CRServo turret;
     DcMotor melonEncoder;
-    
+    public static double HARD_RESET_POWER = 0.01;
+    double blockedSamples = 0;
+    double clearSamples = 0;
+    boolean turretStopped;
+    public static double DEBOUNCE_TURRET_SAMPLES = 4;
+    double previousTicks = 32000;
+    boolean turretReseting = false;
     public PIDController control;
     public static double turretP = 0.007; //turret tuned nov 27
     public static double turretI = 0.0;
@@ -39,7 +45,7 @@ public class Turret extends SubsystemBase {
     double error;
     double ticksMoved;
     double encoderRevs;
-    public static double START_ANGLE = -90;
+    public static double START_ANGLE = 90;
     double operatorOffset;
     double OPERATOR_INCREMENT = 1;
     public enum Mode {Auto, Manual}
@@ -99,6 +105,36 @@ public class Turret extends SubsystemBase {
         melonEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         melonEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
+    public boolean turretBlocked() {
+        boolean blocked = !(ticksMoved < previousTicks);
+        if (blocked){
+            blockedSamples ++;
+            clearSamples = 0;
+            if (blockedSamples > DEBOUNCE_TURRET_SAMPLES){
+                turretStopped = true;
+            }
+        }
+        else{
+            clearSamples ++;
+            blockedSamples = 0;
+            if(clearSamples > DEBOUNCE_TURRET_SAMPLES) {
+                turretStopped = false;
+            }
+        }
+        previousTicks = ticksMoved;
+        return turretStopped;
+    }
+
+    public void turretHardReset(){
+        turretReseting = true;
+        servoPower = HARD_RESET_POWER;
+        if(turretBlocked()){
+            servoPower = 0;
+            reset();
+            turretReseting = false;
+        }
+    }
+
     @Override
     public void periodic(){
         control.setPID(turretP, turretI, turretD);
@@ -116,6 +152,9 @@ public class Turret extends SubsystemBase {
         // right thing.
         if (Math.abs(servoPower) > FRICTION_BOOST_THRESHOLD) {
             servoPower += Math.signum(servoPower) * turretF;
+        }
+        if (turretReseting){
+            turretBlocked();
         }
         
         telem.log("turret-angle", turretAngle);
@@ -139,28 +178,6 @@ public class Turret extends SubsystemBase {
 	if (servoPower < 0.0 && turretAngle > 100) {
 	    servoPower = 0.0;
 	}
-
         turret.set(servoPower);
-    }
-    public class HumanInputs extends CommandBase {
-        GamepadEx operator;
-        public HumanInputs(GamepadEx operator) {
-            this.operator = operator;
-            addRequirements(Turret.this);
-        }
-
-        @Override
-        public void execute() {
-            manualPower = operator.getLeftX() / MANUAL_DIVISOR;
-            if (operator.isDown(GamepadKeys.Button.LEFT_STICK_BUTTON)){
-                mode = Mode.Manual;
-            }
-            else{
-                if (mode == Mode.Manual){
-                    mode = Mode.Auto;
-                    reset();
-                }
-            }
-        }
     }
 }
